@@ -25,9 +25,4 @@ class PageController extends Controller
     {
         return view('pages.syarat-ketentuan');
     }
-
-    public function login(): View
-    {
-        return view('pages.login');
-    }
 }

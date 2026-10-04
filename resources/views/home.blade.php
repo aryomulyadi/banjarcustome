@@ -9,13 +9,18 @@
                     class="absolute inset-0 transition-opacity duration-700"
                     :class="index === {{ $i }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
                 >
-                    <x-placeholder-image label="Banner Promo {{ $i + 1 }}" class="absolute inset-0 h-full w-full" />
+                    @if (file_exists(public_path($slide['image'])))
+                        <img
+                            src="{{ asset($slide['image']) }}"
+                            alt="{{ $slide['title'] }}"
+                            class="absolute inset-0 h-full w-full object-cover"
+                        >
+                    @else
+                        <x-placeholder-image label="Banner Promo {{ $i + 1 }}" class="absolute inset-0 h-full w-full" />
+                    @endif
                     <div class="absolute inset-0 bg-gradient-to-r from-background/95 via-background/75 to-transparent"></div>
 
                     <div class="relative flex h-full max-w-2xl flex-col justify-center gap-4 px-6 sm:px-12">
-                        <span class="w-fit rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-primary">
-                            Banjarmasin · Kalimantan Selatan
-                        </span>
                         <h1 class="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
                             {{ $slide['title'] }}
                         </h1>

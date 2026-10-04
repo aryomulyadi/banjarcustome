@@ -1,0 +1,92 @@
+PRD — BANJAR CUSTOME (Banjarmasin)
+Situs profil perusahaan + katalog + form pemesanan jasa konveksi & sablon.
+(PRD asli ditempel pada sesi percakapan; file ini mencatat keputusan implementasi.)
+
+================================================================
+KEPUTUSAN IMPLEMENTASI (final)
+================================================================
+
+Fase 1 — Situs publik (SELESAI)
+- Stack: Laravel 12, SQLite, Vite 7, Tailwind CSS v4, Alpine.js.
+- UI: token shadcn-style (amber) di resources/css/app.css; komponen Blade
+  (button, card, input, label, textarea, placeholder-image, product-card).
+- Header: nav 6 kategori + Hubungi CS (WA). Filter kegiatan/needs DIHAPUS;
+  sidebar katalog = pencarian + kategori + warna.
+- Kolom palet warna: tabel product_colors mandiri per produk.
+- Semua gambar placeholder abu-abu saat dev (tidak ada aset eksternal).
+- Kontak disentral di config/banjarcustom.php:
+  alamat Jl Veteran Kuripan (KONSISTEN — bukan Jl. Jahri Saleh),
+  WA 0813-4813-8440 (wa.me/6281348138440), IG @banjarcustom_konveksi.id.
+- Tanpa cart/pembayaran: pesanan via form + bridging WhatsApp.
+- Tabel: users (+role admin/user), categories, products, product_colors,
+  galleries, custom_orders (user_id nullable, product_id, quantity,
+  status enum pending/production/completed).
+
+Fase 2 — Auth admin + lacak pesanan (SELESAI)
+- LOGIN KHUSUS ADMIN. Tidak ada register, tidak ada akun customer,
+  tidak ada lupa password. Admin dibuat via seeder/tinker
+  (admin@banjarcustom.test / password).
+- Auth MANUAL, tanpa Laravel Breeze — breeze:install bersifat destruktif
+  (menimpa routes/web.php, app.css, app.js, vite.config.js dan menurunkan
+  Tailwind v4 ke v3); project ini bukan git repo sehingga tak bisa rollback.
+- POST /login diberi throttle:6,1; pesan gagal selalu generik
+  ("Email atau password salah.") untuk akun user-role maupun salah password.
+- Middleware alias 'admin' = App\Http\Middleware\EnsureRoleIsAdmin (403).
+- Login disembunyikan dari situs (tidak ada tombol Akun di header);
+  admin membuka /login langsung. Setelah login: header menampilkan
+  Dashboard + Keluar (khusus admin).
+- Customer cek pesanan TANPA login: /cek-pesanan (ID order + nomor WA).
+  Normalisasi nomor: buang non-digit, 62xxx -> 08xxx, buang nol depan.
+  Akses ditautkan dari footer (Cek Status Pesanan) & halaman sukses pesanan.
+- custom_orders.user_id dibiarkan nullable & TIDAK dipakai (riwayat
+  berbasis akun dibatalkan). users.phone TIDAK ditambahkan.
+
+Fase 3 — Dashboard admin (SELESAI)
+- Prefix /admin + middleware [auth, admin], routes di routes/admin.php.
+- Layout: resources/views/components/layouts/admin.blade.php
+  (sidebar + topbar, token amber sama, sidebar mobile via Alpine).
+- Modul:
+  * Dashboard: stat (pending/production/completed/total/bulan ini/produk/
+    kategori) + 5 pesanan terbaru.
+  * Pesanan: tab filter status + pencarian nama/no WA + pagination;
+    detail + update status (pending/production/completed) + unduh file
+    desain (Storage::download) + tombol chat WA pelanggan.
+  * Produk: CRUD + upload gambar (public/products, hapus file saat
+    ganti/hapus) + palet warna baris-dinamis Alpine (simpan = hapus &
+    insert ulang) + slug unik otomatis.
+  * Kategori: CRUD; hapus DIBLOKIR bila masih ada produk (FK cascade).
+  * Galeri: CRUD (public/galleries), pola sama produk.
+- "Leads" = pesanan status pending pada modul Pesanan (tanpa modul
+  terpisah).
+
+================================================================
+ASET GAMBAR, LOGO & FAVICON
+===============================================================
+- Foto produk & galeri: HANYA via dashboard admin
+  (/admin/produk & /admin/galeri) -> storage/app/public (symlink).
+- Aset statis -> public/images/ (di-serve langsung, di luar Vite):
+  * logo.svg          -> komponen <x-logo> (header, footer, login,
+                         sidebar admin). Fallback otomatis: kotak
+                         "BC" amber bila file belum ada.
+  * favicon.svg / favicon.png -> partials/favicon.blade.php,
+                         <link rel="icon"> di layout app & admin
+                         (render hanya bila file ada).
+  * banner-1.jpg .. banner-3.jpg -> slide hero (HomeController
+                         $slides[image]); fallback placeholder
+                         "Banner Promo N" bila file belum ada.
+                         Rekomendasi: lebar 1600px, rasio ~16:7,
+                         <=300KB, subjek di KANAN (teks menimpa kiri).
+- 43 SVG icon UI tetap inline (scope: logo + favicon saja).
+- resources/views/welcome.blade.php (sisa skeleton) dihapus.
+
+===============================================================
+VERIFIKASI
+===============================================================
+- vendor/bin/pint: passed.
+- php artisan test: 59 tests / 239 assertions lulus.
+- npm run build: sukses (Tailwind v4 via @tailwindcss/vite).
+- Smoke dual jalur: tanpa aset (fallback BC + placeholder, tanpa
+  link icon) dan dengan aset dummy (img logo/banner/favicon tampil,
+  aset 200; dummy dibersihkan, fallback pulih).
+- Smoke fase auth/admin: login admin -> /admin + 8 halaman admin
+  + beranda 200; guest /admin -> redirect /login.

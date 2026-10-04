@@ -50,7 +50,10 @@
             </div>
 
             <p class="mt-5 text-xs text-muted-foreground">
-                Lanjutkan ke WhatsApp agar pesanan langsung kami konfirmasi. Simpan nomor order <strong>#{{ $order->id }}</strong>.
+                Lanjutkan ke WhatsApp agar pesanan langsung kami konfirmasi. Simpan nomor order <strong>#{{ $order->id }}</strong> —
+                <a href="{{ route('track.create') }}" class="font-medium text-primary underline-offset-4 hover:underline">
+                    lacak status pesanan kapan saja
+                </a>.
             </p>
         </div>
     </div>

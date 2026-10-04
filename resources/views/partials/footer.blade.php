@@ -6,7 +6,7 @@
     <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
         <div class="md:col-span-1">
             <div class="flex items-center gap-2.5">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">BC</span>
+                <x-logo />
                 <span class="text-base font-bold">Banjar <span class="text-primary">Custome</span></span>
             </div>
             <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -53,6 +53,7 @@
             <ul class="mt-4 space-y-2">
                 <li><a href="{{ route('tentang') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Tentang Kami</a></li>
                 <li><a href="{{ route('galeri') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Galeri</a></li>
+                <li><a href="{{ route('track.create') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Cek Status Pesanan</a></li>
                 <li><a href="{{ route('size-chart') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Panduan Ukuran</a></li>
                 <li><a href="{{ route('kebijakan-privasi') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Kebijakan Privasi</a></li>
                 <li><a href="{{ route('syarat-ketentuan') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Syarat &amp; Ketentuan Pemesanan</a></li>

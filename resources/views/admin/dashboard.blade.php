@@ -1,0 +1,79 @@
+<x-layouts.admin :title="'Dashboard'">
+
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Menunggu Konfirmasi</p>
+            <p class="mt-2 text-3xl font-bold text-primary">{{ $stats['pending'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat leads →</a>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Sedang Diproses</p>
+            <p class="mt-2 text-3xl font-bold">{{ $stats['production'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'production']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Selesai</p>
+            <p class="mt-2 text-3xl font-bold">{{ $stats['completed'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'completed']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat arsip →</a>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Pesanan Bulan Ini</p>
+            <p class="mt-2 text-3xl font-bold">{{ $stats['month'] }}</p>
+            <p class="mt-2 text-xs text-muted-foreground">Total semua: {{ $stats['orders'] }}</p>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Produk</p>
+            <p class="mt-2 text-3xl font-bold">{{ $stats['products'] }}</p>
+            <a href="{{ route('admin.products.index') }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Kelola produk →</a>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Kategori</p>
+            <p class="mt-2 text-3xl font-bold">{{ $stats['categories'] }}</p>
+            <a href="{{ route('admin.categories.index') }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Kelola kategori →</a>
+        </div>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-border bg-card">
+        <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+            <h2 class="text-sm font-semibold">Pesanan Terbaru</h2>
+            <a href="{{ route('admin.orders.index') }}" class="text-xs font-medium text-primary hover:underline">Semua pesanan →</a>
+        </div>
+
+        @if ($recentOrders->isEmpty())
+            <p class="px-5 py-8 text-center text-sm text-muted-foreground">Belum ada pesanan masuk.</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                            <th class="px-5 py-3 font-medium">#</th>
+                            <th class="px-5 py-3 font-medium">Pelanggan</th>
+                            <th class="px-5 py-3 font-medium">Produk</th>
+                            <th class="px-5 py-3 font-medium">Status</th>
+                            <th class="px-5 py-3 font-medium">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($recentOrders as $order)
+                            <tr class="border-b border-border last:border-0 hover:bg-secondary/50">
+                                <td class="px-5 py-3">
+                                    <a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-primary hover:underline">#{{ $order->id }}</a>
+                                </td>
+                                <td class="px-5 py-3">
+                                    <span class="font-medium">{{ $order->name }}</span>
+                                    <span class="block text-xs text-muted-foreground">{{ $order->whatsapp_number }}</span>
+                                </td>
+                                <td class="px-5 py-3">{{ $order->product?->title ?? 'Custom' }}</td>
+                                <td class="px-5 py-3">
+                                    <span class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">{{ $order->statusLabel() }}</span>
+                                </td>
+                                <td class="px-5 py-3 text-muted-foreground">{{ $order->created_at->translatedFormat('d M Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
+</x-layouts.admin>

@@ -14,14 +14,17 @@ class HomeController extends Controller
             [
                 'title' => 'Jasa Konveksi & Sablon Custom Banjarmasin',
                 'subtitle' => 'Kaos, jersey, kemeja, jaket, hingga merchandise — produksi rapi, harga bersahabat.',
+                'image' => 'images/banner-1.jpg',
             ],
             [
                 'title' => 'Bebas Custom Desain',
                 'subtitle' => 'Kirim desainmu sendiri atau tim kami bantu dari nol sesuai kebutuhan tim dan komunitas.',
+                'image' => 'images/banner-2.jpg',
             ],
             [
                 'title' => 'Melayani Ecer & Grosir',
                 'subtitle' => 'Dari satuan hingga ratusan pcs. Melayani Banjarmasin dan sekitarnya, kirim ke seluruh Indonesia.',
+                'image' => 'images/banner-3.jpg',
             ],
         ];
 

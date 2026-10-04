@@ -24,6 +24,12 @@ class CustomOrder extends Model
 
     public const STATUS_COMPLETED = 'completed';
 
+    public const STATUS_LABELS = [
+        self::STATUS_PENDING => 'Menunggu Konfirmasi',
+        self::STATUS_PRODUCTION => 'Sedang Diproses',
+        self::STATUS_COMPLETED => 'Selesai',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -32,6 +38,34 @@ class CustomOrder extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function statusLabel(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
+    }
+
+    public static function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+
+        if (str_starts_with($digits, '62')) {
+            $digits = '0'.substr($digits, 2);
+        }
+
+        return ltrim($digits, '0');
+    }
+
+    public function matchesPhone(string $phone): bool
+    {
+        return $this->normalizePhone($this->whatsapp_number) === self::normalizePhone($phone);
+    }
+
+    public function customerWhatsappLink(): string
+    {
+        $digits = '62'.self::normalizePhone($this->whatsapp_number);
+
+        return 'https://wa.me/'.$digits;
     }
 
     public function whatsappLink(): string
