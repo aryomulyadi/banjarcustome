@@ -16,10 +16,26 @@ Alpine.data('theme', () => ({
 Alpine.data('heroSlider', (count, interval = 5000) => ({
     index: 0,
     count,
+    paused: false,
     init() {
-        if (count > 1) {
-            setInterval(() => this.next(), interval);
+        if (count < 2) {
+            return;
         }
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            this.paused = true;
+
+            return;
+        }
+
+        setInterval(() => {
+            if (!this.paused) {
+                this.next();
+            }
+        }, interval);
+    },
+    toggle() {
+        this.paused = !this.paused;
     },
     next() {
         this.index = (this.index + 1) % this.count;

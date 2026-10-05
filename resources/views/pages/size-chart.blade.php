@@ -1,4 +1,7 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="'Panduan Ukuran — Banjar Custome'"
+    :description="'Tabel panduan ukuran kaos, jersey, kemeja, dan jaket Banjar Custome dalam sentimeter. Pesan seragam tim dengan ukuran akurat.'"
+>
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">

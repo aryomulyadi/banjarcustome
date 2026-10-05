@@ -1,4 +1,7 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="($activeCategory ? $activeCategory->name . ' — ' : 'Katalog Produk — ') . 'Banjar Custome'"
+    :description="$activeCategory?->description ?: 'Katalog produk konveksi & sablon Banjar Custome: kaos, jersey, kemeja, jaket, seragam, dan merchandise. Tersedia ecer & grosir.'"
+>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
@@ -36,13 +39,14 @@
                                 name="q"
                                 value="{{ request('q') }}"
                                 placeholder="Cari produk..."
+                                aria-label="Cari produk"
                                 class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                         </div>
                     </div>
 
-                    <div class="mt-6">
-                        <h2 class="text-sm font-semibold uppercase tracking-wider">Warna</h2>
+                    <fieldset class="mt-6">
+                        <legend class="text-sm font-semibold uppercase tracking-wider">Warna</legend>
                         <div class="mt-3 space-y-2">
                             <label class="flex cursor-pointer items-center gap-2.5">
                                 <input type="radio" name="warna" value="" class="peer sr-only" @checked(request('warna') === null || request('warna') === '')>
@@ -58,7 +62,7 @@
                                 </label>
                             @endforeach
                         </div>
-                    </div>
+                    </fieldset>
 
                     <div class="mt-6 flex gap-2">
                         <button type="submit" class="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">

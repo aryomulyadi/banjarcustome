@@ -11,10 +11,22 @@ use Illuminate\View\View;
 
 class GalleryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $query = Gallery::latest()->orderByDesc('id');
+
+        if ($request->filled('q')) {
+            $search = $request->string('q')->trim();
+
+            $query->where(function ($builder) use ($search) {
+                $builder->where('title', 'like', "%{$search}%")
+                    ->orWhere('category', 'like', "%{$search}%");
+            });
+        }
+
         return view('admin.galleries.index', [
-            'galleries' => Gallery::latest()->paginate(12),
+            'galleries' => $query->paginate(12)->withQueryString(),
+            'search' => $request->query('q', ''),
         ]);
     }
 
@@ -25,7 +37,7 @@ class GalleryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $this->validateGallery($request);
+        $validated = $this->validateGallery($request, true);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('galleries', 'public');
@@ -45,13 +57,11 @@ class GalleryController extends Controller
 
     public function update(Request $request, Gallery $gallery): RedirectResponse
     {
-        $validated = $this->validateGallery($request);
+        $validated = $this->validateGallery($request, false);
+
+        $oldImage = $gallery->image;
 
         if ($request->hasFile('image')) {
-            if ($gallery->image) {
-                Storage::disk('public')->delete($gallery->image);
-            }
-
             $validated['image'] = $request->file('image')->store('galleries', 'public');
         }
 
@@ -61,6 +71,10 @@ class GalleryController extends Controller
             'category' => $validated['category'] ?? null,
             'image' => $validated['image'] ?? $gallery->image,
         ]);
+
+        if (isset($validated['image']) && $oldImage && $oldImage !== $validated['image']) {
+            Storage::disk('public')->delete($oldImage);
+        }
 
         return redirect()
             ->route('admin.galleries.index')
@@ -80,14 +94,15 @@ class GalleryController extends Controller
             ->with('status', 'Foto galeri berhasil dihapus.');
     }
 
-    private function validateGallery(Request $request): array
+    private function validateGallery(Request $request, bool $requireImage): array
     {
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'caption' => ['nullable', 'string', 'max:500'],
             'category' => ['nullable', 'string', 'max:100'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => [$requireImage ? 'required' : 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [
+            'image.required' => 'Foto galeri wajib diunggah.',
             'image.mimes' => 'Format gambar harus jpg, jpeg, png, atau webp.',
             'image.max' => 'Ukuran gambar maksimal 2 MB.',
         ]);

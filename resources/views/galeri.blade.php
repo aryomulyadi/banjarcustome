@@ -1,4 +1,7 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="'Galeri Hasil Produksi — Banjar Custome'"
+    :description="'Lihat hasil produksi sablon dan konveksi Banjar Custome: kaos komunitas, seragam sekolah, jersey, dan merchandise untuk Banjarmasin dan sekitarnya.'"
+>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
@@ -41,7 +44,7 @@
                 @foreach ($galleries as $gallery)
                     <figure class="group overflow-hidden rounded-xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:shadow-lg">
                         @if ($gallery->image)
-                            <img src="{{ asset('storage/'.$gallery->image) }}" alt="{{ $gallery->title }}" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                            <img src="{{ asset('storage/'.$gallery->image) }}" alt="{{ $gallery->title }}" width="800" height="600" loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105">
                         @else
                             <x-placeholder-image label="Galeri" class="transition-transform duration-300 group-hover:scale-105" />
                         @endif

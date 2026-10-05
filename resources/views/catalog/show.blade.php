@@ -1,4 +1,9 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="$product->title . ' — Banjar Custome'"
+    :description="Str::limit(strip_tags($product->description ?: 'Pesan ' . $product->title . ' custom di Banjar Custome, Banjarmasin. Sablon awet, produksi rapi, ecer & grosir.'), 160)"
+    :ogImage="$product->image ? asset('storage/' . $product->image) : asset('images/banner-1.jpg')"
+    :ogType="'product'"
+>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -17,7 +22,7 @@
             {{-- Gambar --}}
             <div class="overflow-hidden rounded-2xl border border-border bg-card">
                 @if ($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->title }}" class="aspect-[4/3] w-full object-cover">
+                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->title }}" width="800" height="600" decoding="async" class="aspect-[4/3] w-full object-cover">
                 @else
                     <x-placeholder-image label="Foto Produk" class="aspect-[4/3]" />
                 @endif
@@ -88,5 +93,23 @@
             </section>
         @endif
     </div>
+
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $product->title,
+            'description' => Str::limit(strip_tags($product->description ?? ''), 200),
+            'image' => $product->image ? asset('storage/'.$product->image) : asset('images/banner-1.jpg'),
+            'url' => route('produk.show', $product->slug),
+            'brand' => ['@type' => 'Brand', 'name' => 'Banjar Custome'],
+            'offers' => [
+                '@type' => 'Offer',
+                'url' => route('produk.show', $product->slug),
+                'priceCurrency' => 'IDR',
+                'availability' => 'https://schema.org/InStock',
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
 
 </x-layouts.app>

@@ -1,8 +1,14 @@
 <x-layouts.admin :title="'Produk'">
 
-    <div class="flex items-center justify-between gap-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-muted-foreground">Kelola katalog produk yang tampil di situs publik.</p>
-        <x-button href="{{ route('admin.products.create') }}">Tambah Produk</x-button>
+        <div class="flex gap-2">
+            <form method="GET" action="{{ route('admin.products.index') }}" class="flex gap-2">
+                <x-input name="q" value="{{ $search }}" placeholder="Cari produk / kategori…" class="w-full sm:w-56" aria-label="Cari produk" />
+                <x-button type="submit" variant="secondary">Cari</x-button>
+            </form>
+            <x-button href="{{ route('admin.products.create') }}">Tambah Produk</x-button>
+        </div>
     </div>
 
     <div class="mt-5 overflow-hidden rounded-xl border border-border bg-card">

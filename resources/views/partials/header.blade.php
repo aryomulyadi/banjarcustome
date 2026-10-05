@@ -1,5 +1,4 @@
 @php
-    $navCategories = \App\Models\Category::select('name', 'slug')->orderBy('name')->get();
     $activeCategory = request()->routeIs('kategori') ? request()->route('slug') : null;
 @endphp
 
@@ -89,13 +88,16 @@
                 class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border lg:hidden"
                 @click="mobileOpen = !mobileOpen"
                 aria-label="Buka menu"
+                aria-expanded="false"
+                :aria-expanded="mobileOpen.toString()"
+                aria-controls="menu-mobile"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
             </button>
         </div>
     </div>
 
-    <div class="border-t border-border lg:hidden" x-show="mobileOpen" x-cloak>
+    <div id="menu-mobile" class="border-t border-border lg:hidden" x-show="mobileOpen" x-cloak>
         <nav class="mx-auto grid max-w-7xl gap-1 px-4 py-3 sm:px-6">
             @foreach ($navCategories as $category)
                 <a

@@ -1,4 +1,4 @@
-<x-layouts.app>
+<x-layouts.app :title="'Login Admin — Banjar Custome'" :noindex="true">
 
     <div class="mx-auto flex max-w-md flex-col justify-center px-4 py-14 sm:px-6 lg:px-8">
         <div class="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">

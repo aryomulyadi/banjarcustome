@@ -1,4 +1,7 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="'Banjar Custome — Jasa Konveksi & Sablon Custom Banjarmasin'"
+    :description="'Jasa konveksi dan sablon custom di Banjarmasin: kaos, jersey printing, kemeja, jaket, seragam, dan merchandise. Custom desain, ecer & grosir, kirim ke seluruh Indonesia.'"
+>
 
     {{-- Hero Slider --}}
     <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
@@ -9,10 +12,14 @@
                     class="absolute inset-0 transition-opacity duration-700"
                     :class="index === {{ $i }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
                 >
-                    @if (file_exists(public_path($slide['image'])))
+                    @if (! empty($slide['image']) && file_exists(public_path($slide['image'])))
                         <img
                             src="{{ asset($slide['image']) }}"
                             alt="{{ $slide['title'] }}"
+                            width="1600"
+                            height="700"
+                            decoding="async"
+                            @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif
                             class="absolute inset-0 h-full w-full object-cover"
                         >
                     @else
@@ -44,7 +51,18 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 </button>
                 <button type="button" @click="next()" class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background" aria-label="Slide berikutnya">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+
+                <button
+                    type="button"
+                    @click="toggle()"
+                    class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background"
+                    :aria-label="paused ? 'Putar slide otomatis' : 'Jeda slide otomatis'"
+                    :aria-pressed="paused.toString()"
+                >
+                    <svg x-show="paused" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    <svg x-show="!paused" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect width="6" height="14" x="4" y="5" rx="1"/><rect width="6" height="14" x="14" y="5" rx="1"/></svg>
                 </button>
 
                 <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
@@ -165,7 +183,7 @@
             @forelse ($galleries as $gallery)
                 <figure class="group overflow-hidden rounded-xl border border-border bg-card">
                     @if ($gallery->image)
-                        <img src="{{ asset('storage/'.$gallery->image) }}" alt="{{ $gallery->title }}" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <img src="{{ asset('storage/'.$gallery->image) }}" alt="{{ $gallery->title }}" width="800" height="600" loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105">
                     @else
                         <x-placeholder-image label="Galeri" class="transition-transform duration-300 group-hover:scale-105" />
                     @endif
@@ -181,6 +199,58 @@
             @endforelse
         </div>
     </section>
+
+    {{-- Testimoni --}}
+    @if ($testimonials->isNotEmpty())
+        <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold sm:text-3xl">Kata Mereka</h2>
+                <p class="mt-1 text-sm text-muted-foreground">Ulasan asli pelanggan yang pesan langsung di Banjar Custome — tampil di Google Reviews.</p>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($testimonials as $testimonial)
+                    @php
+                        $initials = collect(explode(' ', trim($testimonial->name)))
+                            ->filter()
+                            ->take(2)
+                            ->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))
+                            ->implode('');
+                    @endphp
+                    <figure class="flex flex-col rounded-xl border border-border bg-card p-5">
+                        <figcaption class="flex items-center gap-3">
+                            <span aria-hidden="true" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                                {{ $initials }}
+                            </span>
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="truncate text-sm font-semibold">{{ $testimonial->name }}</span>
+                                    <span class="inline-flex shrink-0 items-center rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                        Ulasan Google
+                                    </span>
+                                </div>
+                                @if ($testimonial->role || $testimonial->city)
+                                    <span class="block truncate text-xs text-muted-foreground">
+                                        {{ collect([$testimonial->role, $testimonial->city])->filter()->implode(' · ') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </figcaption>
+
+                        <div class="mt-3 flex items-center gap-1 text-primary" aria-label="Rating {{ $testimonial->rating }} dari 5">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="{{ $i <= $testimonial->rating ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.123 2.123 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
+                            @endfor
+                        </div>
+
+                        <blockquote class="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+                            "{{ $testimonial->content }}"
+                        </blockquote>
+                    </figure>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Profil Perusahaan --}}
     <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

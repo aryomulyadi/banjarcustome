@@ -31,7 +31,7 @@ class CatalogController extends Controller
         $related = Product::with(['colors', 'category'])
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->latest()
+            ->latest()->orderByDesc('id')
             ->take(4)
             ->get();
 
@@ -40,7 +40,7 @@ class CatalogController extends Controller
 
     private function renderCatalog(Request $request, ?Category $activeCategory): View
     {
-        $query = Product::with(['colors', 'category'])->latest();
+        $query = Product::with(['colors', 'category'])->latest()->orderByDesc('id');
 
         if ($activeCategory) {
             $query->where('category_id', $activeCategory->id);

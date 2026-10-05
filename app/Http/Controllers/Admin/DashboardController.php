@@ -24,7 +24,7 @@ class DashboardController extends Controller
                 'categories' => Category::count(),
                 'month' => CustomOrder::where('created_at', '>=', now()->startOfMonth())->count(),
             ],
-            'recentOrders' => CustomOrder::with('product')->latest()->limit(5)->get(),
+            'recentOrders' => CustomOrder::with('product')->latest()->orderByDesc('id')->limit(5)->get(),
         ]);
     }
 }

@@ -4,18 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class CustomOrder extends Model
 {
     protected $fillable = [
-        'user_id',
         'product_id',
         'name',
         'whatsapp_number',
         'quantity',
+        'deadline',
+        'service_type',
+        'delivery_method',
+        'is_express',
+        'address',
+        'size_quantities',
+        'notes',
         'order_details',
         'design_file',
-        'status',
+    ];
+
+    protected $casts = [
+        'deadline' => 'date',
+        'size_quantities' => 'array',
+        'is_express' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'status' => self::STATUS_PENDING,
     ];
 
     public const STATUS_PENDING = 'pending';
@@ -24,11 +41,30 @@ class CustomOrder extends Model
 
     public const STATUS_COMPLETED = 'completed';
 
+    public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_LABELS = [
         self::STATUS_PENDING => 'Menunggu Konfirmasi',
         self::STATUS_PRODUCTION => 'Sedang Diproses',
         self::STATUS_COMPLETED => 'Selesai',
+        self::STATUS_CANCELLED => 'Dibatalkan',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $order) {
+            if (! $order->tracking_token) {
+                $order->tracking_token = Str::random(40);
+            }
+        });
+
+        static::created(function (self $order) {
+            $order->statusHistory()->create([
+                'from_status' => null,
+                'to_status' => $order->status,
+            ]);
+        });
+    }
 
     public function user(): BelongsTo
     {
@@ -38,6 +74,11 @@ class CustomOrder extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function statusHistory(): HasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class);
     }
 
     public function statusLabel(): string
@@ -58,7 +99,7 @@ class CustomOrder extends Model
 
     public function matchesPhone(string $phone): bool
     {
-        return $this->normalizePhone($this->whatsapp_number) === self::normalizePhone($phone);
+        return self::normalizePhone($this->whatsapp_number) === self::normalizePhone($phone);
     }
 
     public function customerWhatsappLink(): string
@@ -66,6 +107,11 @@ class CustomOrder extends Model
         $digits = '62'.self::normalizePhone($this->whatsapp_number);
 
         return 'https://wa.me/'.$digits;
+    }
+
+    public function successUrl(): string
+    {
+        return route('pesan.success', ['token' => $this->tracking_token]);
     }
 
     public function whatsappLink(): string
@@ -80,8 +126,47 @@ class CustomOrder extends Model
             $lines[] = 'Jumlah: '.$this->quantity.' pcs';
         }
 
+        if ($this->size_quantities !== null && $this->size_quantities !== []) {
+            $sizes = collect($this->size_quantities)
+                ->filter(fn ($qty) => $qty !== null && $qty !== '')
+                ->map(fn ($qty, $size) => $size.': '.$qty)
+                ->implode(', ');
+
+            if ($sizes !== '') {
+                $lines[] = 'Ukuran: '.$sizes;
+            }
+        }
+
+        if ($this->deadline) {
+            $lines[] = 'Deadline: '.$this->deadline->translatedFormat('d F Y');
+        }
+
+        if ($this->is_express) {
+            $lines[] = 'Pesanan: EXPRESS (butuh cepat)';
+        }
+
+        if ($this->service_type) {
+            $lines[] = 'Jenis: '.$this->service_type;
+        }
+
+        if ($this->delivery_method) {
+            $lines[] = 'Pengiriman: '.($this->delivery_method === 'ambil' ? 'Ambil sendiri' : 'Dikirim');
+        }
+
+        if ($this->address) {
+            $lines[] = 'Alamat: '.$this->address;
+        }
+
         $lines[] = 'WhatsApp saya: '.$this->whatsapp_number;
-        $lines[] = 'Detail: '.$this->order_details;
+
+        if ($this->order_details) {
+            $lines[] = 'Detail: '.$this->order_details;
+        }
+
+        if ($this->notes) {
+            $lines[] = 'Catatan: '.$this->notes;
+        }
+
         $lines[] = 'Mohon dikonfirmasi ya. Terima kasih.';
 
         return config('banjarcustom.whatsapp_link').'?text='.rawurlencode(implode("\n", $lines));

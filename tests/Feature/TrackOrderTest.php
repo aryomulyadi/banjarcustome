@@ -21,14 +21,19 @@ class TrackOrderTest extends TestCase
             'slug' => 'kaos-polos-cotton',
         ]);
 
-        return CustomOrder::create(array_merge([
+        $order = CustomOrder::create(array_merge([
             'product_id' => $product->id,
             'name' => 'Andi Wijaya',
             'whatsapp_number' => '081234567890',
             'quantity' => 5,
             'order_details' => 'Kaos polos lengan pendek ukuran L, sablon dada kiri.',
-            'status' => CustomOrder::STATUS_PRODUCTION,
         ], $attributes));
+
+        if (array_key_exists('status', $attributes)) {
+            $order->forceFill(['status' => $attributes['status']])->save();
+        }
+
+        return $order->refresh();
     }
 
     public function test_track_page_returns_successful_response(): void
@@ -42,12 +47,12 @@ class TrackOrderTest extends TestCase
 
         $order = $this->order();
 
-        $this->get(route('pesan.success', $order))->assertOk()->assertSee('lacak status pesanan');
+        $this->get($order->successUrl())->assertOk()->assertSee('lacak status pesanan');
     }
 
     public function test_matching_order_id_and_phone_shows_status(): void
     {
-        $order = $this->order();
+        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
 
         $response = $this->post('/cek-pesanan', [
             'order_id' => $order->id,

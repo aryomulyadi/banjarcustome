@@ -1,15 +1,18 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="'Syarat & Ketentuan Pemesanan — Banjar Custome'"
+    :description="'Syarat dan ketentuan pemesanan di Banjar Custome: proses pemesanan, harga estimasi, pembayaran, produksi, revisi, dan pengiriman.'"
+>
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
             <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
-            <span>/</span>
-            <span class="text-foreground">Syarat &amp; Ketentuan</span>
+            <span aria-hidden="true">/</span>
+            <span class="text-foreground" aria-current="page">Syarat &amp; Ketentuan</span>
         </nav>
 
         <span class="text-xs font-semibold uppercase tracking-widest text-primary">Legal</span>
         <h1 class="mt-2 text-3xl font-bold sm:text-4xl">Syarat &amp; Ketentuan Pemesanan</h1>
-        <p class="mt-2 text-sm text-muted-foreground">Terakhir diperbarui: {{ date('d F Y') }}</p>
+        <p class="mt-2 text-sm text-muted-foreground">Terakhir diperbarui: {{ now()->translatedFormat('d F Y') }}</p>
 
         <div class="mt-8 space-y-6 text-sm leading-relaxed text-muted-foreground">
             <section>

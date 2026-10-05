@@ -9,6 +9,10 @@
             <img
                 src="{{ asset('storage/' . $product->image) }}"
                 alt="{{ $product->title }}"
+                width="800"
+                height="600"
+                loading="lazy"
+                decoding="async"
                 class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
             >
         @else

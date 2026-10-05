@@ -40,4 +40,14 @@ class PagesTest extends TestCase
             ->assertSee('Lingkar Dada')
             ->assertSee('XXXL');
     }
+
+    public function test_layanan_page_shows_estimation_and_payment_terms(): void
+    {
+        $this->get('/layanan')
+            ->assertOk()
+            ->assertSee('Estimasi Produksi & Pembayaran')
+            ->assertSee('Kaos — 3–7 hari kerja')
+            ->assertSee('Jersey — 10–12 hari')
+            ->assertSee('DP 50%');
+    }
 }

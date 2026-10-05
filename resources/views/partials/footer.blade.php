@@ -1,7 +1,3 @@
-@php
-    $footerCategories = \App\Models\Category::select('name', 'slug')->orderBy('name')->get();
-@endphp
-
 <footer class="border-t border-border bg-muted/40">
     <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
         <div class="md:col-span-1">
@@ -15,7 +11,7 @@
             </p>
             <div class="mt-4 flex gap-2">
                 <a
-                    href="https://instagram.com/banjarcustom_konveksi.id"
+                    href="{{ config('banjarcustom.instagram') }}"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -38,7 +34,7 @@
         <div>
             <h3 class="text-sm font-semibold uppercase tracking-wider">Kategori</h3>
             <ul class="mt-4 space-y-2">
-                @foreach ($footerCategories as $category)
+                @foreach ($navCategories as $category)
                     <li>
                         <a href="{{ route('kategori', $category->slug) }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">
                             {{ $category->name }}
@@ -52,7 +48,10 @@
             <h3 class="text-sm font-semibold uppercase tracking-wider">Informasi</h3>
             <ul class="mt-4 space-y-2">
                 <li><a href="{{ route('tentang') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Tentang Kami</a></li>
+                <li><a href="{{ route('layanan') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Layanan</a></li>
                 <li><a href="{{ route('galeri') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Galeri</a></li>
+                <li><a href="{{ route('faq') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">FAQ</a></li>
+                <li><a href="{{ route('lokasi') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Lokasi Workshop</a></li>
                 <li><a href="{{ route('track.create') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Cek Status Pesanan</a></li>
                 <li><a href="{{ route('size-chart') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Panduan Ukuran</a></li>
                 <li><a href="{{ route('kebijakan-privasi') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Kebijakan Privasi</a></li>
@@ -65,7 +64,7 @@
             <ul class="mt-4 space-y-3 text-sm text-muted-foreground">
                 <li class="flex gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
-                    <span>{{ config('banjarcustom.address') }}</span>
+                    <a href="{{ config('banjarcustom.maps_place_url') }}" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-primary">{{ config('banjarcustom.address') }}</a>
                 </li>
                 <li class="flex gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -75,8 +74,8 @@
                 </li>
                 <li class="flex gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-                    <a href="https://instagram.com/banjarcustom_konveksi.id" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-primary">
-                        @banjarcustom_konveksi.id
+                    <a href="{{ config('banjarcustom.instagram') }}" target="_blank" rel="noopener noreferrer" class="transition-colors hover:text-primary">
+                        {{ config('banjarcustom.instagram_handle') }}
                     </a>
                 </li>
             </ul>

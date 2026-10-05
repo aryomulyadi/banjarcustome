@@ -1,4 +1,7 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="'Tentang Kami — Banjar Custome'"
+    :description="'Mengenal Banjar Custome, jasa konveksi dan sablon di Banjarmasin: pengalaman, teknik sablon, dan komitmen hasil rapi untuk komunitas, sekolah, dan perusahaan.'"
+>
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">

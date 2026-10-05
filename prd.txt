@@ -83,10 +83,220 @@ ASET GAMBAR, LOGO & FAVICON
 VERIFIKASI
 ===============================================================
 - vendor/bin/pint: passed.
-- php artisan test: 59 tests / 239 assertions lulus.
+- php artisan test: 97 tests / 424 assertions lulus (Fase 4).
 - npm run build: sukses (Tailwind v4 via @tailwindcss/vite).
 - Smoke dual jalur: tanpa aset (fallback BC + placeholder, tanpa
   link icon) dan dengan aset dummy (img logo/banner/favicon tampil,
   aset 200; dummy dibersihkan, fallback pulih).
 - Smoke fase auth/admin: login admin -> /admin + 8 halaman admin
   + beranda 200; guest /admin -> redirect /login.
+
+Fase 4 — Penyempurnaan (SELESAI)
+- P0 Keamanan & bug fix:
+  * Honeypot "website" di POST /pesan (bot dibuang ke beranda + log),
+    throttle:12,1 pada /pesan dan 10,1 pada /cek-pesanan.
+  * successUrl kini token acak 40 char (route /pesan/sukses/{token},
+    where token [A-Za-z0-9]{40}) — ID order tak bisa ditebak;
+    page sukses pakai firstOrFail -> 404 untuk token salah.
+  * SecurityHeaders global (X-Content-Type-Options, X-Frame-Options
+    SAMEORIGIN, Referrer-Policy, Permissions-Policy; HSTS hanya di
+    APP_ENV=production).
+  * design_file pindah ke disk PRIVATE (storage/app/private/designs)
+    + download admin lewat Storage::disk('local'); 10 file PDF 0 byte
+    lama dibersihkan; favicon.ico 0 byte dihapus.
+  * custom_orders di-rebuild: tracking_token unique + index status/
+    created_at/whatsapp_number/name, deadline, service_type,
+    delivery_method, address, size_quantities json, notes, status
+    string(20) (menambah status cancelled) — riwayat order_status_history.
+  * Fix: status di-default 'pending' di model (DB default tak terbaca
+    saat creating), update status pakai forceFill (status bukan fillable),
+    OrderStatusHistory pakai $table 'order_status_history',
+    @json multi-baris diganti {!! json_encode() !!} (JSON-LD Product/
+    FAQPage/LocalBusiness), Str_limit -> Str::limit, sitemap arrow-fn
+    by-value (URL dinamis tak pernah masuk) diganti foreach.
+  * Tambah: Skip link + <main id="konten-utama" tabindex="-1">,
+    404/403/500 kustom, Route::fallback -> errors.404.
+- P1 SEO & performa:
+  * Meta description, canonical, OG/Twitter di layout publik; noindex
+    untuk /pesan, /cek-pesanan, /pesan/sukses, /login, halaman error,
+    cetak nota, admin. JSON-LD: Product (detail), FAQPage (/faq),
+    LocalBusiness (/lokasi). Sitemap.xml + robots.txt (dinamis,
+    bukan file statis) + sitemap.xml di robots.
+  * Hapus @source vendor pagination; pagination Laravel dipublish ke
+    resources/views/vendor/pagination/tailwind.blade.php dan diubah
+    pakai token tema + label Indonesia + aria-label.
+  * Gambar: width/height + loading=lazy + decoding=async (banner-1
+    fetchpriority=high); banner-2 2,1MB -> 213KB & banner-3 1,8MB ->
+    131KB (GD, resize 1600px, <=300KB).
+  * Cache nav kategori (view composer header/footer), settings cache.
+  * force https + APP_FORCE_SCHEME di production (AppServiceProvider).
+- P2 Konten & konversi + admin:
+  * Form pesanan baru: fieldset produk/jumlah+ukuran per size
+    (S..3XL, total otomatis jadi quantity), jenis sablon (6 opsi),
+    deadline (after_or_equal:today), pengiriman kirim/ambil + alamat
+    wajib bila kirim, catatan, upload file desain.
+  * Halaman sukses: ringkasan lengkap + tombol "Kirim Ringkasan ke
+    Admin (WhatsApp)" (wa.me berisi teks terstruktur).
+  * Halaman baru: /layanan, /lokasi (peta), /faq (FAQ dari DB),
+    footer: Layanan/FAQ/Lokasi + IG dari config; FAB WhatsApp.
+  * Admin baru: FAQ CRUD, Testimoni CRUD, Pengaturan (3 slide hero +
+    3 statistik, upload banner), Profil (ganti password dengan
+    current_password), Export CSV pesanan, Cetak nota (print view),
+    Riwayat status (from/to/changed_by) di detail pesanan,
+    filter status + pencarian di semua list admin.
+- P3 Test, a11y, konten:
+  * A11y: aria-label pada pencarian katalog + tombol slider, fieldset/
+    legend filter warna, tombol pause/play slider (aria-pressed,
+    hormati prefers-reduced-motion), aria-expanded/aria-controls
+    sidebar & menu mobile.
+  * Bersih-bersih: 10 PDF 0 byte + favicon.ico 0 byte dihapus,
+    README.md ditulis ulang (UTF-8, dokumen proyek), .env.example
+    diberi catatan hardening produksi, config jam buka/ukuran/maps.
+  * Tests: 97 tests / 424 assertions lulus (SeoTest, OrderModelTest,
+    AdminContentTest, plus perbaikan OrderFormTest/TrackOrderTest/
+    AdminDashboardTest untuk token + forceFill status + disk lokal).
+- Fix stabilitas urutan: semua latest() ditambah orderByDesc('id')
+  supaya take(8)/take(6) deterministik (sebelumnya beranda bisa
+  gagal saat created_at sama setelah index created_at dibuat).
+- Verifikasi akhir (3x run beruntun): vendor/bin/pint passed,
+  php artisan test 97 tests / 424 assertions lulus, npm run build
+  sukses (CSS 80,87 kB / JS 107,48 kB); route:cache & config:cache
+  jalan (config cache harus di-clear dulu sebelum test — sudah
+  ditangani script `composer test`).
+- Catatan konten yang masih placeholder (butuh input user): teks FAQ
+  & testimoni awal, jam buka sebenarnya, link Google Maps, nama jenis
+  sablon final, favicon.svg (saat ini = salinan logo.svg).
+
+KONTEN NYATA & LAYANAN EDITABLE (SELESAI)
+- Jam buka asli (config/banjarcustom.php): Minggu Tutup; Senin-Sabtu
+  09.00 - 17.00 WITA (7 baris, urutan gaya Google). JSON-LD
+  opening_hours_schema = "Mo-Sa 09:00-17:00". Halaman /lokasi dan
+  LocalBusiness otomatis ikut (loop config).
+- Jenis sablon kini BISA DIEDIT ADMIN:
+  * config 'services' = default 8 layanan (Plastisol, DTF, Bordir,
+    Printing Sublim Jersey, Printing Sublim Jaket, Sublim Mug,
+    UV DTF Tumbler, Merchandise Lain) berisi title+desc.
+  * App\Support\ServiceTypes: items()/titles()/setItems(), sumber
+    Setting 'services.items' (JSON, lewat cache) -> fallback config.
+  * OrderController tidak lagi pakai const SERVICE_TYPES; form pesanan
+    memakai ServiceTypes::titles() (judul <=60 = batas kolom).
+  * /admin/pengaturan punya section "Jenis Sablon & Teknik" dengan
+    baris dinamis Alpine (Judul + Deskripsi, tambah/hapus), pola sama
+    editor warna produk; validasi services min:1, title max:60,
+    desc max:255. Halaman /layanan di-loop dari ServiceTypes::items().
+  * x-data memakai @js() (aman dari tanda kutip input admin).
+- FAQ asli: FaqSeeder 9 pertanyaan (produksi, minimal order, kirim
+  desain, jenis sablon, alur pesan, kirim luar kota, cek status,
+  ukuran, komplain) - teks generik, diedit lewat /admin/faq.
+- Testimoni Google asli (3): TestimonialSeeder - Abdul Haris Haris,
+  syamsuri uwie, marthadys 1103 (rating 5, emoji dibersihkan).
+  Kartu beranda baru: avatar lingkaran inisial + badge "Ulasan Google"
+  + bintang + kutipan.
+- DatabaseSeeder memanggil FaqSeeder + TestimonialSeeder (firstOrCreate,
+  idempotent) dan sudah dijalankan di DB dev (9 FAQ, 3 testimoni).
+- Peta iframe /lokasi sekarang pakai config maps_query.
+- Tests: 103 tests / 491 assertions lulus (baru: jam buka+JSON-LD,
+  opsi layanan form pesanan, simpan layanan via pengaturan + tampil di
+  /layanan & /pesan, validasi services, render semua halaman admin
+  konten, FAQ seeder tampil, testimoni+badge tampil).
+- Verifikasi: vendor/bin/pint passed, php artisan test 103/491 (2x
+  beruntun), npm run build sukses (CSS 80,83 kB / JS 107,48 kB).
+
+FASE 6A — GOOGLE MAPS ASLI (SELESAI)
+- Link listing Google Maps (nama Google "CUSTOM JERSEY DAN KAOS") disimpan di
+  config: maps_place_url (URL lengkap) + maps_latitude (-3.3199293) +
+  maps_longitude (114.6154141). Key lama maps_query dihapus (sudah tidak
+  dipakai; embed sekarang pakai koordinat presisi, z=16).
+- /lokasi: iframe embed ?q=lat,lng (pin presisi); tombol "Buka di Google
+  Maps" (listing) + "Rute petunjuk arah" (destination=lat,lng); JSON-LD
+  LocalBusiness ditambah geo (GeoCoordinates) + hasMap (URL listing).
+- Footer: alamat kini link ke listing Google Maps.
+
+FASE 6B — NOTIFIKASI PESANAN BARU (SELESAI)
+- config 'admin_email' => env('BC_ADMIN_EMAIL') + placeholder di .env.example
+  (BISA diubah kapan saja tanpa ubah kode; dikombinasikan dengan email akun
+  role=admin di DB yang bisa diganti lewat /admin/profil).
+- App\Notifications\NewOrderNotification (mail, sync tanpa queue): subjek
+  "Pesanan Baru #ord-{id} — {nama}", isi lengkap (WA, produk, jenis, jumlah,
+  deadline, estimasi express/reguler, pengiriman, detail) + tombol link ke
+  admin.orders.show. Dikirim via Notification::route('mail', ...) dari
+  OrderController::notifyAdmins(), dibungkus try/catch + Log::warning
+  supaya kegagalan email tidak menggagalkan pesanan.
+- Badge sidebar admin di menu "Pesanan": hitung status=pending via
+  View::composer('components.layouts.admin') — aria-label
+  "{n} pesanan menunggu konfirmasi".
+
+FASE 6C — ESTIMASI, EXPRESS, DP 50% (SELESAI)
+- Migrasi 2026_10_04_000007: custom_orders.is_express boolean default false
+  (+ index); fillable + cast boolean; baris "Estimasi" di ringkasan WA.
+- Form pesanan: hint di bawah Deadline ("kaos 3-7 hari kerja, jersey 10-12
+  hari - setelah desain disetujui") + checkbox "Pesanan Express" (same-day
+  kaos / di bawah 10 hari, biaya tambahan, konfirmasi ke CS); validasi
+  express sometimes:boolean, is_express = $request->boolean('express').
+- Tampil di admin: badge Express di daftar pesanan, baris Estimasi di detail
+  (Reguler: 3-7/10-12 hari), nota cetak (baris Estimasi + footer "Skema:
+  DP 50% di awal, 50% pelunasan..."), export CSV kolom "Estimasi".
+- Halaman sukses: baris Estimasi + baris "Pembayaran: DP 50% di awal" +
+  catatan skema DP di paragraf bawah.
+- /layanan: kartu "Estimasi Produksi & Pembayaran" (4 kartu: kaos, jersey,
+  express, DP 50%).
+- FaqSeeder diubah firstOrCreate -> updateOrCreate (re-seed memperbarui
+  jawaban): FAQ produksi kini kaos 3-7 hari / jersey 10-12 hari + express;
+  FAQ baru "Bagaimana skema pembayarannya?" (DP 50%) jadi 10 FAQ; FAQ
+  "cara pesannya" menyisipkan langkah DP 50%. SUDAH dijalankan di DB dev.
+- HomeContent::stats default "1-7 Hari" -> "3-7 Hari" (home.stats belum
+  tersimpan di DB, jadi default baru langsung berlaku; tetap bisa diedit di
+  Pengaturan).
+- README.md disesuaikan (fitur pesanan, admin, estimasi/express/DP).
+
+VERIFIKASI FASE 6
+- php artisan migrate OK (kolom is_express), db:seed FaqSeeder OK (10 FAQ).
+- Tests: 109 tests / 526 assertions lulus (baru: hint+checkbox express,
+  order express tersimpan + Notification::assertSentOnDemand, badge sidebar,
+  badge express di detail/nota/CSV, /layanan estimasi, /lokasi koordinat+
+  link Maps+geo/hasMap, FAQ DP 50, stat "3-7 Hari").
+- vendor/bin/pint --test passed; npm run build sukses
+  (CSS 81,30 kB / JS 107,48 kB).
+- config:cache + route:cache OK; jalankan ulang test dalam keadaan config
+  cache memang 40 gagal (perilaku Laravel phpunit vs config:cache) -
+  `composer test` selalu config:clear dulu; setelah clear: 109 hijau.
+- Catatan: re-seed FaqSeeder menimpa editan teks FAQ admin (updateOrCreate).
+- Menunggu input user: isi BC_ADMIN_EMAIL di .env kapan saja; foto testimoni
+  asli; kebijakan express resmi (biaya) untuk teks final.
+
+FASE 7P - PEMULIHAN & PENGAMAN (4 Okt 2026)
+INSIDEN: data database/database.sqlite terhapus semua (users/kategori/
+produk/galeri/FAQ/testimoni = 0, schema 15 migrasi utuh, file 4 Okt 23:45).
+Penyebab: saat verifikasi Fase 6 dijalankan `config:cache` lalu
+`php artisan test` - dengan config ter-cache, env DB_DATABASE=:memory:
+dari phpunit.xml diabaikan, sehingga RefreshDatabase menjalankan
+migrate:fresh ke database ASLI (run pertama saat config cache aktif =
+40 gagal adalah gejala yang sama). Ini kesalahan verifikasi, bukan bug app.
+PEMULIHAN:
+- php artisan db:seed: users=2 (admin@banjarcustom.test / password),
+  kategori=6, produk=13, galeri=8, FAQ=10, testimoni=3.
+- File foto TIDAK hilang (8 produk png + 8 galeri jpg masih di
+  storage/app/public). New command `php artisan photos:relink [--dry-run]`
+  (app/Console/Commands/RelinkPhotos.php): peta pasangan disusun dari
+  inspeksi visual 16 foto -> kolom image produk/galeri; 16/16 ditautkan.
+  Pasangan LEMAH (perlu cek manual di admin): foto totebag BBPKS ->
+  "Kaos Polos Grosir Komunitas"; foto tumbler GEMARIKAN -> "Seragam Kantor
+  Perusahaan"; mockup Relawan -> "Kaos Polos Cotton Combed 30s"; mockup
+  Hasnur -> "Jersey Voli Tim". Produk masih tanpa foto (memang tidak
+  dapat foto): jersey-basket-printing, kemeja-koko-kombinasi,
+  jaket-hoodie-zipper, jaket-coach-jacket, topi-custom-bordir.
+PENGAMAN:
+- tests/TestCase.php: override setUpTraits() - suite gagal dengan pesan
+  jelas jika database != :memory: SEBELUM RefreshDatabase/migrate:fresh.
+  Terbukti: config:cache + php artisan test -> semua gagal guard,
+  hitungan DB tetap utuh (users=2, produk=13, 8 foto, FAQ=10).
+- README: setup + db:seed; perintah test = `composer test` + peringatan
+  config:cache.
+VERIFIKASI FASE 7P
+- composer test: 109 tests / 526 assertions lulus (setelah pint fix
+  gaya RelinkPhotos). vendor/bin/pint --test passed.
+- npm run build sukses (CSS 81,30 kB / JS 107,48 kB).
+- photos:relink --dry-run lalu relink: 8 produk + 8 galeri ditautkan.
+- Menunggu input user: login admin@banjarcustom.test / password; cek
+  katalog & galeri, perbaiki pasangan foto yang meleset lewat form edit;
+  lanjut Fase 7Q (lightbox galeri, avatar testimoni, dst).

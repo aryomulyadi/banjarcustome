@@ -1,8 +1,14 @@
 <x-layouts.admin :title="'Galeri'">
 
-    <div class="flex items-center justify-between gap-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-muted-foreground">Foto karya & hasil produksi yang tampil di halaman Galeri.</p>
-        <x-button href="{{ route('admin.galleries.create') }}">Tambah Foto</x-button>
+        <div class="flex gap-2">
+            <form method="GET" action="{{ route('admin.galleries.index') }}" class="flex gap-2">
+                <x-input name="q" value="{{ $search }}" placeholder="Cari foto…" class="w-full sm:w-48" aria-label="Cari galeri" />
+                <x-button type="submit" variant="secondary">Cari</x-button>
+            </form>
+            <x-button href="{{ route('admin.galleries.create') }}">Tambah Foto</x-button>
+        </div>
     </div>
 
     @if ($galleries->isEmpty())

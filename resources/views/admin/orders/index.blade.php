@@ -22,8 +22,14 @@
             @if ($activeStatus)
                 <input type="hidden" name="status" value="{{ $activeStatus }}">
             @endif
-            <x-input name="q" value="{{ $search }}" placeholder="Cari nama / no. WA…" class="w-full lg:w-64" />
+            <x-input name="q" value="{{ $search }}" placeholder="Cari nama / no. WA…" class="w-full lg:w-64" aria-label="Cari pesanan" />
             <x-button type="submit" variant="secondary">Cari</x-button>
+            <a
+                href="{{ route('admin.orders.export', array_filter(['status' => $activeStatus, 'q' => $search])) }}"
+                class="inline-flex h-10 items-center justify-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-secondary"
+            >
+                Export CSV
+            </a>
         </form>
     </div>
 
@@ -54,7 +60,12 @@
                                     <span class="font-medium">{{ $order->name }}</span>
                                     <span class="block text-xs text-muted-foreground">{{ $order->whatsapp_number }}</span>
                                 </td>
-                                <td class="px-5 py-3">{{ $order->product?->title ?? 'Custom' }}</td>
+                                <td class="px-5 py-3">
+                                    {{ $order->product?->title ?? 'Custom' }}
+                                    @if ($order->is_express)
+                                        <span class="ml-1 inline-block rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-destructive">Express</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-3">{{ $order->quantity ?? '—' }}</td>
                                 <td class="px-5 py-3">
                                     <span class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">{{ $order->statusLabel() }}</span>

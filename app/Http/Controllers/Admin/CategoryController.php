@@ -11,10 +11,18 @@ use Illuminate\View\View;
 
 class CategoryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $query = Category::withCount('products')->orderBy('name');
+
+        if ($request->filled('q')) {
+            $search = $request->string('q')->trim();
+            $query->where('name', 'like', "%{$search}%");
+        }
+
         return view('admin.categories.index', [
-            'categories' => Category::withCount('products')->orderBy('name')->paginate(10),
+            'categories' => $query->paginate(10)->withQueryString(),
+            'search' => $request->query('q', ''),
         ]);
     }
 

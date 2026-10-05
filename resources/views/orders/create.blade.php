@@ -1,10 +1,14 @@
-<x-layouts.app>
+<x-layouts.app
+    :title="'Form Pemesanan Custom — Banjar Custome'"
+    :description="'Pesan kaos, jersey, kemeja, jaket, dan seragam custom di Banjar Custome. Isi form, unggah desain, lalu konfirmasi via WhatsApp.'"
+    :noindex="true"
+>
 
     <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
             <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
-            <span>/</span>
-            <span class="text-foreground">Form Pemesanan</span>
+            <span aria-hidden="true">/</span>
+            <span class="text-foreground" aria-current="page">Form Pemesanan</span>
         </nav>
 
         <div class="rounded-2xl border border-border bg-card p-6 sm:p-8">
@@ -16,7 +20,7 @@
             </p>
 
             @if ($errors->any())
-                <div class="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+                <div class="mt-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive" role="alert">
                     <p class="font-semibold">Mohon perbaiki data berikut:</p>
                     <ul class="mt-2 list-inside list-disc space-y-1">
                         @foreach ($errors->all() as $error)
@@ -28,6 +32,12 @@
 
             <form method="POST" action="{{ route('pesan.store') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
                 @csrf
+
+                {{-- Honeypot: jangan diisi, jangan dihapus. --}}
+                <div class="hidden" aria-hidden="true">
+                    <label for="website">Website</label>
+                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                </div>
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div class="space-y-2">
@@ -78,31 +88,145 @@
                     </div>
 
                     <div class="space-y-2">
-                        <label for="quantity" class="text-sm font-medium">Jumlah (pcs)</label>
-                        <input
-                            id="quantity"
-                            name="quantity"
-                            type="number"
-                            min="1"
-                            value="{{ old('quantity') }}"
-                            placeholder="mis. 24"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('quantity') border-destructive @enderror"
+                        <label for="service_type" class="text-sm font-medium">Jenis Sablon / Pengerjaan</label>
+                        <select
+                            id="service_type"
+                            name="service_type"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('service_type') border-destructive @enderror"
                         >
-                        @error('quantity') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                            <option value="">Belum yakin — minta rekomendasi</option>
+                            @foreach ($serviceTypes as $type)
+                                <option value="{{ $type }}" @selected(old('service_type') === $type)>{{ $type }}</option>
+                            @endforeach
+                        </select>
+                        @error('service_type') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
+                <fieldset class="space-y-2">
+                    <legend class="text-sm font-medium">Jumlah per Ukuran <span class="font-normal text-muted-foreground">(opsional)</span></legend>
+                    <p class="text-xs text-muted-foreground">
+                        Isi jumlah per ukuran, atau lihat
+                        <a href="{{ route('size-chart') }}" class="font-medium text-primary underline-offset-4 hover:underline" target="_blank">panduan ukuran</a>.
+                    </p>
+                    <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
+                        @foreach ($sizes as $size)
+                            <div class="space-y-1">
+                                <label for="sizes_{{ $size }}" class="text-xs font-medium uppercase">{{ $size }}</label>
+                                <input
+                                    id="sizes_{{ $size }}"
+                                    name="sizes[{{ $size }}]"
+                                    type="number"
+                                    min="0"
+                                    value="{{ old("sizes.$size", 0) }}"
+                                    inputmode="numeric"
+                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-2 text-center text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error("sizes.$size") border-destructive @enderror"
+                                >
+                            </div>
+                        @endforeach
+                    </div>
+                    @error('sizes') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+
+                    <div class="grid gap-5 pt-2 sm:grid-cols-2">
+                        <div class="space-y-2">
+                            <label for="quantity" class="text-sm font-medium">Total Jumlah (pcs)</label>
+                            <input
+                                id="quantity"
+                                name="quantity"
+                                type="number"
+                                min="1"
+                                value="{{ old('quantity') }}"
+                                placeholder="mis. 24"
+                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('quantity') border-destructive @enderror"
+                            >
+                            <p class="text-xs text-muted-foreground">Biarkan kosong untuk menghitung otomatis dari jumlah per ukuran.</p>
+                            @error('quantity') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="deadline" class="text-sm font-medium">Deadline <span class="font-normal text-muted-foreground">(opsional)</span></label>
+                            <input
+                                id="deadline"
+                                name="deadline"
+                                type="date"
+                                min="{{ now()->format('Y-m-d') }}"
+                                value="{{ old('deadline') }}"
+                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('deadline') border-destructive @enderror"
+                            >
+                            @error('deadline') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                            <p class="text-xs text-muted-foreground">Estimasi produksi: kaos 3–7 hari kerja, jersey 10–12 hari — dihitung setelah desain disetujui.</p>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="rounded-md border border-primary/30 bg-primary/5 p-4">
+                    <label class="flex cursor-pointer items-start gap-3">
+                        <input
+                            type="checkbox"
+                            name="express"
+                            value="1"
+                            @checked((bool) old('express'))
+                            class="mt-0.5 h-4 w-4 border-input accent-[color:var(--color-primary)]"
+                        >
+                        <span>
+                            <span class="block text-sm font-medium">Pesanan Express <span class="font-normal text-muted-foreground">(opsional, biaya tambahan)</span></span>
+                            <span class="mt-0.5 block text-xs text-muted-foreground">
+                                Kaos bisa dikerjakan same-day dan pesanan lain di bawah 10 hari. Centang lalu konfirmasi detail &amp; biayanya ke CS sebelum produksi.
+                            </span>
+                        </span>
+                    </label>
+                </div>
+
+                <fieldset class="space-y-2">
+                    <legend class="text-sm font-medium">Pengambilan / Pengiriman</legend>
+                    <div class="flex flex-wrap gap-4">
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="radio" name="delivery_method" value="kirim" @checked(old('delivery_method') === 'kirim') class="h-4 w-4 border-input accent-[color:var(--color-primary)]">
+                            Dikirim (kurir / ekspedisi)
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="radio" name="delivery_method" value="ambil" @checked(old('delivery_method') === 'ambil') class="h-4 w-4 border-input accent-[color:var(--color-primary)]">
+                            Ambil sendiri di workshop
+                        </label>
+                    </div>
+                    @error('delivery_method') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+
+                    <div class="space-y-2 pt-1">
+                        <label for="address" class="text-sm font-medium">Alamat Pengiriman <span class="font-normal text-muted-foreground">(wajib jika dikirim)</span></label>
+                        <textarea
+                            id="address"
+                            name="address"
+                            rows="2"
+                            placeholder="Nama penerima, alamat lengkap, kecamatan/kota"
+                            class="flex min-h-[70px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('address') border-destructive @enderror"
+                        >{{ old('address') }}</textarea>
+                        @error('address') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    </div>
+                </fieldset>
+
                 <div class="space-y-2">
-                    <label for="order_details" class="text-sm font-medium">Detail Pesanan <span class="text-destructive">*</span></label>
+                    <label for="order_details" class="text-sm font-medium">Detail Pesanan <span class="font-normal text-muted-foreground">(opsional)</span></label>
                     <textarea
                         id="order_details"
                         name="order_details"
                         rows="5"
-                        required
-                        placeholder="Jelaskan kebutuhan Anda: jenis item, warna, ukuran, deadline, nama tim/komunitas, catatan desain, dll."
+                        placeholder="Jelaskan kebutuhan Anda: warna, nama tim/komunitas, catatan desain, dll."
                         class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('order_details') border-destructive @enderror"
                     >{{ old('order_details') }}</textarea>
                     @error('order_details') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-2">
+                    <label for="notes" class="text-sm font-medium">Catatan Tambahan <span class="font-normal text-muted-foreground">(opsional)</span></label>
+                    <input
+                        id="notes"
+                        name="notes"
+                        type="text"
+                        value="{{ old('notes') }}"
+                        placeholder="mis. minta sample dulu, bayar DP 50%, dst."
+                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('notes') border-destructive @enderror"
+                    >
+                    @error('notes') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">

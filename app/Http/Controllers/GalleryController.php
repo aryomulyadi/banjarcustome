@@ -10,7 +10,7 @@ class GalleryController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Gallery::latest();
+        $query = Gallery::latest()->orderByDesc('id');
 
         $activeCategory = null;
 

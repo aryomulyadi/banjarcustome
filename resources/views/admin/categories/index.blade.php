@@ -1,8 +1,14 @@
 <x-layouts.admin :title="'Kategori'">
 
-    <div class="flex items-center justify-between gap-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-muted-foreground">Kategori tampil sebagai menu navigasi di header dan footer.</p>
-        <x-button href="{{ route('admin.categories.create') }}">Tambah Kategori</x-button>
+        <div class="flex gap-2">
+            <form method="GET" action="{{ route('admin.categories.index') }}" class="flex gap-2">
+                <x-input name="q" value="{{ $search }}" placeholder="Cari kategori…" class="w-full sm:w-48" aria-label="Cari kategori" />
+                <x-button type="submit" variant="secondary">Cari</x-button>
+            </form>
+            <x-button href="{{ route('admin.categories.create') }}">Tambah Kategori</x-button>
+        </div>
     </div>
 
     <div class="mt-5 overflow-hidden rounded-xl border border-border bg-card">

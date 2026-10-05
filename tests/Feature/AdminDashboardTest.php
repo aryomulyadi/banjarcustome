@@ -28,12 +28,18 @@ class AdminDashboardTest extends TestCase
             'title' => 'Kaos Sablon',
         ]);
 
-        return CustomOrder::create(array_merge([
+        $order = CustomOrder::create(array_merge([
             'product_id' => $product->id,
             'name' => 'Pelanggan Uji',
             'whatsapp_number' => '081111111111',
             'order_details' => 'Detail pesanan untuk pengujian dashboard admin.',
         ], $attributes));
+
+        if (array_key_exists('status', $attributes)) {
+            $order->forceFill(['status' => $attributes['status']])->save();
+        }
+
+        return $order->refresh();
     }
 
     public function test_guest_is_redirected_from_all_admin_pages(): void
@@ -65,6 +71,38 @@ class AdminDashboardTest extends TestCase
             ->assertSee('Menunggu Konfirmasi')
             ->assertSee('Pesanan Terbaru')
             ->assertSee('Pelanggan Uji');
+    }
+
+    public function test_pending_orders_show_badge_in_admin_sidebar(): void
+    {
+        $this->order(['status' => CustomOrder::STATUS_PENDING]);
+        $this->order(['status' => CustomOrder::STATUS_PENDING]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('2 pesanan menunggu konfirmasi');
+    }
+
+    public function test_express_order_shows_badge_on_detail_print_and_export(): void
+    {
+        $order = $this->order();
+        $order->forceFill(['is_express' => true])->save();
+
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.orders.show', $order))
+            ->assertOk()
+            ->assertSee('Express');
+
+        $this->actingAs($admin)
+            ->get(route('admin.orders.print', $order))
+            ->assertOk()
+            ->assertSee('EXPRESS — same-day / di bawah 10 hari');
+
+        $csv = $this->actingAs($admin)->get(route('admin.orders.export'))->streamedContent();
+        $this->assertStringContainsString('Express', $csv);
     }
 
     public function test_orders_index_filters_by_status(): void
@@ -126,11 +164,11 @@ class AdminDashboardTest extends TestCase
 
     public function test_admin_can_download_design_file(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $order = $this->order();
         $path = UploadedFile::fake()->create('desain-mentah.pdf', 50, 'application/pdf')
-            ->storeAs('designs', 'desain-mentah.pdf', 'public');
+            ->storeAs('designs', 'desain-mentah.pdf', 'local');
         $order->update(['design_file' => $path]);
 
         $this->actingAs($this->admin())
@@ -141,7 +179,7 @@ class AdminDashboardTest extends TestCase
 
     public function test_download_returns_404_when_file_missing(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $order = $this->order(['design_file' => 'designs/hilang.pdf']);
 
@@ -161,11 +199,11 @@ class AdminDashboardTest extends TestCase
 
     public function test_non_admin_cannot_download_design(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $order = $this->order();
         $path = UploadedFile::fake()->create('rahasia.pdf', 10, 'application/pdf')
-            ->storeAs('designs', 'rahasia.pdf', 'public');
+            ->storeAs('designs', 'rahasia.pdf', 'local');
         $order->update(['design_file' => $path]);
 
         $user = User::factory()->create(['role' => 'user']);
