@@ -53,7 +53,7 @@ class SeoTest extends TestCase
         $response = $this->get(route('produk.show', $product->slug));
 
         $response->assertOk()
-            ->assertSee('<script type="application/ld+json">', false)
+            ->assertSee('<script type="application/ld+json"', false)
             ->assertSee('"@type":"Product"', false)
             ->assertSee('"name":"Kaos Sablon Satuan"', false);
     }
@@ -152,6 +152,14 @@ class SeoTest extends TestCase
             ->assertSee('404', false);
     }
 
+    public function test_custom_error_pages_403_and_500_render(): void
+    {
+        $this->assertStringContainsString('403', view('errors.403')->render());
+        $this->assertStringContainsString('Akses Ditolak', view('errors.403')->render());
+        $this->assertStringContainsString('500', view('errors.500')->render());
+        $this->assertStringContainsString('Terjadi Gangguan', view('errors.500')->render());
+    }
+
     public function test_security_headers_are_set_on_responses(): void
     {
         $response = $this->get('/');
@@ -161,6 +169,88 @@ class SeoTest extends TestCase
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
             ->assertHeader('Permissions-Policy');
+
+        $csp = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertNotSame('', $csp);
+        $this->assertStringContainsString("default-src 'self'", $csp);
+        $this->assertStringContainsString("script-src 'self' 'unsafe-eval' 'nonce-", $csp);
+        $this->assertStringContainsString("frame-ancestors 'self'", $csp);
+        $this->assertStringContainsString("form-action 'self'", $csp);
+        $this->assertStringContainsString("object-src 'none'", $csp);
+        $this->assertStringContainsString('frame-src', $csp);
+    }
+
+    public function test_inline_scripts_carry_csp_nonce(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<script nonce="', false)
+            ->assertSee('type="application/ld+json" nonce="', false);
+    }
+
+    public function test_home_has_website_and_organization_json_ld(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('"@type":"WebSite"', false)
+            ->assertSee('"@type":"Organization"', false)
+            ->assertSee('"potentialAction"', false);
+    }
+
+    public function test_product_page_has_breadcrumb_json_ld(): void
+    {
+        $category = Category::create(['name' => 'Kaos', 'slug' => 'kaos']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'title' => 'Kaos Breadcrumb Tes',
+            'slug' => 'kaos-breadcrumb-tes',
+        ]);
+
+        $this->get(route('produk.show', $product->slug))
+            ->assertOk()
+            ->assertSee('"@type":"BreadcrumbList"', false)
+            ->assertSee('"name":"Beranda"', false)
+            ->assertSee('"name":"Kaos"', false)
+            ->assertSee('"name":"Kaos Breadcrumb Tes"', false);
+    }
+
+    public function test_catalog_and_galleries_have_breadcrumb_json_ld(): void
+    {
+        $this->get('/produk')
+            ->assertOk()
+            ->assertSee('"@type":"BreadcrumbList"', false);
+
+        $this->get('/galeri')
+            ->assertOk()
+            ->assertSee('"@type":"BreadcrumbList"', false);
+    }
+
+    public function test_sitemap_includes_lastmod_and_image_for_products(): void
+    {
+        $category = Category::create(['name' => 'Jersey', 'slug' => 'jersey']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'title' => 'Jersey Berfoto',
+            'slug' => 'jersey-berfoto-tes',
+            'image' => 'products/jersey-berfoto.jpg',
+        ]);
+
+        $this->get('/sitemap.xml')
+            ->assertOk()
+            ->assertSee('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"', false)
+            ->assertSee('<lastmod>'.$product->updated_at->toDateString().'</lastmod>', false)
+            ->assertSee('<image:loc>'.asset('storage/products/jersey-berfoto.jpg').'</image:loc>', false);
+    }
+
+    public function test_open_graph_has_image_dimensions_and_apple_touch_icon(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<meta property="og:image:width" content="1600"', false)
+            ->assertSee('<meta property="og:image:height" content="700"', false)
+            ->assertSee('<meta property="og:image:alt"', false)
+            ->assertSee('rel="apple-touch-icon"', false);
     }
 
     public function test_content_pages_return_successful_response(): void

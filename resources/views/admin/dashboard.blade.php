@@ -31,6 +31,36 @@
             <p class="mt-2 text-3xl font-bold">{{ $stats['categories'] }}</p>
             <a href="{{ route('admin.categories.index') }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Kelola kategori →</a>
         </div>
+        <div class="rounded-xl border border-border bg-card p-5">
+            <p class="text-sm font-medium text-muted-foreground">Dibatalkan</p>
+            <p class="mt-2 text-3xl font-bold">{{ $stats['cancelled'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'cancelled']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
+        </div>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-border bg-card p-5">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-base font-semibold">Pesanan 30 Hari Terakhir</h2>
+                <p class="mt-0.5 text-xs text-muted-foreground">Jumlah pesanan masuk per hari.</p>
+            </div>
+            <span class="text-xs text-muted-foreground">{{ $chart[0]['label'] }} – {{ $chart[29]['label'] }}</span>
+        </div>
+        <div class="mt-4 flex h-32 items-end gap-[3px] border-b border-border" role="img" aria-label="Grafik batang jumlah pesanan masuk per hari selama 30 hari terakhir">
+            @foreach ($chart as $day)
+                <div class="group flex h-full flex-1 items-end" title="{{ $day['label'] }}: {{ $day['count'] }} pesanan">
+                    <div
+                        class="w-full rounded-t-sm bg-primary/70 transition-colors group-hover:bg-primary"
+                        style="height: {{ $day['count'] > 0 ? max(4, round($day['count'] / $chartMax * 100)) : 0 }}%"
+                    ></div>
+                </div>
+            @endforeach
+        </div>
+        <div class="mt-2 flex justify-between text-[10px] text-muted-foreground">
+            <span>{{ $chart[0]['label'] }}</span>
+            <span>{{ $chart[14]['label'] }}</span>
+            <span>{{ $chart[29]['label'] }}</span>
+        </div>
     </div>
 
     <div class="mt-6 rounded-xl border border-border bg-card">

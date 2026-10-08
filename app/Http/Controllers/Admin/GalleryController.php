@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Gallery;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class GalleryController extends Controller
@@ -40,7 +40,7 @@ class GalleryController extends Controller
         $validated = $this->validateGallery($request, true);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('galleries', 'public');
+            $validated['image'] = ImageOptimizer::store($request->file('image'), 'galleries');
         }
 
         Gallery::create($validated);
@@ -62,7 +62,7 @@ class GalleryController extends Controller
         $oldImage = $gallery->image;
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('galleries', 'public');
+            $validated['image'] = ImageOptimizer::store($request->file('image'), 'galleries');
         }
 
         $gallery->update([
@@ -73,7 +73,7 @@ class GalleryController extends Controller
         ]);
 
         if (isset($validated['image']) && $oldImage && $oldImage !== $validated['image']) {
-            Storage::disk('public')->delete($oldImage);
+            ImageOptimizer::delete($oldImage);
         }
 
         return redirect()
@@ -84,7 +84,7 @@ class GalleryController extends Controller
     public function destroy(Gallery $gallery): RedirectResponse
     {
         if ($gallery->image) {
-            Storage::disk('public')->delete($gallery->image);
+            ImageOptimizer::delete($gallery->image);
         }
 
         $gallery->delete();

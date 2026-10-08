@@ -300,3 +300,79 @@ VERIFIKASI FASE 7P
 - Menunggu input user: login admin@banjarcustom.test / password; cek
   katalog & galeri, perbaiki pasangan foto yang meleset lewat form edit;
   lanjut Fase 7Q (lightbox galeri, avatar testimoni, dst).
+
+FASE 7A-7D (IMPLEMENTASI PENUH) - SELESAI
+=========================================
+7A Font & bundle: Instrument Sans self-host 8 woff2 (public/fonts, preload 400/500);
+  Bunny Fonts dihapus dari layout publik & admin. app.js tanpa import bootstrap;
+  bootstrap.js dihapus; deps npm tinggal alpinejs (axios/cvr/clsx/tailwind-merge buang).
+  Cache: home.products/galleries/testimonials (10 mnt) + galleries.categories;
+  invalidasi on save/delete di Product/Gallery/Testimonial. Atribut: logo width/height
+  decoding, catalog/show fetchpriority=high (LCP). .env.example APP_DEBUG=false.
+  +9 test (kategori edit, cancel order, export filter/search, error pages, galeri
+  filter/paginasi). JS 107,48 -> 55,67 kB.
+7B Gambar: intervention/image ^3.11 (GD). App\Support\ImageOptimizer: orient EXIF,
+  scaleDown max 1600, encode q82 (png lossless) + saudara .webp q82; dipakai Product/
+  Gallery/Testimonial/Setting slides (store/update/delete dua file). Komponen
+  <x-img> -> <picture> (picture{display:contents}); dipakai product-card, catalog/
+  show, galeri, home; og:image tetap original. 16 foto lama dikonversi webx sekali
+  jalan (tmp_webp_convert.php, 16/16). Lightbox galeri: Alpine galleryLightbox +
+  <dialog> (ESC native, arrow kiri/kanan, backdrop klik, no-JS fallback <a>).
+  Testimoni: migrasi kolom photo nullable, upload admin (enctype + preview), render
+  di home (fallback inisial), hapus file saat delete. BUGFIX: slide home yang diupload
+  tidak pernah tampil (path storage/ dinegosiasikan di HomeContent::slides()).
+  +3 test (webp+picture, foto testimoni, lightbox markup).
+7C SEO: WebSite+Organization JSON-LD sitewide (graph, @json); BreadcrumbList di
+  catalog/show + catalog/index + galeri (komponen x-jsonld-breadcrumbs); sitemap
+  lastmod (kategori+produk) + <image:image> (produk berfoto) + xmlns:image;
+  og:image:width/height/alt (default banner 1600x700, produk 800x600);
+  apple-touch-icon.png 180x180 (System.Drawing, primary+BC); nonce mulai dipasang.
+  +5 test (WebSite/Organization, breadcrumb x3, sitemap lastmod/image, og dims/icon).
+7D Keamanan & operasional:
+  - CSP di SecurityHeaders: default-src 'self' + base/form/frame-ancestors 'self',
+    object-src 'none', nonce per-request utk semua <script> (inline theme + JSON-LD),
+    style-src 'self' 'unsafe-inline', img https:, frame-src google maps; di non-production
+    izinkan localhost:5173 (Vite dev); upgrade-insecure-requests + HSTS production.
+  - php artisan backup:run: zip database.sqlite + storage/app/public ->
+    storage/app/backups, retensi 7 (opsi --keep/--dir); README: contoh cron.
+  - Dashboard: kartu Dibatalkan + bar chart CSS 30 hari (tanpa dependensi; aria-label,
+    tooltip title, garis dasar; chartMax dari controller).
+  - users.last_login_at (migrasi + cast datetime + saveQuietly saat login) +
+    tampil di profil admin.
+  - config banjarcustom.express_fee (BC_EXPRESS_FEE, default null): tampil di form
+    pesanan & layanan hanya jika diisi; .env.example komentar. Teks DP/SMTP/email
+    TIDAK disentuh (7E ditunda sesuai keputusan).
+  - README: teks CSP disesuaikan (nonce), backup ditambah, hitungan test 132.
+VERIFIKASI AKHIR FASE 7
+- vendor/bin/pint: passed. composer test: 132 tests / 633 assertions lulus.
+- npm run build: CSS 84,91 kB / JS 56,12 kB. (warning vite ttg url(/fonts/...) -
+  path absolut, terevaluasi saat runtime, non-blocking.)
+- Migrasi jalan di DB dev: add_photo_to_testimonials + add_last_login_at_to_users.
+- Catatan: respons error (404/403/500) tetap tanpa header middleware (pipeline
+  menangkap exception sebelum SecurityHeaders selesai) - gap lama, bukan regresi.
+
+PERBAIKAN CSP x ALPINE (laporan bug toggle dark/light & hero slider)
+Gejala user: toggle dark/light tidak bisa, slide hero tidak jalan (php artisan serve).
+Akar masalah utama: CSP Fase 7D tanpa 'unsafe-eval' memblokir new Function internal
+Alpine -> SEMUA ekspresi x-data/x-show/@click gagal (EvalError) di semua mode;
+x-cloak tetap terhapus sehingga probe awal mengira Alpine hidup. Bug lain yang ikut
+ditemukan & diperbaiki:
+- public/hot stale (sisa npm run dev di-kill paksa) -> @vite menyuntik URL dev mati;
+  dibersihkan; vite kini di-pin host 127.0.0.1, port 5173, strictPort (vite.config.js).
+- CSP dev: Chrome MENOLAK sumber IPv6 bracket (http://[::1]:5173) dan port wildcard
+  ("*") - keduanya dibuang sebagai malformed (uji terisolasi 4 halaman: [::1] & wildcard
+  BLOCKED, localhost/127.0.0.1 LOADED). Oleh itu CSP non-production kini hanya
+  localhost:5173 + 127.0.0.1:5173 (script-src, style-src, connect-src + ws).
+- script-src memuat 'unsafe-eval' di semua env (dibutuhkan Alpine standar; nonce +
+  'self' tetap memblokir injeksi inline/eksternal). Keputusan user: opsi unsafe-eval,
+  bukan migrasi @alpinejs/csp.
+- components/layouts/admin.blade.php: inline script theme-init kini ber-nonce
+  (sebelumnya diblokir CSP di semua mode -> dark mode admin tidak persist).
+- admin/orders/print.blade.php: onclick="window.print()" (inline handler, diblokir
+  CSP) -> <button id="btn-cetak"> + <script nonce> addEventListener.
+- SeoTest: assert script-src disesuaikan ('self' 'unsafe-eval' 'nonce-).
+- Test baru: dashboard admin + print page assert <script nonce= / id=btn-cetak /
+  assertDontSee onclick= (total jadi 132 tests / 637 assertions).
+Verifikasi: pint passed; composer test 132/637; npm run build CSS 84,91 kB /
+JS 56,12 kB; probe Edge headless dev & built masing-masing 0 pelanggaran console,
+x-cloak 0, x-show mengevaluasi (3 display:none); hot file dihapus setelah probe dev.

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gallery;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class GalleryController extends Controller
@@ -21,11 +22,11 @@ class GalleryController extends Controller
 
         $galleries = $query->paginate(12)->withQueryString();
 
-        $categories = Gallery::select('category')
+        $categories = Cache::remember('galleries.categories', now()->addMinutes(10), fn () => Gallery::select('category')
             ->distinct()
             ->whereNotNull('category')
             ->orderBy('category')
-            ->pluck('category');
+            ->pluck('category'));
 
         return view('galeri', compact('galleries', 'categories', 'activeCategory'));
     }

@@ -18,6 +18,9 @@
     <img
         src="{{ asset('images/logo.svg') }}"
         alt="Banjar Custome"
+        width="100"
+        height="100"
+        decoding="async"
         {{ $attributes->merge(['class' => 'block shrink-0 object-contain '.($imgSizes[$size] ?? $imgSizes['sm'])]) }}
     >
 @else

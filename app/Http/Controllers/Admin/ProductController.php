@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -44,7 +44,7 @@ class ProductController extends Controller
         $validated = $this->validateProduct($request);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
         }
 
         $product = Product::create([
@@ -78,7 +78,7 @@ class ProductController extends Controller
         $oldImage = $product->image;
 
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
+            $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
         }
 
         $product->update([
@@ -90,7 +90,7 @@ class ProductController extends Controller
         ]);
 
         if (isset($validated['image']) && $oldImage && $oldImage !== $validated['image']) {
-            Storage::disk('public')->delete($oldImage);
+            ImageOptimizer::delete($oldImage);
         }
 
         $this->syncColors($product, $validated['colors'] ?? []);
@@ -103,7 +103,7 @@ class ProductController extends Controller
     public function destroy(Product $product): RedirectResponse
     {
         if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+            ImageOptimizer::delete($product->image);
         }
 
         $product->colors()->delete();

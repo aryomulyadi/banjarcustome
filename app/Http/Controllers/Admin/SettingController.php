@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Support\HomeContent;
+use App\Support\ImageOptimizer;
 use App\Support\ServiceTypes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SettingController extends Controller
@@ -75,10 +75,10 @@ class SettingController extends Controller
             return $current;
         }
 
-        $path = $request->file($key)->store('slides', 'public');
+        $path = ImageOptimizer::store($request->file($key), 'slides');
 
-        if ($current && Storage::disk('public')->exists($current)) {
-            Storage::disk('public')->delete($current);
+        if ($current) {
+            ImageOptimizer::delete($current);
         }
 
         return $path;

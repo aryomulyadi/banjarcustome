@@ -43,6 +43,8 @@ class LoginController extends Controller
             ]);
         }
 
+        Auth::user()->forceFill(['last_login_at' => now()])->saveQuietly();
+
         $request->session()->regenerate();
 
         return redirect()->to($this->redirectTo($request));

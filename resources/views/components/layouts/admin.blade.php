@@ -9,10 +9,8 @@
 
         @include('partials.favicon')
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
 
-        <script>
+        <script nonce="{{ request()->attributes->get('csp_nonce') }}">
             (function () {
                 var stored = localStorage.getItem('theme');
                 if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

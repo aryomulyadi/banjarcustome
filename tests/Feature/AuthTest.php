@@ -46,6 +46,23 @@ class AuthTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_records_last_login_at_and_profile_shows_it(): void
+    {
+        $admin = $this->admin();
+
+        $this->post('/login', [
+            'email' => $admin->email,
+            'password' => 'password',
+        ])->assertRedirect(route('admin.dashboard'));
+
+        $this->assertNotNull($admin->fresh()->last_login_at);
+
+        $this->actingAs($admin->fresh())
+            ->get(route('admin.profile.edit'))
+            ->assertOk()
+            ->assertSee('Login Terakhir');
+    }
+
     public function test_non_admin_account_cannot_login(): void
     {
         $user = User::factory()->create(['role' => 'user']);

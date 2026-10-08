@@ -5,7 +5,7 @@
         Kembali ke daftar testimoni
     </a>
 
-    <form method="POST" action="{{ route('admin.testimonials.update', $testimonial) }}" class="mt-4">
+    <form method="POST" action="{{ route('admin.testimonials.update', $testimonial) }}" enctype="multipart/form-data" class="mt-4">
         @csrf
         @method('PUT')
 

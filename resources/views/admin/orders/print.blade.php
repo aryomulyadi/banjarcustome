@@ -74,8 +74,12 @@
     </div>
 
     <div class="actions">
-        <button type="button" class="primary" onclick="window.print()">Cetak</button>
+        <button type="button" class="primary" id="btn-cetak">Cetak</button>
         <a href="{{ route('admin.orders.show', $order) }}">Kembali</a>
     </div>
+
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
+        document.getElementById('btn-cetak').addEventListener('click', function () { window.print(); });
+    </script>
 </body>
 </html>

@@ -6,15 +6,15 @@
 >
     <div class="relative overflow-hidden">
         @if ($product->image)
-            <img
-                src="{{ asset('storage/' . $product->image) }}"
-                alt="{{ $product->title }}"
+            <x-img
+                :src="$product->image"
+                :alt="$product->title"
                 width="800"
                 height="600"
                 loading="lazy"
                 decoding="async"
                 class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            >
+            />
         @else
             <x-placeholder-image :label="$product->category?->name ?? 'Produk'" class="transition-transform duration-300 group-hover:scale-105" />
         @endif

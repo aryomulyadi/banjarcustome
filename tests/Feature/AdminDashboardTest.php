@@ -64,13 +64,19 @@ class AdminDashboardTest extends TestCase
     {
         $this->order(['status' => CustomOrder::STATUS_PENDING]);
         $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $this->order(['status' => CustomOrder::STATUS_CANCELLED]);
 
         $this->actingAs($this->admin())
             ->get(route('admin.dashboard'))
             ->assertOk()
             ->assertSee('Menunggu Konfirmasi')
             ->assertSee('Pesanan Terbaru')
-            ->assertSee('Pelanggan Uji');
+            ->assertSee('Pelanggan Uji')
+            ->assertSee('Dibatalkan')
+            ->assertSee('status=cancelled', false)
+            ->assertSee('Pesanan 30 Hari Terakhir')
+            ->assertSee('aria-label="Grafik batang jumlah pesanan masuk per hari selama 30 hari terakhir"', false)
+            ->assertSee('<script nonce="', false);
     }
 
     public function test_pending_orders_show_badge_in_admin_sidebar(): void
@@ -160,6 +166,29 @@ class AdminDashboardTest extends TestCase
             ->assertSessionHasErrors('status');
 
         $this->assertSame(CustomOrder::STATUS_PENDING, $order->fresh()->status);
+    }
+
+    public function test_admin_can_cancel_order(): void
+    {
+        $order = $this->order(['status' => CustomOrder::STATUS_PENDING]);
+
+        $this->actingAs($this->admin())
+            ->patch(route('admin.orders.status', $order), ['status' => 'cancelled'])
+            ->assertRedirect(route('admin.orders.show', $order));
+
+        $this->assertSame(CustomOrder::STATUS_CANCELLED, $order->fresh()->status);
+    }
+
+    public function test_orders_index_filters_by_cancelled_status(): void
+    {
+        $this->order(['status' => CustomOrder::STATUS_PENDING, 'name' => 'Pesanan Berjalan']);
+        $this->order(['status' => CustomOrder::STATUS_CANCELLED, 'name' => 'Pesanan Dibatalkan']);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.orders.index', ['status' => 'cancelled']))
+            ->assertOk()
+            ->assertSee('Pesanan Dibatalkan')
+            ->assertDontSee('Pesanan Berjalan');
     }
 
     public function test_admin_can_download_design_file(): void

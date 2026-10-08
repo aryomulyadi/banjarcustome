@@ -183,7 +183,7 @@
             @forelse ($galleries as $gallery)
                 <figure class="group overflow-hidden rounded-xl border border-border bg-card">
                     @if ($gallery->image)
-                        <img src="{{ asset('storage/'.$gallery->image) }}" alt="{{ $gallery->title }}" width="800" height="600" loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        <x-img :src="$gallery->image" :alt="$gallery->title" width="800" height="600" loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     @else
                         <x-placeholder-image label="Galeri" class="transition-transform duration-300 group-hover:scale-105" />
                     @endif
@@ -219,9 +219,15 @@
                     @endphp
                     <figure class="flex flex-col rounded-xl border border-border bg-card p-5">
                         <figcaption class="flex items-center gap-3">
-                            <span aria-hidden="true" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
-                                {{ $initials }}
-                            </span>
+                            @if ($testimonial->photo)
+                                <span class="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-primary/15">
+                                    <x-img :src="$testimonial->photo" :alt="$testimonial->name" width="88" height="88" loading="lazy" decoding="async" class="h-11 w-11 object-cover" />
+                                </span>
+                            @else
+                                <span aria-hidden="true" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
+                                    {{ $initials }}
+                                </span>
+                            @endif
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="truncate text-sm font-semibold">{{ $testimonial->name }}</span>

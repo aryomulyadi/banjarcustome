@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Gallery;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\ImageOptimizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -87,6 +88,28 @@ class AdminCrudTest extends TestCase
         $this->assertDatabaseCount('products', 0);
     }
 
+    public function test_image_upload_creates_webp_variant_and_view_uses_picture(): void
+    {
+        Storage::fake('public');
+
+        $category = $this->category();
+
+        $this->actingAs($this->admin())->post(route('admin.products.store'), [
+            'title' => 'Produk Webp',
+            'category_id' => $category->id,
+            'image' => $this->fakeImage(),
+        ])->assertRedirect(route('admin.products.index'));
+
+        $product = Product::where('slug', 'produk-webp')->firstOrFail();
+
+        Storage::disk('public')->assertExists($product->image);
+        Storage::disk('public')->assertExists(ImageOptimizer::webpPath($product->image));
+
+        $this->get(route('produk.show', $product->slug))
+            ->assertOk()
+            ->assertSee('type="image/webp"', false);
+    }
+
     public function test_product_update_replaces_image_and_colors(): void
     {
         Storage::fake('public');
@@ -100,6 +123,7 @@ class AdminCrudTest extends TestCase
         ]);
         $product->colors()->create(['name' => 'Merah', 'hex' => '#ff0000']);
         Storage::disk('public')->put('products/lama.png', 'isi-lama');
+        Storage::disk('public')->put('products/lama.webp', 'isi-webp');
 
         $response = $this->actingAs($this->admin())->put(route('admin.products.update', $product), [
             'title' => 'Produk Terbaru',
@@ -118,7 +142,9 @@ class AdminCrudTest extends TestCase
         $this->assertSame('Produk Terbaru', $product->title);
         $this->assertSame('produk-lama', $product->slug);
         Storage::disk('public')->assertMissing('products/lama.png');
+        Storage::disk('public')->assertMissing('products/lama.webp');
         Storage::disk('public')->assertExists($product->image);
+        Storage::disk('public')->assertExists(ImageOptimizer::webpPath($product->image));
         $this->assertCount(1, $product->colors);
         $this->assertDatabaseHas('product_colors', ['product_id' => $product->id, 'name' => 'Biru']);
     }
@@ -202,6 +228,41 @@ class AdminCrudTest extends TestCase
 
         $this->assertDatabaseHas('categories', ['id' => $category->id]);
         $this->assertDatabaseHas('products', ['id' => $product->id]);
+    }
+
+    public function test_category_can_be_edited_and_updated(): void
+    {
+        $category = $this->category();
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.categories.edit', $category))
+            ->assertOk()
+            ->assertSee('Sablon');
+
+        $this->actingAs($admin)
+            ->put(route('admin.categories.update', $category), [
+                'name' => 'Sablon & Cetak',
+                'description' => 'Deskripsi kategori diperbarui.',
+            ])
+            ->assertRedirect(route('admin.categories.index'));
+
+        $category->refresh();
+        $this->assertSame('Sablon & Cetak', $category->name);
+        $this->assertSame('Deskripsi kategori diperbarui.', $category->description);
+        $this->assertSame('sablon', $category->slug);
+    }
+
+    public function test_category_update_requires_name(): void
+    {
+        $category = $this->category();
+
+        $this->actingAs($this->admin())
+            ->from(route('admin.categories.edit', $category))
+            ->put(route('admin.categories.update', $category), ['name' => ''])
+            ->assertSessionHasErrors('name');
+
+        $this->assertSame('Sablon', $category->fresh()->name);
     }
 
     public function test_gallery_can_be_created_updated_and_deleted(): void

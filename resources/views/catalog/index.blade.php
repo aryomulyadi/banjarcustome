@@ -16,6 +16,12 @@
             @endif
         </nav>
 
+        <x-jsonld-breadcrumbs :items="array_values(array_filter([
+            ['name' => 'Beranda', 'url' => route('home')],
+            $activeCategory ? ['name' => 'Katalog', 'url' => route('produk.index')] : null,
+            $activeCategory ? ['name' => $activeCategory->name, 'url' => route('kategori', $activeCategory->slug)] : ['name' => 'Katalog Produk', 'url' => route('produk.index')],
+        ]))" />
+
         <div class="mb-8">
             <h1 class="text-2xl font-bold sm:text-3xl">{{ $activeCategory?->name ?? 'Katalog Produk' }}</h1>
             <p class="mt-1 text-sm text-muted-foreground">

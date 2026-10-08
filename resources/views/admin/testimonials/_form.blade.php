@@ -34,6 +34,26 @@
         <x-textarea id="content" name="content" rows="4" required placeholder="Ceritakan pengalaman pelanggan memesan di Banjar Custome…">{{ old('content', $testimonial?->content) }}</x-textarea>
     </div>
 
+    <div class="space-y-2">
+        <x-label for="photo">Foto Pelanggan (opsional)</x-label>
+
+        @if ($testimonial?->photo)
+            <div class="overflow-hidden rounded-md border border-border" style="width: 3.25rem; height: 3.25rem;">
+                <img src="{{ Storage::url($testimonial->photo) }}" alt="{{ $testimonial->name }}" class="h-full w-full object-cover">
+            </div>
+            <p class="text-xs text-muted-foreground">Foto saat ini. Pilih file baru untuk mengganti.</p>
+        @endif
+
+        <input
+            id="photo"
+            name="photo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+        <p class="text-xs text-muted-foreground">jpg/png/webp, maks 2 MB. Tanpa foto, beranda menampilkan inisial nama.</p>
+    </div>
+
     <label class="flex cursor-pointer items-center gap-2 text-sm font-medium">
         <input type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-input accent-[color:var(--color-primary)]" @checked(old('is_active', $testimonial?->is_active ?? true))>
         Tampilkan di beranda

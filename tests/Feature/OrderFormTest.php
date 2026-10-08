@@ -106,6 +106,22 @@ class OrderFormTest extends TestCase
             ->assertSee('same-day');
     }
 
+    public function test_express_fee_shows_only_when_configured(): void
+    {
+        config()->set('banjarcustom.express_fee', 'Rp15.000');
+
+        $this->get('/pesan')
+            ->assertOk()
+            ->assertSee('biaya tambahan Rp15.000');
+
+        config()->set('banjarcustom.express_fee', null);
+
+        $this->get('/pesan')
+            ->assertOk()
+            ->assertSee('biaya tambahan')
+            ->assertDontSee('biaya tambahan Rp15.000');
+    }
+
     public function test_express_order_is_saved_and_admins_receive_notification(): void
     {
         Notification::fake();

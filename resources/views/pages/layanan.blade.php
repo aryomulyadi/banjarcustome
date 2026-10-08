@@ -42,7 +42,7 @@
             @foreach ([
                 ['title' => 'Kaos — 3–7 hari kerja', 'desc' => 'Estimasi produksi kaos sablon reguler, dihitung setelah desain disetujui.'],
                 ['title' => 'Jersey — 10–12 hari', 'desc' => 'Jersey printing sublim butuh waktu lebih lama karena proses jahit dan cetak full body.'],
-                ['title' => 'Express — same-day / di bawah 10 hari', 'desc' => 'Butuh lebih cepat? Kaos bisa dikerjakan hari itu juga dan pesanan lain di bawah 10 hari, dengan biaya tambahan. Konfirmasi ke CS.'],
+                ['title' => 'Express — same-day / di bawah 10 hari', 'desc' => 'Butuh lebih cepat? Kaos bisa dikerjakan hari itu juga dan pesanan lain di bawah 10 hari, dengan biaya tambahan'.(config('banjarcustom.express_fee') ? ' ('.config('banjarcustom.express_fee').')' : '').'. Konfirmasi ke CS.'],
                 ['title' => 'DP 50%', 'desc' => 'Bayar DP 50% untuk mulai produksi, 50% sisanya sebelum pesanan diambil atau dikirim.'],
             ] as $item)
                 <div class="rounded-xl border border-border bg-card p-5">

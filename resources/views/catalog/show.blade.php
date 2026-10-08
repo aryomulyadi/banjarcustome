@@ -2,6 +2,8 @@
     :title="$product->title . ' — Banjar Custome'"
     :description="Str::limit(strip_tags($product->description ?: 'Pesan ' . $product->title . ' custom di Banjar Custome, Banjarmasin. Sablon awet, produksi rapi, ecer & grosir.'), 160)"
     :ogImage="$product->image ? asset('storage/' . $product->image) : asset('images/banner-1.jpg')"
+    :ogImageWidth="800"
+    :ogImageHeight="600"
     :ogType="'product'"
 >
 
@@ -18,11 +20,18 @@
             <span class="text-foreground">{{ $product->title }}</span>
         </nav>
 
+        <x-jsonld-breadcrumbs :items="array_values(array_filter([
+            ['name' => 'Beranda', 'url' => route('home')],
+            ['name' => 'Katalog', 'url' => route('produk.index')],
+            $product->category ? ['name' => $product->category->name, 'url' => route('kategori', $product->category->slug)] : null,
+            ['name' => $product->title, 'url' => route('produk.show', $product->slug)],
+        ]))" />
+
         <div class="grid gap-8 lg:grid-cols-2">
             {{-- Gambar --}}
             <div class="overflow-hidden rounded-2xl border border-border bg-card">
                 @if ($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->title }}" width="800" height="600" decoding="async" class="aspect-[4/3] w-full object-cover">
+                    <x-img :src="$product->image" :alt="$product->title" width="800" height="600" fetchpriority="high" decoding="async" class="aspect-[4/3] w-full object-cover" />
                 @else
                     <x-placeholder-image label="Foto Produk" class="aspect-[4/3]" />
                 @endif
@@ -94,7 +103,7 @@
         @endif
     </div>
 
-    <script type="application/ld+json">
+    <script type="application/ld+json" nonce="{{ request()->attributes->get('csp_nonce') }}">
         {!! json_encode([
             '@context' => 'https://schema.org',
             '@type' => 'Product',

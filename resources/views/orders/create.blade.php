@@ -169,7 +169,7 @@
                             class="mt-0.5 h-4 w-4 border-input accent-[color:var(--color-primary)]"
                         >
                         <span>
-                            <span class="block text-sm font-medium">Pesanan Express <span class="font-normal text-muted-foreground">(opsional, biaya tambahan)</span></span>
+                            <span class="block text-sm font-medium">Pesanan Express <span class="font-normal text-muted-foreground">(opsional, biaya tambahan{{ config('banjarcustom.express_fee') ? ' '.config('banjarcustom.express_fee') : '' }})</span></span>
                             <span class="mt-0.5 block text-xs text-muted-foreground">
                                 Kaos bisa dikerjakan same-day dan pesanan lain di bawah 10 hari. Centang lalu konfirmasi detail &amp; biayanya ke CS sebelum produksi.
                             </span>

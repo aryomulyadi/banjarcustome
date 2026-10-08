@@ -11,3 +11,7 @@
 @if ($favicon)
     <link rel="icon" type="{{ $favicon['type'] }}" href="{{ asset($favicon['path']) }}">
 @endif
+
+@if (file_exists(public_path('images/apple-touch-icon.png')))
+    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+@endif

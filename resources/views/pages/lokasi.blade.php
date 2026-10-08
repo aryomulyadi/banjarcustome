@@ -85,7 +85,7 @@
         </div>
     </div>
 
-    <script type="application/ld+json">
+    <script type="application/ld+json" nonce="{{ request()->attributes->get('csp_nonce') }}">
         {!! json_encode([
             '@context' => 'https://schema.org',
             '@type' => 'LocalBusiness',

@@ -23,6 +23,9 @@ return [
     // Email notifikasi pesanan baru (boleh dikosongkan; bisa diubah kapan saja).
     'admin_email' => env('BC_ADMIN_EMAIL'),
 
+    // Biaya tambahan pesanan express (opsional). Kosongkan = tampil teks generik "biaya tambahan".
+    'express_fee' => env('BC_EXPRESS_FEE'),
+
     'open_hours' => [
         'Minggu' => 'Tutup',
         'Senin' => '09.00 – 17.00 WITA',

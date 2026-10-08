@@ -1,5 +1,3 @@
-import './bootstrap';
-
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
@@ -42,6 +40,37 @@ Alpine.data('heroSlider', (count, interval = 5000) => ({
     },
     prev() {
         this.index = (this.index - 1 + this.count) % this.count;
+    },
+}));
+
+Alpine.data('galleryLightbox', () => ({
+    items: [],
+    index: 0,
+    init() {
+        this.items = [...this.$root.querySelectorAll('a[data-lb]')].map((a) => ({
+            url: a.href,
+            title: a.dataset.title || '',
+        }));
+    },
+    open(i) {
+        if (!this.items.length) {
+            return;
+        }
+
+        this.index = i;
+        this.$refs.dialog.showModal();
+    },
+    close() {
+        this.$refs.dialog.close();
+    },
+    next() {
+        this.index = (this.index + 1) % this.items.length;
+    },
+    prev() {
+        this.index = (this.index - 1 + this.items.length) % this.items.length;
+    },
+    get current() {
+        return this.items[this.index] || null;
     },
 }));
 

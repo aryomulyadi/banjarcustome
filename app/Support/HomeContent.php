@@ -11,7 +11,15 @@ class HomeContent
         $stored = json_decode((string) Setting::get('home.slides'), true);
 
         if (is_array($stored) && count($stored) === 3) {
-            return $stored;
+            return array_map(function (array $slide): array {
+                $image = (string) ($slide['image'] ?? '');
+
+                if ($image !== '' && ! str_starts_with($image, 'images/') && ! str_starts_with($image, 'storage/')) {
+                    $slide['image'] = 'storage/'.$image;
+                }
+
+                return $slide;
+            }, $stored);
         }
 
         return [

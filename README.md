@@ -32,11 +32,12 @@ Website company profile + pemesanan custom (sablon kaos/dll) berbasis **Laravel 
 - FAQ, Testimoni, Pengaturan (jam buka, jenis sablon & teknik, slide & statistik beranda), Profil (ganti password dengan konfirmasi password saat ini).
 
 **Keamanan & performa**
-- Security headers (CSP ringkas, X-Frame-Options, dll; HSTS hanya di production).
+- Security headers (Content-Security-Policy: nonce + `'unsafe-eval'` untuk Alpine, whitelist `localhost`/`127.0.0.1:5173` di non-production karena Chrome menolak sumber `[::1]`/port-wildcard, X-Frame-Options, dll; HSTS hanya di production).
 - Route fallback ke `errors/404`, halaman error 403/404/500 sendiri.
 - Navigasi kategori di-cache (`nav.categories`), testi & slider di-cache per query.
 - Gambar `loading="lazy"` + `width/height` (banner pertama `fetchpriority="high"`), banner dikompres (≤300 KB).
 - Design file disimpan di disk `private` (`storage/app/private/designs`) — tidak bisa diakses publik.
+- Backup: `php artisan backup:run` membuat zip database SQLite + `storage/app/public` ke `storage/app/backups` (retensi 7; opsi `--keep` dan `--dir`). Contoh cron harian: `0 2 * * * cd /path/ke/projek && php artisan backup:run`.
 
 ## Menjalankan
 
@@ -61,7 +62,7 @@ php artisan serve
 
 ```bash
 vendor/bin/pint                # format kode (laravel preset)
-composer test                  # 109 test (unit + feature) - config:clear dulu
+composer test                  # 132 test (unit + feature) - config:clear dulu
 npm run build                  # build aset produksi
 ```
 

@@ -8,10 +8,13 @@ use App\Models\Faq;
 use App\Models\Product;
 use App\Models\Testimonial;
 use App\Models\User;
+use App\Support\ImageOptimizer;
 use Database\Seeders\FaqSeeder;
 use Database\Seeders\TestimonialSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminContentTest extends TestCase
@@ -129,6 +132,37 @@ class AdminContentTest extends TestCase
             ->assertRedirect(route('admin.testimonials.index'));
 
         $this->assertDatabaseMissing('testimonials', ['id' => $testimonial->id]);
+    }
+
+    public function test_testimonial_photo_upload_creates_webp_and_renders_on_home(): void
+    {
+        Storage::fake('public');
+
+        $admin = $this->admin();
+
+        $path = tempnam(sys_get_temp_dir(), 'bcimg');
+        file_put_contents($path, base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+        ));
+
+        $this->actingAs($admin)->post(route('admin.testimonials.store'), [
+            'name' => 'Budi Santoso',
+            'rating' => 5,
+            'content' => 'Hasil sablon rapi sekali.',
+            'is_active' => '1',
+            'photo' => new UploadedFile($path, 'foto.png', 'image/png', null, true),
+        ])->assertRedirect(route('admin.testimonials.index'));
+
+        $testimonial = Testimonial::where('name', 'Budi Santoso')->firstOrFail();
+
+        $this->assertStringStartsWith('testimonials/', $testimonial->photo);
+        Storage::disk('public')->assertExists($testimonial->photo);
+        Storage::disk('public')->assertExists(ImageOptimizer::webpPath($testimonial->photo));
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('type="image/webp"', false)
+            ->assertSee('Budi Santoso');
     }
 
     public function test_active_testimonial_shows_on_home_page(): void
@@ -332,7 +366,10 @@ class AdminContentTest extends TestCase
             ->get(route('admin.orders.print', $order))
             ->assertOk()
             ->assertSee('Pelanggan Konten')
-            ->assertSee('10');
+            ->assertSee('10')
+            ->assertSee('id="btn-cetak"', false)
+            ->assertSee('<script nonce="', false)
+            ->assertDontSee('onclick=', false);
     }
 
     public function test_order_export_downloads_csv_with_orders(): void
@@ -345,6 +382,34 @@ class AdminContentTest extends TestCase
 
         $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
         $this->assertStringContainsString('Pelanggan Export', $response->streamedContent());
+    }
+
+    public function test_order_export_filters_by_status(): void
+    {
+        $this->order(['name' => 'Export Pending']);
+
+        $selesai = $this->order(['name' => 'Export Selesai']);
+        $selesai->forceFill(['status' => CustomOrder::STATUS_COMPLETED])->save();
+
+        $csv = $this->actingAs($this->admin())
+            ->get(route('admin.orders.export', ['status' => 'completed']))
+            ->streamedContent();
+
+        $this->assertStringContainsString('Export Selesai', $csv);
+        $this->assertStringNotContainsString('Export Pending', $csv);
+    }
+
+    public function test_order_export_searches_by_name(): void
+    {
+        $this->order(['name' => 'Dicari Sobat']);
+        $this->order(['name' => 'Tidak Terlibat']);
+
+        $csv = $this->actingAs($this->admin())
+            ->get(route('admin.orders.export', ['q' => 'Sobat']))
+            ->streamedContent();
+
+        $this->assertStringContainsString('Dicari Sobat', $csv);
+        $this->assertStringNotContainsString('Tidak Terlibat', $csv);
     }
 
     public function test_guest_cannot_access_new_admin_pages(): void

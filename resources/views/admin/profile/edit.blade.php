@@ -16,6 +16,10 @@
                     <dt class="text-muted-foreground">Role</dt>
                     <dd class="font-medium uppercase">{{ $user->role }}</dd>
                 </div>
+                <div class="flex justify-between gap-4">
+                    <dt class="text-muted-foreground">Login Terakhir</dt>
+                    <dd class="font-medium">{{ $user->last_login_at?->translatedFormat('d M Y, H:i') ?? 'Belum pernah login' }}</dd>
+                </div>
             </dl>
         </div>
 
