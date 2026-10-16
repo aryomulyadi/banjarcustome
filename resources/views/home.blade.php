@@ -88,7 +88,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
                 </span>
                 <div>
-                    <h3 class="font-semibold">Bebas Custom Desain</h3>
+                    <h2 class="font-semibold">Bebas Custom Desain</h2>
                     <p class="mt-1 text-sm text-muted-foreground">Punya desain sendiri? Kirim aja. Belum punya? Tim kami bantu buatkan.</p>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
                 </span>
                 <div>
-                    <h3 class="font-semibold">Sablon Awet &amp; Tidak Pecah</h3>
+                    <h2 class="font-semibold">Sablon Awet &amp; Tidak Pecah</h2>
                     <p class="mt-1 text-sm text-muted-foreground">Bahan dan teknik sablon berkualitas, hasil tetap elastis setelah berulang kali dicuci.</p>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                 </span>
                 <div>
-                    <h3 class="font-semibold">Melayani Ecer &amp; Grosir</h3>
+                    <h2 class="font-semibold">Melayani Ecer &amp; Grosir</h2>
                     <p class="mt-1 text-sm text-muted-foreground">Satuan untuk keperluan pribadi maupun ratusan pcs untuk komunitas dan perusahaan.</p>
                 </div>
             </div>

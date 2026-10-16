@@ -3,8 +3,10 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class SecurityHeaders
 {
@@ -13,7 +15,22 @@ class SecurityHeaders
         $nonce = bin2hex(random_bytes(16));
         $request->attributes->set('csp_nonce', $nonce);
 
-        $response = $next($request);
+        try {
+            $response = $next($request);
+        } catch (Throwable $e) {
+            // Middleware global setelah SecurityHeaders (di dalam stack) bisa
+            // melempar exception — mis. PreventRequestsDuringMaintenance (503)
+            // atau ValidatePostSize (413). Tangkap di sini supaya halaman error
+            // tetap mendapat header keamanan. Laporan + render tetap via
+            // ExceptionHandler.
+            $handler = app(ExceptionHandler::class);
+            $handler->report($e);
+            $response = $handler->render($request, $e);
+        }
+
+        if (! $response instanceof Response) {
+            $response = app(ExceptionHandler::class)->render($request, $response);
+        }
 
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');

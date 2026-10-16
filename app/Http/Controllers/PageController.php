@@ -37,6 +37,11 @@ class PageController extends Controller
         return view('pages.size-chart');
     }
 
+    public function panduanJersey(): View
+    {
+        return view('pages.jersey-guide');
+    }
+
     public function kebijakanPrivasi(): View
     {
         return view('pages.kebijakan-privasi');

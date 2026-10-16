@@ -33,13 +33,13 @@
                 <div class="space-y-2">
                     <x-label for="current_password">Password Saat Ini *</x-label>
                     <x-input id="current_password" name="current_password" type="password" required autocomplete="current-password" />
-                    @error('current_password') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('current_password') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">
                     <x-label for="password">Password Baru *</x-label>
                     <x-input id="password" name="password" type="password" required autocomplete="new-password" />
-                    @error('password') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('password') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">

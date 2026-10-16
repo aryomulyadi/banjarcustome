@@ -53,6 +53,8 @@ class ProductController extends Controller
             'slug' => $this->uniqueSlug($validated['title']),
             'description' => $validated['description'] ?? null,
             'price_estimate' => $validated['price_estimate'] ?? null,
+            'base_price' => $validated['base_price'] ?? null,
+            'price_tiers' => $validated['price_tiers'] ?? null,
             'image' => $validated['image'] ?? null,
         ]);
 
@@ -86,6 +88,8 @@ class ProductController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'price_estimate' => $validated['price_estimate'] ?? null,
+            'base_price' => $validated['base_price'] ?? null,
+            'price_tiers' => $validated['price_tiers'] ?? null,
             'image' => $validated['image'] ?? $product->image,
         ]);
 
@@ -121,6 +125,27 @@ class ProductController extends Controller
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'description' => ['nullable', 'string', 'max:3000'],
             'price_estimate' => ['nullable', 'string', 'max:100'],
+            'base_price' => ['nullable', 'integer', 'min:0', 'max:100000000000'],
+            'price_tiers' => [
+                'nullable',
+                'array',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! is_array($value)) {
+                        return;
+                    }
+
+                    $mins = array_filter(array_map(
+                        static fn ($tier) => is_array($tier) ? ($tier['min_qty'] ?? null) : null,
+                        $value,
+                    ));
+
+                    if (count($mins) !== count(array_unique($mins))) {
+                        $fail('Tangga jumlah tidak boleh memiliki min qty ganda.');
+                    }
+                },
+            ],
+            'price_tiers.*.min_qty' => ['required', 'integer', 'min:1', 'max:1000000'],
+            'price_tiers.*.unit_price' => ['required', 'integer', 'min:0', 'max:100000000000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'colors' => ['nullable', 'array'],
             'colors.*.name' => ['required', 'string', 'max:50'],

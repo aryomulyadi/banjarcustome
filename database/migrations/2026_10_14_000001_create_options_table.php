@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('options', function (Blueprint $table) {
+            $table->id();
+            $table->string('kind', 16);
+            $table->string('name', 120);
+            $table->string('hex', 7)->nullable();
+            $table->timestamps();
+
+            $table->unique(['kind', 'name']);
+            $table->index('kind');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('options');
+    }
+};

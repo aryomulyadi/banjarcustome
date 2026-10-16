@@ -36,6 +36,7 @@ class SitemapController extends Controller
             ['loc' => route('lokasi'), 'priority' => '0.6'],
             ['loc' => route('faq'), 'priority' => '0.6'],
             ['loc' => route('size-chart'), 'priority' => '0.5'],
+            ['loc' => route('panduan-jersey'), 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => route('track.create'), 'priority' => '0.4'],
             ['loc' => route('kebijakan-privasi'), 'priority' => '0.2'],
             ['loc' => route('syarat-ketentuan'), 'priority' => '0.2'],

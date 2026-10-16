@@ -52,6 +52,13 @@
                 </p>
                 <p class="mt-1 text-xs text-muted-foreground">Harga estimasi — final menyesuaikan bahan, jumlah, dan tingkat kerumitan desain.</p>
 
+                @if (\App\Support\ServiceTypes::isJerseyTitle($product->title) || \App\Support\ServiceTypes::isJerseyTitle($product->category?->name))
+                    <a href="{{ route('panduan-jersey') }}" class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm font-semibold transition-colors hover:bg-primary/10">
+                        <span>Panduan Jersey 2026-2027 — harga dasar, minimal order, upgrade kerah &amp; bahan</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                @endif
+
                 @if ($product->description)
                     <p class="mt-4 leading-relaxed text-muted-foreground">{{ $product->description }}</p>
                 @endif

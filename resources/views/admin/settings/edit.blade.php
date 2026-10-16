@@ -34,7 +34,7 @@
                                 class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm file:mr-4 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                             <p class="text-xs text-muted-foreground">Kosongkan jika tidak diganti. Banner saat ini: <code>{{ $slide['image'] }}</code></p>
-                            @error("slides.$index.image") <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                            @error("slides.$index.image") <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </fieldset>

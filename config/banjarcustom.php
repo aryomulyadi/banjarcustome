@@ -50,6 +50,87 @@ return [
 
     'sizes' => ['S', 'M', 'L', 'XL', 'XXL', '3XL'],
 
+    // Tambahan harga per ukuran (rupiah) yang tampil di nota & kalkulator.
+    // Ukuran yang tidak terdaftar di sini tetap mengikuti pola (n-2) × 10.000
+    // untuk nXL (4XL = 30.000, dst); selain itu 0. Harga per pesanan bisa
+    // dioverride admin lewat kolom size_prices (detail pesanan).
+    'size_surcharges' => [
+        'XXL' => 10000,
+        '3XL' => 20000,
+        'XXXL' => 20000,
+        '4XL' => 30000,
+        '5XL' => 40000,
+        '6XL' => 50000,
+        '7XL' => 60000,
+        '8XL' => 70000,
+        '9XL' => 80000,
+        '10XL' => 90000,
+    ],
+
+    // Biaya desain khusus jersey (dikenakan di awal, revisi tetap gratis).
+    'design_fee_jersey' => 50000,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pedoman Katalog Jersey 2026-2027 (harga, aturan order, upgrade)
+    |--------------------------------------------------------------------------
+    */
+
+    'jersey' => [
+        // Harga dasar Jersey Reguler (Atasan Only).
+        'base_price' => 85000,
+
+        // Spesifikasi dasar tanpa biaya tambahan.
+        'base_spec' => ['Lengan Pendek', 'Kerah O-Neck', 'Bahan Dryfit Milano'],
+
+        // Minimal pemesanan (pcs).
+        'min_order' => 12,
+
+        // Waktu produksi normal (hari kerja).
+        'lead_time' => '14-25 hari kerja',
+
+        // Opsi VIP ORDER — biaya tambahan per jersey untuk pengerjaan lebih cepat.
+        'vip_fee' => 10000,
+
+        // Biaya desain (1-2 hari kerja, revisi bebas hingga fix).
+        'design_fee' => 50000,
+
+        // DP minimal sebelum produksi (persen), wajib lunas sebelum pengiriman.
+        'dp_percent' => 50,
+
+        // Upgrade kerah: ['name' => nama, 'fee' => biaya tambahan per pcs].
+        'collars' => [
+            ['name' => 'O-Neck', 'fee' => 0],
+            ['name' => 'V-Neck', 'fee' => 5000],
+            ['name' => 'V-Neck Tumpuk', 'fee' => 5000],
+            ['name' => 'O-Neck Variasi', 'fee' => 8000],
+            ['name' => 'Double V-Neck', 'fee' => 8000],
+            ['name' => 'Wangky Kancing', 'fee' => 12000],
+            ['name' => 'Wangky Adidas Insert', 'fee' => 12000],
+            ['name' => 'Wangky V-Neck', 'fee' => 12000],
+            ['name' => 'Wangky Adidas', 'fee' => 12000],
+            ['name' => 'Wangky Tali', 'fee' => 15000],
+            ['name' => 'Wangky Zipper', 'fee' => 15000],
+            ['name' => 'Shanghai Zipper', 'fee' => 15000],
+        ],
+
+        // Upgrade bahan: ['name' => nama, 'fee' => biaya tambahan per pcs].
+        'fabrics' => [
+            ['name' => 'Dryfit Milano', 'fee' => 0],
+            ['name' => 'Brazil Bintik', 'fee' => 5000],
+            ['name' => 'Benzema', 'fee' => 5000],
+            ['name' => 'Embos Tofo', 'fee' => 15000],
+            ['name' => 'Embos Straw', 'fee' => 15000],
+            ['name' => 'Embos Labirin', 'fee' => 15000],
+            ['name' => 'Embos Timnas', 'fee' => 15000],
+            ['name' => 'Embos Geomatric', 'fee' => 15000],
+            ['name' => 'Airwalk', 'fee' => 15000],
+            ['name' => 'Jaqcuard Moving', 'fee' => 15000],
+            ['name' => 'Jaqcuard Geomatric', 'fee' => 15000],
+            ['name' => 'Jaqcuard Camo', 'fee' => 15000],
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Jenis Sablon & Teknik (default — bisa diganti admin di /admin/pengaturan)

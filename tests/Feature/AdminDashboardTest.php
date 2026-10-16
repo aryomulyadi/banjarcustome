@@ -9,10 +9,12 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\InteractsWithXlsx;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
 {
+    use InteractsWithXlsx;
     use RefreshDatabase;
 
     private function admin(): User
@@ -100,15 +102,21 @@ class AdminDashboardTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.orders.show', $order))
             ->assertOk()
-            ->assertSee('Express');
+            ->assertSee('Express')
+            ->assertSee('same-day / <10 hari');
 
+        // Nota cetak tidak lagi memuat baris estimasi.
         $this->actingAs($admin)
             ->get(route('admin.orders.print', $order))
             ->assertOk()
-            ->assertSee('EXPRESS — same-day / di bawah 10 hari');
+            ->assertDontSee('EXPRESS — same-day');
 
-        $csv = $this->actingAs($admin)->get(route('admin.orders.export'))->streamedContent();
-        $this->assertStringContainsString('Express', $csv);
+        // Ekspor XLSX format baru: label express tidak ikut kolom, baris pesanan tetap ada.
+        $export = $this->actingAs($admin)->get(route('admin.orders.export'));
+        $text = $this->xlsxText($export);
+
+        $this->assertStringContainsString('Pelanggan Uji', $text);
+        $this->assertStringContainsString('TOTAL', $text);
     }
 
     public function test_orders_index_filters_by_status(): void
@@ -150,10 +158,10 @@ class AdminDashboardTest extends TestCase
             ->assertSee('Pelanggan Uji');
 
         $this->actingAs($admin)
-            ->patch(route('admin.orders.status', $order), ['status' => 'production'])
+            ->patch(route('admin.orders.status', $order), ['status' => 'confirmed'])
             ->assertRedirect(route('admin.orders.show', $order));
 
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, $order->fresh()->status);
+        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
     }
 
     public function test_invalid_status_is_rejected(): void
@@ -173,10 +181,16 @@ class AdminDashboardTest extends TestCase
         $order = $this->order(['status' => CustomOrder::STATUS_PENDING]);
 
         $this->actingAs($this->admin())
-            ->patch(route('admin.orders.status', $order), ['status' => 'cancelled'])
+            ->patch(route('admin.orders.status', $order), [
+                'status' => 'cancelled',
+                'cancel_reason' => 'Pelanggan membatalkan sebelum produksi.',
+            ])
             ->assertRedirect(route('admin.orders.show', $order));
 
-        $this->assertSame(CustomOrder::STATUS_CANCELLED, $order->fresh()->status);
+        $fresh = $order->fresh();
+
+        $this->assertSame(CustomOrder::STATUS_CANCELLED, $fresh->status);
+        $this->assertSame('Pelanggan membatalkan sebelum produksi.', $fresh->cancel_reason);
     }
 
     public function test_orders_index_filters_by_cancelled_status(): void

@@ -33,6 +33,14 @@ class ServiceTypes
         )));
     }
 
+    /**
+     * Deteksi judul layanan jersey (mis. "Printing Sublim — Jersey").
+     */
+    public static function isJerseyTitle(?string $title): bool
+    {
+        return $title !== null && str_contains(strtolower($title), 'jersey');
+    }
+
     public static function setItems(array $items): void
     {
         Setting::set(self::SETTING_KEY, json_encode(array_values($items)));

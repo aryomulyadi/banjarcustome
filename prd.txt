@@ -376,3 +376,476 @@ ditemukan & diperbaiki:
 Verifikasi: pint passed; composer test 132/637; npm run build CSS 84,91 kB /
 JS 56,12 kB; probe Edge headless dev & built masing-masing 0 pelanggaran console,
 x-cloak 0, x-show mengevaluasi (3 display:none); hot file dihapus setelah probe dev.
+
+
+FASE 8 - PENYEMPURNAAN WEBSITE (hardening + fitur + kualitas)
+Scope disetujui user: Hardening & gap teknis + Kualitas (CI, a11y, test) + fitur
+spreadsheet/nota/kalkulator; rekomendasi hosting = shared hosting (Rp400-700 rb/thn,
+VPS hanya bila trafik naik) - sudah didokumentasikan di README.
+
+8A-1 Error pages + header keamanan: SecurityHeaders kini try/catch $next ->
+report + render via ExceptionHandler, sehingga 404/403/500 mendapat CSP/nosniff/
+X-Frame-Options dll (sebelumnya exception lolos ke atas -> header tidak pernah
+terpasang). Test baru: test_security_headers_are_set_on_error_responses.
+8A-2 Express fee tuntas: config banjarcustom.express_fee tampil di ringkasan WA
+(whatsappLink), baris estimasi halaman sukses, baris nota "Biaya express", dan
+kolom CSV "Biaya Express".
+8A-3 Scheduler: Schedule::command('backup:run')->dailyAt('02:00')->withoutOverlapping()
+di routes/console.php; dokumentasi cron schedule:run di README; ScheduleTest.
+
+8B-5 Impor pesanan Excel/CSV: composer require openspout/openspout:^4.9 (versi
+tertinggi kompatibel PHP 8.2; v4.10+ minta PHP 8.3). Migrasi kolom
+custom_orders.source (form|import, default form). Route /admin/pesanan/import
+(GET form, GET template .xlsx via openspout writer, POST proses). Pembacaan XLSX
+(openspout) + CSV (fgetcsv, auto-delim ,/;). Validasi per baris (tanggal d/m/Y &
+Y-m-d, nama, whatsapp, status enum, produk match lower(title), jumlah, pengiriman,
+harga angka, maks karakter) - SEMUA baris harus valid, bila ada error tidak ada
+satupun data masuk (DB transaction all-or-not, laporkan nomor baris error).
+created_at pesanan = tanggal di file (backdate), statusHistory + tracking_token
+otomatis dari event model. Badge "Impor" + filter sumber di index, kolom
+"Sumber" di export CSV. Test: AdminOrderImportTest (template download, import
+CSV valid + product match + backdate, XLSX valid, error membatalkan seluruh
+impor, kolom hilang fatal, ekstensi ditolak, filter sumber).
+
+8B-6 Harga pesanan: migrasi custom_orders.unit_price & total_price (bigint
+nullable). PATCH /admin/pesanan/{order}/harga - total dihitung otomatis
+(satuan x jumlah) bila dikosongkan, bisa di-clear berdua, validasi integer >=0.
+Tampil di detail (2 baris baru), nota (Harga satuan/Total), kolom CSV
+"Harga Satuan"/"Total". Halaman sukses & WA summary pelanggan TIDAK menampilkan
+harga (asumsi disetujui). Test: AdminOrderPriceTest (auto total, override,
+clear, tolak negatif, detail+nota, nota express fee, WA fee, sukses fee, CSV).
+
+8B-7 Kalkulator harga: migrasi products.base_price + price_tiers (JSON
+[min_qty, unit_price]). Form produk: kartu "Harga Kalkulator (Admin)" dengan
+input harga dasar + tangga qty dinamis Alpine (mirip pola warna). Helper murni
+App\Support\PriceCalculator::unitPrice (tier min<=qty terbesar, fallback base,
+null bila kosong) + total + expressFeeNumber (parse "Rp 50.000"). Halaman
+/admin/kalkulator (CalculatorController) - pilih produk, qty, override manual,
+opsi biaya express, total besar, salin ringkasan (clipboard). Navigasi sidebar
++ "Kalkulator". Verifikasi: Unit\PriceCalculatorTest (5 test boundary tier) +
+x-data diekstrak dari render view & diuji di Node (lolos sintaks + logika:
+tier 49/50/60, override 55000, fee 50000, total 160000, apostrophe judul aman
+karena json_encode JSON_HEX_APOS).
+
+8B-8 Nota: baris Harga satuan / Biaya express / Total + footer ganti jadi
+skema DP langsung bila total ada (teks "harga menyusul" tetap bila tanpa harga).
+
+8C-9 CI: .github/workflows/ci.yml - job test (checkout, setup-php 8.2 + sqlite,
+composer install, pint --test, cp .env + key:generate, composer test) + job
+build (setup-node 20, npm ci, npm run build). Aktif otomatis saat repo di-push
+ke GitHub.
+
+8C-10 Aksesibilitas: role="alert" utk semua blok @error (orders/create 14x,
+admin profile/settings, banner track & login) + aria-invalid="true" pada input
+bersesalan error orders/create (11x); label+hint+aria-describedby form impor;
+aria-live pada ringkatan kalkulator; heading beranda h3->h2 (USP setelah h1,
+skip-level diperbaiki); KONTRAS: light theme --primary diganti amber-700
+hsl(30 85% 39%) - amber-500 + teks krem hanya ~1.9:1 (gagal), amber-700 lolos
+4.5:1 dua arah (teks di putih & putih di atasnya); dark theme tetap amber
+terang + teks gelap (sudah lolos). Skip-link sudah ada (app.blade).
+
+8C-11 Test: 132/637 -> 158/754 (+26 test: import6, harga8, kalkulator5,
+schedule1, error-header1, price-calculator unit5). Struktur riwayat: kolom FK
+custom_order_id (bukan order_id).
+
+DOKUMENTASI: README - fitur admin baru (impor/harga/kalkulator), keamanan error
+headers, aksesibilitas, CI, scheduler backup, struktur app/Support + Controller
+baru, jumlah test 158, dan bagian "Panduan deploy: shared hosting vs VPS"
+(rekomendasi shared hosting + biaya, syarat host PHP8.2/sqlite/cron/SSL, SMTP,
+7 langkah deploy, cron schedule:run).
+
+VERIFIKASI AKHIR: vendor/bin/pint passed; composer test 158 tests / 754
+assertions (0 gagal); npm run build OK (CSS 85,94 kB / JS 56,12 kB); probe Edge
+headless mode-built: 5 halaman publik (/, /layanan, /pesan, /galeri,
+/cek-pesanan) masing-masing 0 pesan console error/CSP (capture dikalibrasi
+dengan sentinel console.error - terdeteksi), x-cloak tersisa 0, x-show
+mengevaluasi (display:none ada di /pesan); server probe + artefak dibersihkan
+(tidak ada public/hot).
+
+
+FASE 9 - AUDIT BUG, NOTA TABEL KALKULATOR, PLANNING ALUR PRODUKSI
+
+9A Audit & perbaikan 20 temuan (semua severity): (1) TINGGI mojibake+BOM di 3
+view (home, admin/profile, admin/settings) - akibat Get-Content default cp1252;
+dipulihkan ke UTF-8 tanpa BOM + test EncodingIntegrityTest (no-BOM, no-mojibake,
+judul beranda pakai — dan ->). (2) kartu Harga: total auto dihitung ulang saat
+satuan diubah (Alpine watch, override manual lepas auto) + peringatan flash bila
+total != satuan x jumlah. (3) grandTotalPrice() = subtotal + fee express; nota/
+show/CSV menampilkan Subtotal / Biaya express / Total pembayaran (konsisten
+kalkulator). (4) importStore PRG: redirect->with('report'), importForm baca lalu
+flush session (refresh tidak menggandakan). (5) export CSV: netralisasi formula
+=+-@ (prefix ') anti CSV-injection, penulisan RFC-4180 manual, BOM UTF-8.
+(6) parseAmount ketat: angka polos / pemisah ribuan tegas saja, cap 100 M,
+desimal/rentang ditolak. (7) form produk: old(price_tiers/colors) + JSON_HEX_* +
+guard non-array. (8) tanggal impor: rentang 1970..+2 tahun, deadline tidak diisi
+(kolom tanggal = tanggal pesanan). (9) SecurityHeaders append->prepend (tutup
+celah 413/503 dari global middleware) + test maintenance 503. (10) tier harga:
+min_qty ganda ditolak (closure validator), tie-break JS samakan dgn PHP (>, bukan
+>=), tier tanpa harga di-skip di JS & controller. (11) chip status mempertahankan
+source+q; statusCounts difilter sumber. (12) parseDate cek getLastErrors (tolak
+rollover 31/02). (13) baris kosong CSV tidak dibuang - nomor baris error akurat.
+(14) CSV quote ganda benar (str_getcsv roundtrip). (15) baca XLSX try/finally +
+limit 50.000 baris. (16) test diketat (PRG, template header==IMPORT_HEADERS via
+reflection, rollover, harga 45000.5, WA placeholder, chips+count, q=0, mismatch,
+grand total, CSV BOM+injection parse per kolom, 503 header, min_qty ganda).
+(17) expressFeeLabel format tunggal "Rp 50.000" (PriceCalculator::expressFeeNumber
+-> number_format; create.blade ikut; OrderFormTest disesuaikan). (18) array_filter
+pakai callback (q="0" dipertahankan). (19) WA impor wajib >=5 digit. (20) cari
+produk impor: slug dulu, lalu LOWER(title)=LOWER(?) dua sisi.
+
+9B Nota = tabel perhitungan + kalkulator 1 baris cetak:
+- Migrasi 2026_10_07_000001 add bahan/type/warna (string 120 nullable) di
+  custom_orders; kartu "Spesifikasi Nota" di detail pesanan (PATCH
+  admin.orders.spec) diisi admin sebelum cetak.
+- Partial resources/views/admin/orders/_nota-table.blade.php: kolom Jenis |
+  Bahan | Type | Warna | Ukuran | Jumlah | Harga | Total Harga (dipakai print
+  order & lembar penawaran kalkulator).
+- print.blade dirombak: kop + info (Tanggal, Nama Customer, WA, Deadline,
+  estimasi, kirim) + seksi "Rincian Perhitungan" (tabel 8 kolom) + rangkuman
+  Subtotal/Biaya express/Total pembayaran + detail/catan + footer DP.
+- Kalkulator: input Nama Customer, Jenis (select ServiceTypes), Bahan, Type
+  (default judul produk), Warna, Ukuran + tabel live 8 kolom identik dgn nota +
+  rangkuman + tombol "Cetak Penawaran" (window.open GET admin.calculator.print)
+  -> lembar standalone penawaran (tanpa no. order, berlaku 7 hari) + tombol
+  Cetak; input dibatasi server (qty 1..1jt, unit 0..100M, teks 120 char).
+
+9C Planning: docs/PLAN-ALUR-PESANAN.md - peta status Open->done (pending/
+confirmed/design/ready/production/completed/cancelled + matriks transisi),
+SLA per tahap & margin 3 hari, alur desain (upload->approval->revisi 2x),
+validasi size_quantities = quantity sebelum produksi, 3 opsi handoff
+admin->produksi (rekomendasi Kartu Kerja Produksi cetak + WA grup, role produksi
+menyusul), timeline riwayat di halaman lacak, tabel fase 9A-9G + keputusan yang
+menunggu review. Dokumen saja - implementasi menyusul setelah direview.
+
+VERIFIKASI AKHIR: vendor/bin/pint passed; composer test 177 tests / 882
+assertions (0 gagal; +19 dari 158: EncodingIntegrity3, import4, price4, seko
+1(maintenance), calculator1, nota7); npm run build OK (CSS 85,94 kB / JS
+56,12 kB); probe Edge headless (CDP, Node WebSocket) 12 halaman (5 publik: /,
+/produk, /pesan, /cek-pesanan, /faq + login POST + 6 admin: dashboard, pesanan,
+kalkulator, detail, cetak nota, produk/create): 0 pesan console error/warning,
+0 x-cloak tersisa, sentinel console.error tertangkap di semua halaman (kalibrasi
+capture OK); favicon.svg ditambahkan ke 2 lembar print standalone (perbaiki 404
+favicon di cetak nota). Artefak dibersihkan: server probe, Edge headless, user
+probe@local.test, file temp; public/hot tidak ada.
+
+FASE 9 LANJUTAN - NOTA BARIS PER UKURAN + DOKUMEN ALUR PESANAN
+
+9D Nota per ukuran: tabel rincian kini 1 baris per ukuran (S=10, M=12, dst;
+kolom Jenis/Bahan/Type/Warna hanya baris pertama), kolom Jumlah = qty ukuran,
+Harga = harga dasar + surcharge ukuran. Surcharge default di
+config(banjarcustom.size_surcharges): XXL +10.000, 3XL/XXXL +20.000,
+4XL +30.000 ... 10XL +90.000, dengan fallback pola (n-2) x 10.000
+(App\Support\SizeSurcharge::of + tests/Unit/SizeSurchargeTest). Override per
+pesanan lewat kolom baru size_prices (JSON) - admin isi per baris di kartu
+"Spesifikasi Harga" detail pesanan (kosong = otomatis). Subtotal nota = Sigma
+baris; bila total_price manual beda dari Sigma tampil baris "Penyesuaian
+manual" (+/- selisih). resolvedTotalPrice() kini sadar rincian ukuran (show,
+CSV, grand total ikut konsisten). updatePrice: auto-total mengikuti Sigma
+rincian (bukan satuan x jumlah) + validasi size_prices (array max 30, key
+[A-Za-z0-9]{1,10}, value int|null, semua kosong -> null) + pesan warning
+menyebut "jumlah rincian ukuran".
+
+9E Nota cetak disederhanakan: baris Deadline / Estimasi / Pengiriman /
+Alamat DIHAPUS - KV hanya Tanggal, Nama Customer, WhatsApp (info lengkap
+tetap di halaman detail pesanan). Test baru memastikan 4 baris + tanggal/
+teks estimasi/alamat tidak muncul lagi di cetak.
+
+9F Kalkulator multi-baris: input ukuran "S:10, M:12" diparse jadi baris
+terpisah di Tabel Perhitungan (identik dgn nota; kolom identik baris
+pertama); kolom Harga tiap baris editable (override per ukuran via
+sizeOverrides, default = harga dasar + surcharge dari config); qty total =
+Sigma ukuran (input qty manual hanya tanpa ukuran); subtotal = Sigma
+(qty x harga baris). Cetak Penawaran kirim parameter sizes=JSON
+[{s,q,u}] (<=4000 char, <=30 baris, ukuran 12 char, qty 1..1jt, harga
+0..100M) - CalculatorController::print membangun baris per ukuran, fallback
+param lama (back-compat) bila tak ada/tak valid. Anti-circular: tierQty
+dipakai autoUnit (rows -> baseUnit -> autoUnit -> tierQty tanpa kembali ke
+rows). Lembar penawaran pakai partial _nota-table yang sama.
+
+9G Dokumen docs/PLAN-ALUR-PESANAN.md ditulis ulang: alur nyata WA-first
+(1 balasan WA + minta spesifikasi, 2 spesifikasi fix, 3 designer desain +
+revisi s/d fix, 4 list ukuran + nota DP 50%, 5 pembelian bahan), dua jalur
+produksi - Jalur A konveksi (bahan -> cutting -> jahit -> sablon -> QC) vs
+Jalur B jersey/sublim (designer terbitkan SPK -> langsung over ke operator
+sublim -> sublim -> jahit -> QC, tanpa gerbang pembelian bahan), hybrid
+WA+website (website = sumber kebenaran status/nota/DP/timeline, WA =
+komunikasi + tabel 8 template pesan per tahap, aturan "chat WA -> update
+status di website"), peta status + matriks, SLA deadline, approval desain,
+handoff (Kartu Kerja A/B/C + SPK jalur sublim), tracking timeline, tabel
+fase 9A-9G + 5 keputusan menunggu review.
+
+VERIFIKASI AKHIR: vendor/bin/pint passed; composer test 190 tests / 949
+assertions (0 gagal; +13 dari 177: SizeSurcharge5, nota per-ukuran 5,
+calculator sizes 3 - 1 gagal awal double-escape &amp; diperbaiki); npm run
+build OK (CSS 85,98 kB / JS 56,12 kB); probe Edge headless (CDP) 11 halaman
++ interaksi kalkulator: isi "S:10, M:12, XXL:6" -> 3 baris terpisah, 3 input
+harga per baris, Total 28 pcs, 0 console error, 0 x-cloak, sentinel tertangkap
+di semua halaman. Artefak dibersihkan (server, Edge, user probe, temp);
+public/hot tidak ada. Belum di-commit.
+
+FASE 10 - NOTA BERSIH, MASTER DATA, PROGRES PRODUKSI, FORMAT EXCEL BARU
+
+10A Nota cetak bersih (catatan user): judul lembar & kepala nota HANYA
+"NOTA PESANAN" - nomor nota "#id" dan badge status DIHAPUS (juga dari
+<title>: "Nota Pesanan - Banjar Custome"); KV tetap Tanggal, Nama
+Customer, WhatsApp. Status & nomor tetap di halaman detail pesanan. Test
+test_print_omits_order_number_and_status (assertDontSee pola nomor/status/
+badge).
+
+10B Master data dropdown (keputusan user: tabel baru, bukan bawaan):
+migrasi tabel "options" (kind: type|material|color, name <=120, hex
+nullable utk swatch warna, unique(kind,name)) + model MasterOption
+(scope forKind, namesFor) + CRUD /admin/master-data (MasterDataController:
+index3 section, store validasi nama unik per kind + regex hex, destroy)
++ menu sidebar "Data Master" setelah Kategori. Form pesanan publik TIDAK
+berubah (jenis tetap dari Pengaturan; type/bahan/warna diisi admin di
+kartu Spesifikasi). 4 test CRUD/validasi/guest/non-admin.
+
+10C Progres produksi (keputusan user: pelengkap status, bukan pengganti):
+migrasi 3 boolean pesan_bahan_ok / produksi_ok / finish_ok (default false)
+di custom_orders + cast boolean + konstanta CustomOrder::PROGRESS_FLAGS
+(pesan_bahan_ok => "Pesan Bahan", produksi_ok => "Produksi", finish_ok =>
+"Finish"). Kartu "Progres Produksi" di detail pesanan (3 checkbox ok/nok +
+Simpan) via PATCH baru admin.orders.progress (updateProgress: boolean()
+per flag). Daftar pesanan: kolom "Progres" -3 titik ok/nok per pesanan.
+BUG ditemukan saat probe: @foreach (PROGRESS_FLAGS as $flag) memberi
+VALUE ("Pesan Bahan"), bukan key - $order->{$flag} selalu null (dot selalu
+""); fix: as $flag => $label. 3 test (kartu, toggle PATCH persist, kolom).
+
+10D Impor format Excel BARU (menggantikan format lama, keputusan user):
+IMPORT_HEADERS = [BULAN, customer, jenis, waktu pengambilan, type, bahan,
+warna, pesan bahan, produksi, finish, TOTAL, jumlah, ukuran, whatsapp,
+status, catatan] (16 kolom; template resmi ikut). Judul dicocokkan
+normalizeHeading (lowercase, spasi tunggal, underscore->spasi): urutan
+bebas, kolom ekstra diabaikan, wajib HANYA "customer" (1 test: urutan
+acak + mixed case + kolom asing). Per baris: customer <=255; jenis
+divalidasi KETAT ke ServiceTypes::titles() case-insens - asing DITOLAK
+(keputusan user); waktu pengambilan -> deadline (d/m/Y|Y-m-d, tanpa
+rollover); type/bahan/warna <=120 + auto-create master bila belum ada
+(dedup case-insens, dicatat di ringkasan "Master data baru dibuat" utk
+kind type/material/color); flag parse ok/nok (+ ya/tidak/1/0/yes/no/true/
+false, kosong = nok, lain = error baris "harus bernilai ok atau nok");
+jumlah 1..1jt; ukuran "S:6, M:12" (<=30 baris, qty 1..1jt) ->
+size_quantities + fallback quantity = Sigma ukuran; TOTAL parseAmount
+(rpcase-insens, ribuan tegas, <=100M, desimal tolak); whatsapp kini
+OPSINAL (migrasi custom_orders.whatsapp_number nullable - form publik
+tetap wajib via validasi request); status key ATAU label terjemahan
+(Menunggu Konfirmasi -> pending, dll), default pending; BULAN ->
+parseMonth ("Oktober 2026"/"Okt 2026"/"October 2026"/"2026-10"/"10-2026"/
+"10.2026" -> tgl 1 bulan tsb utk created_at; gagal = WARNING non-fatal
++ tanggal impor, tampil blok amber di laporan). Laporan impor kini
+memuat: fatal / errors per baris / warnings / created (master baru) /
+imported. Blok view import ditulis ulang (daftar kolom aturan + 3 blok
+laporan). 16 test (rewrite10 lama + jenis/flag/bulan/ukuran/status baru).
+
+10E Export XLSX menggantikan CSV (keputusan user): export() ->
+BinaryFileResponse "laporan-pesanan.xlsx" (OpenSpout), heading =
+IMPORT_HEADERS (identik impor), filter status/source/q tetap; nilai
+diisi sistem: BULAN = created_at->translatedFormat("F Y"), ok/nok dari
+flag, TOTAL = resolvedTotalPrice(), ukuran dari size_quantities, status
+= label. ANTI INJEKSI FORMULA: Cell::fromValue() menghasilkan
+FormulaCell utk string prefix "=" (bahaya di Excel) -> helper xlsxCell()
+menulis semua string sbg StringCell (angka tetap NumericCell). Label UI:
+"Export CSV" -> "Export Excel" (index + hint kartu harga). Test roundtrip:
+export -> upload ulang -> 1 pesanan masuk dgn field inti identik
+(whatsapp, qty, deadline, jenis, type/bahan/warna, ukuran, TOTAL, notes,
+status label, flag, bulan created_at). 6 titik test export ditulis ulang
+dari streamedContent() ke trait Tests\Concerns\InteractsWithXlsx
+(xlsxRows/xlsxText); test BOM diganti xlsx_keeps_formula_like_text_as_
+plain_string (sel dibaca kembali sbg teks persis, tanpa eksekusi).
+
+VERIFIKASI AKHIR FASE 10: vendor/bin/pint passed; composer test 205
+tests / 1076 assertions (0 gagal; +15 dari 190: nota-omits1, master4,
+progres3, impor rewrite +6, roundtrip termasuk di impor); npm run build
+OK (CSS 86,74 kB / JS 56,12 kB); probe Edge headless (CDP) 21 check PASS
+- home (0 x-cloak), login, master-data (3 group + tambah "Jersey Probe"
+via form), daftar (kolom Progres), detail (kartu + PATCH progres ->
+persist true,true,true), import (aturan ok/nok + ukuran), export (PK zip
+magic, content-type spreadsheetml, filename laporan-pesanan.xlsx),
+cetak (title bersih, tanpa status, tanpa badge, tanpa nomor), 0 console
+error, 0 exception; bug foreach PROGRESS_FLAGS di atas ditemukan & fixed
+dari probe ini (view:clear setelah fix). Artefak dibersihkan: server
+8099, Edge headless, file probe (seed/check/debug/cell/show/mjs),
+data probe (user probe@local.test, order "Pelanggan Probe", master
+"Jersey Probe"/"Cotton Combed 30s"/"Navy" - tabel options kembali
+kosong); public/hot tidak ada. Belum di-commit.
+
+FASE 11 - ALUR PESANAN: STATUS TERJAGA, DESAIN+APPROVAL, DP, SPK/KARTU KERJA
+
+Keputusan user saat review: role produksi/9G TUNDA; revisi desain BEBAS tanpa
+biaya (desain umum gratis; desain jersey biaya Rp50.000 DI AWAL, revisi tetap
+gratis); DP dicatat NOMINAL + waktu diterima. Sumber plan:
+docs/PLAN-ALUR-PESANAN.md (9A-9F).
+
+11A Status & guard transisi (9A): 3 status baru + label Indonesia -
+confirmed "Terkonfirmasi", design "Proses Desain", ready "Siap Produksi"
+(SLABELS kini 7 entri; filter daftar, impor/ekspor, riwayat otomatis ikut).
+Matriks CustomOrder::TRANSITIONS: pending->confirmed/cancelled;
+confirmed->design/cancelled; design->ready/cancelled;
+ready->production/design/revisi/cancelled; production->completed/cancelled;
+completed->cancelled; cancelled->final. Lompat tahap DITOLAK dengan pesan
+"Transisi X -> Y tidak diizinkan" + daftar status tersedia; cancelled wajib
+cancel_reason (min 3, migrasi kolom text) - pesan error per field; transisi ke
+design (revisi) me-reset design_approved_at; updateStatus tulis history
+(changed_by admin). Select status di detail kini hanya menampilkan target
+yg diizinkan (allowedNextStatuses) + textarea alasan batal (tampil Alpine
+saat "Dibatalkan" dipilih); status final tampil "sudah final" (cancelled).
+
+11B Syarat naik "Siap Produksi" (9B+9D): readyBlockers() dicek otomatis di
+updateStatus - pesan menyebut yg kurang: (1) harus dari Proses Desain,
+(2) desain disetujui pelanggan, (3) rincian ukuran terisi & Sigma qty ==
+quantity, (4) harga tersedia (resolvedTotalPrice), (5) spesifikasi nota
+bahan/type/warna lengkap, (6) DP diterima. Kolom baru (migrasi
+2026_10_15_000001): cancel_reason, design_file_admin, design_approved_at,
+design_revisions, design_revision_reason, dp_amount, dp_received_at,
+assigned_operator, spk_number, spk_issued_at.
+
+Desain & approval: admin unggah hasil desain (POST orders.design.upload,
+disk private designs/admin, jpg/png/webp/pdf maks 10MB) - ganti file = reset
+persetujuan + hapus file lama; preview inline (orders.design.preview,
+response()->file dgn mimeType); tombol "Tandai Disetujui (via WA)" untuk
+persetujuan manual tanpa tombol web. Pelanggan via link token /lacak/{token}
+(40 char, throttle): GET halaman lacak + download desain (track.design,
+token-gated), POST setujui (track.approve - hanya tahap design/ready; flash),
+POST revisi (track.revision - alasan wajib min5: status->design, approval
+null, design_revisions+1, simpan alasan; dari ready tulis history
+ready->design changed_by null; ditolak di luar tahap dgn pesan jelas).
+
+11C DP 50%: kartu DP di detail - input nominal (dp_amount), dp_received_at
+terisi otomatis saat pertama dicatat, tampil sisa tagihan (grandTotal - DP);
+kosongkan = reset keduanya (penanda dikosongkan).
+
+11D Kartu Kerja + SPK + template WA (9C): GET orders.card (lembar "KARTU
+KERJA PRODUKSI" standalone spt nota: info order, tabel ukuran per baris
+dgn harga, thumbnail desain via route preview, catatan, ttd) dan GET
+orders.spk ("SURAT PERINTAH KERJA" + nomor SPK-{id pad4} + tanggal terbit
+digenerate sekali saat cetak pertama + operator). Kartu "Serah Terima
+Produksi": input assigned_operator (PATCH orders.handover) + 2 tombol cetak.
+Kartu "Pesan WhatsApp": 8 template per tahap (masuk, konfirmasi, desain,
+desain-selesai dgn link lacak, revisi, nota-dp dgn rincian ukuran+total+
+DP 50%+biaya desain jersey, dp-diterima, selesai) via CustomOrder::
+waTemplates() - Alpine select + preview textarea + Salin (clipboard) +
+buka wa.me dgn teks terisi; link lacak = /lacak/{token}.
+
+11E Timeline pelanggan (9F): halaman lacak (hasil form id+WA maupun token
+URL) kini memuat: riwayat dari order_status_history (tahap + waktu, TANPA
+nama admin), deadline (+badge Lewat bila lewat), desain (unduh + kartu
+persetujuan Setujui/Minta Revisi saat tahap design/ready & belum disetujui;
+blok "sedang disiapkan" saat belum ada file), flash track_flash/track_error.
+
+11F Flag lewat deadline (9E): isOverdue() = deadline < hari ini (zona app
+Asia/Makassar) && status belum completed/cancelled - badge merah "Lewat
+deadline" + baris "Deadline: d M Y" di kolom Tanggal daftar pesanan, badge
+"Lewat" di halaman lacak, baris "Perhatian" di detail.
+
+Info biaya desain jersey: config banjarcustom.design_fee_jersey = 50000 +
+isJersey()/designFee() (deteksi "jersey" case-insens di service_type); kartu
+Harga memberi hint biaya desain jersey di awal (TIDAK otomatis mengubah
+total - admin menambahkan ke Total bila menagih sekaligus); hint ikut
+template WA "nota-dp".
+
+VERIFIKASI AKHIR FASE 11: vendor/bin/pint passed; composer test 230 tests /
+1216 assertions (0 gagal; +25 dari 205: AdminOrderFlowTest 11,
+TrackDesignFlowTest 8, WorkCardTest 4, + 3 test lama disesuaikan dgn guard
+- riwayat status & update status pakai transisi legal, cancel wajib alasan);
+npm run build OK (CSS 69,43 kB / JS 56,12 kB); probe Edge headless (CDP)
+24 check PASS - home, login, daftar (badge lewat deadline + baris deadline),
+detail pending (status terbatas, kartu WA/DP/serah terima), detail desain
+(approval info, tombol tandai, hint biaya jersey), kartu kerja & SPK
+(SPK-0004 tergenerate), lacak token (timeline, kartu approval, unduh),
+revisi via web (flash "Permintaan revisi ke-1" + approval reset), approve
+(flash tercatat), pending track (badge Lewat, tanpa kartu approval), 0
+console error, 0 exception. Bug probe: check case-sensitive thd CSS
+uppercase (LAGI) + regex replace PowerShell gagal (diperbaiki di script);
+probe tidak idempoten - tambah reset script sebelum run ulang. Artefak
+dibersihkan: data probe (2 order, user probe@local.test, file desain probe),
+server 8099, Edge headless, file temp probe11*; public/hot tidak ada.
+Belum di-commit.
+
+FASE 12 - KATALOG JERSEY 2026-2027 + KALKULATOR JERSEY + SPK BANNER
+
+12A Pedoman di config: banjarcustom.jersey = { base_price 85000, base_spec
+[Lengan Pendek, Kerah O-Neck, Bahan Dryfit Milano], min_order 12, lead_time
+"14-25 hari kerja", vip_fee 10000, design_fee 50000 (sumber sama dgn
+design_fee_jersey), dp_percent 50, collars 12 opsi (O-Neck 0; V-Neck &
+V-Neck Tumpuk 5.000; O-Neck Variasi & Double V-Neck 8.000; Wangky Kancing/
+Adidas Insert/V-Neck/Adidas 12.000; Wangky Tali/Zipper & Shanghai Zipper
+15.000), fabrics 12 opsi (Dryfit Milano 0; Brazil Bintik & Benzema 5.000;
+Embos Tofo/Straw/Labirin/Timnas/Geomatric, Airwalk, Jaqcuard
+Moving/Geomatric/Camo 15.000 - varian dipecah per nama, fee identik) }.
+ServiceTypes::isJerseyTitle() helper deteksi "jersey" case-insens;
+CustomOrder::isJersey() di-refactor pakai helper (hilang duplikasi).
+
+12B Halaman /panduan-jersey (PageController::panduanJersey + view
+pages/jersey-guide + route name panduan-jersey): hero harga dasar Rp85.000/
+pcs + chips spec dasar, 4 kartu (MOQ 12 pcs, 14-25 hari + VIP +Rp10.000,
+DP 50% hangus jika batal, biaya desain Rp50.000 1-2 hari revisi bebas),
+tabel Upgrade Kerah (12 baris) + Upgrade Bahan (12 baris) dgn "Standar
+(Rp 0)" utk opsi dasar, contoh perhitungan (12 pcs V-Neck+Embos =
+Rp1.260.000), CTA form + WhatsApp. SitemapController: entry priority 0.7
+(changefreq monthly). Link banner "Panduan Jersey 2026-2027" otomatis di
+catalog/show bila judul produk ATAU nama kategori mengandung "jersey".
+
+12C MOQ + teks estimasi: OrderController::store cek setelah quantity final
+(sudah termurunkan dari Sigma sizes) - bila ServiceTypes::isJerseyTitle
+(service_type) && quantity < min_order -> back()->withErrors(['quantity'
+=> "Minimal pemesanan jersey 12 pcs (MOQ)."]). Hint di orders/create:
+"jersey 14-25 hari kerja (VIP ORDER +Rp10.000, lebih cepat)" + "Minimal
+order jersey 12 pcs" + link panduan; halaman layanan: item "Jersey -
+14-25 hari kerja" + catatan VIP.
+
+12D Kalkulator admin: CalculatorController::index pass config jersey;
+calculator.blade Alpine state jerseyCollar/jerseyFabric/jerseyVip/
+jerseyDesign + getters isJersey (jenis mengandung "jersey"),
+collarFee/fabricFee (lookup nama), jerseyExtra (fee kerah + bahan + VIP
+per pcs), designFee (sekali), jerseyNote utk ringkasan. rows getter:
+unit = baseUnit + jerseyExtra + surcharge ukuran (override manual per baris
+tetap menang); total = subtotal + express + designFee. Panel x-show
+isJersey: select Kerah/Bahan (opsi + "(+Rp n)" dari config), checkbox VIP
+ORDER & Biaya desain, info "Tambahan per pcs saat ini: Rp x". printQuote
+kirim param desain=1 -> CalculatorController::print hitung designFee dari
+config -> calculator-print tampil baris "Biaya desain jersey (revisi
+bebas)" + grandTotal ikut.
+
+12E Migrasi collar_model (2026_10_15_000002, string 60 nullable setelah
+warna) + $fillable; kartu Spesifikasi Nota input "Model Kerah (jersey)"
+(list=datalist opsi config collar + link panduan); updateSpec validasi
+['nullable','string','max:60'] - semua field updateSpec sekarang pakai
+($validated[...] ?? null) ?: null (bug "Undefined array key" krn field
+nullable absent tidak masuk array validated).
+
+12F SPK redesign (resources/views/admin/orders/spk.blade.php ditulis ulang
+total, berdiri sendiri TANPA _work-card): Tailwind @vite + <style> @page
+size A4 landscape; strip BANJAR CUSTOME + pill "SPK PRODUKSI"; box biru
+(service_type font-black + nama pelanggan), box merah (DEADLINE PRODUKSI +
+tanggal + badge Express bila is_express); tengah: box desain (gambar via
+designPreview utk ekstensi gambar, teks utk PDF, placeholder "Belum ada
+file desain final") + panel "RINCIAN UKURAN & TOTAL KESELURUHAN" (tabel
+size/qty + angka total pcs text-5xl merah); baris spesifikasi border-2
+(JENIS, MODEL KERAH bila jersey, BAHAN, WARNA) + blok CATATAN bila notes;
+footer internal. DIHAPUS dari cetakan: harga Rp, WhatsApp, tanda tangan,
+nomor SPK & tanggal & operator (spkPrint tetap generate nomor ke DB
+sekali). Kartu Kerja tetap pakai _work-card (desain lama).
+
+VERIFIKASI AKHIR FASE 12: vendor/bin/pint passed; composer test 244 tests
+/ 1310 assertions (0 gagal; +14 dari 230: PanduanJerseyTest 4,
+OrderFormMoqTest 5, CalculatorJerseyTest 3, + WorkCardTest SPK banner/
+collar/updateSpec 3 diganti/tambah, test lama disesuaikan: hint estimasi
+OrderFormTest, item layanan PagesTest, SeoTest + /panduan-jersey); npm run
+build OK (CSS 72,41 kB / JS 56,12 kB); probe Edge headless (CDP) 32 check
+PASS - panduan (harga/MOQ/leadtime/DP/desain/tabel/CTA, 0 error), form
+hint+link, login sesi, kalkulator (panel tersembunyi sebelum jenis jersey,
+muncul sesudahnya, link panduan, override 100.000 + kerah Wangky Zipper +
+Embos Tofo + VIP + desain = delta tepat +90.000 utk qty 1, ringkasan
+menyebut opsi & biaya desain), cetak penawaran desain=1 (baris +
+Rp 150.000), MOQ (qty 11 tolak dgn pesan, Sigma sizes 11 tolak, qty 12
+lolos ke sukses, non-jersey qty 1 lolos), SPK (banner, collar jersey,
+tanpa nomor/Rp/WA/operator, @page A4 landscape, 0 console error). Screenshot
+review: spk_banner, panduan_jersey, kalkulator_panel. Bug probe: race
+condition login (poll hingga pathname berubah), querySelector("form")
+menangkap form logout header utk (action "/logout" -> redirect "/") ->
+selector form[action*="/pesan"], innerText mengikuti text-transform CSS
+uppercase -> cek case-insensitive, JSON_HEX utk x-data yg di-{{ }} escape
+jadi &quot; (bukan \u0022). Artefak dibersihkan: data probe (user
+probe@local.test, order jersey #5, order MOQ), server 8099, Edge headless,
+file temp probe12/shots*. Belum di-commit.

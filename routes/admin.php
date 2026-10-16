@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\CalculatorController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Admin\MasterDataController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProfileController;
@@ -16,10 +18,26 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/export', [OrderController::class, 'export'])->name('orders.export');
+    Route::get('/pesanan/import', [OrderController::class, 'importForm'])->name('orders.import');
+    Route::get('/pesanan/import/template', [OrderController::class, 'importTemplate'])->name('orders.import.template');
+    Route::post('/pesanan/import', [OrderController::class, 'importStore'])->name('orders.import.store');
     Route::get('/pesanan/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/pesanan/{order}/cetak', [OrderController::class, 'print'])->name('orders.print');
     Route::patch('/pesanan/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
+    Route::patch('/pesanan/{order}/progres', [OrderController::class, 'updateProgress'])->name('orders.progress');
+    Route::patch('/pesanan/{order}/harga', [OrderController::class, 'updatePrice'])->name('orders.price');
+    Route::patch('/pesanan/{order}/spesifikasi', [OrderController::class, 'updateSpec'])->name('orders.spec');
     Route::get('/pesanan/{order}/design', [OrderController::class, 'downloadDesign'])->name('orders.design');
+    Route::post('/pesanan/{order}/desain', [OrderController::class, 'updateDesign'])->name('orders.design.upload');
+    Route::post('/pesanan/{order}/desain/disetujui', [OrderController::class, 'approveDesign'])->name('orders.design.approve');
+    Route::get('/pesanan/{order}/desain/preview', [OrderController::class, 'designPreview'])->name('orders.design.preview');
+    Route::patch('/pesanan/{order}/dp', [OrderController::class, 'updateDp'])->name('orders.dp');
+    Route::patch('/pesanan/{order}/serah-terima', [OrderController::class, 'updateHandover'])->name('orders.handover');
+    Route::get('/pesanan/{order}/kartu-kerja', [OrderController::class, 'cardPrint'])->name('orders.card');
+    Route::get('/pesanan/{order}/spk', [OrderController::class, 'spkPrint'])->name('orders.spk');
+
+    Route::get('/kalkulator', [CalculatorController::class, 'index'])->name('calculator');
+    Route::get('/kalkulator/cetak', [CalculatorController::class, 'print'])->name('calculator.print');
 
     Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
     Route::get('/produk/create', [ProductController::class, 'create'])->name('products.create');
@@ -55,6 +73,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/testimoni/{testimonial}/edit', [TestimonialController::class, 'edit'])->name('testimonials.edit');
     Route::put('/testimoni/{testimonial}', [TestimonialController::class, 'update'])->name('testimonials.update');
     Route::delete('/testimoni/{testimonial}', [TestimonialController::class, 'destroy'])->name('testimonials.destroy');
+
+    Route::get('/master-data', [MasterDataController::class, 'index'])->name('master.index');
+    Route::post('/master-data', [MasterDataController::class, 'store'])->name('master.store');
+    Route::delete('/master-data/{option}', [MasterDataController::class, 'destroy'])->name('master.destroy');
 
     Route::get('/pengaturan', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');

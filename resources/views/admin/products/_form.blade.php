@@ -3,6 +3,23 @@
     $currentColors = $product
         ? $product->colors->map(fn ($color) => ['name' => $color->name, 'hex' => $color->hex])->values()->all()
         : [];
+    $currentTiers = $product?->price_tiers ?? [];
+
+    // Saat validasi gagal, pertahankan input admin (bukan nilai DB lama).
+    $formColors = old('colors', $currentColors);
+    $formTiers = old('price_tiers', $currentTiers);
+
+    if (! is_array($formColors)) {
+        $formColors = $currentColors;
+    }
+
+    if (! is_array($formTiers)) {
+        $formTiers = $currentTiers;
+    }
+
+    $jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+    $colorsJson = json_encode(array_values($formColors), $jsonFlags) ?: '[]';
+    $tiersJson = json_encode(array_values($formTiers), $jsonFlags) ?: '[]';
 @endphp
 
 <div class="grid gap-5 lg:grid-cols-3">
@@ -44,7 +61,81 @@
         </div>
 
         <div class="rounded-xl border border-border bg-card p-5" x-data='{
-            colors: {{ json_encode($currentColors) }},
+            tiers: {{ $tiersJson }},
+            add() { this.tiers.push({ min_qty: "", unit_price: "" }); },
+            remove(index) { this.tiers.splice(index, 1); },
+        }'>
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-semibold">Harga Kalkulator (Admin)</h2>
+                    <p class="mt-0.5 text-xs text-muted-foreground">Dipakai halaman /admin/kalkulator. Pembeli tetap melihat "Estimasi Harga" di atas.</p>
+                </div>
+                <x-button type="button" variant="secondary" size="sm" @click="add()">+ Tangga</x-button>
+            </div>
+
+            <div class="mt-4 space-y-4">
+                <div class="space-y-2">
+                    <x-label for="base_price">Harga dasar (Rp / pcs)</x-label>
+                    <x-input id="base_price" name="base_price" type="number" min="0" value="{{ old('base_price', $product?->base_price) }}" placeholder="cth. 45000" />
+                    @error('base_price')
+                        <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="space-y-3">
+                    <p class="text-sm font-medium">Tangga jumlah (opsional)</p>
+
+                    <template x-for="(tier, index) in tiers" :key="index">
+                        <div class="flex flex-wrap items-center gap-3 rounded-md border border-border p-3">
+                            <label class="shrink-0 text-xs text-muted-foreground" :for="`tier-min-${index}`">Min qty</label>
+                            <input
+                                type="number"
+                                min="1"
+                                :id="`tier-min-${index}`"
+                                :name="`price_tiers[${index}][min_qty]`"
+                                x-model="tier.min_qty"
+                                placeholder="cth. 50"
+                                class="flex h-10 w-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                            <label class="shrink-0 text-xs text-muted-foreground" :for="`tier-price-${index}`">Harga / pcs</label>
+                            <input
+                                type="number"
+                                min="0"
+                                :id="`tier-price-${index}`"
+                                :name="`price_tiers[${index}][unit_price]`"
+                                x-model="tier.unit_price"
+                                placeholder="cth. 40000"
+                                class="flex h-10 w-36 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                            <button
+                                type="button"
+                                @click="remove(index)"
+                                class="shrink-0 rounded-md border border-destructive/40 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </template>
+
+                    @error('price_tiers')
+                        <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                    @enderror
+                    @error('price_tiers.*.min_qty')
+                        <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                    @enderror
+                    @error('price_tiers.*.unit_price')
+                        <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                    @enderror
+
+                    <p x-show="tiers.length === 0" x-cloak class="rounded-md border border-dashed border-border px-4 py-4 text-center text-sm text-muted-foreground">
+                        Belum ada tangga. Tanpa tangga, kalkulator memakai harga dasar.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-xl border border-border bg-card p-5" x-data='{
+            colors: {{ $colorsJson }},
             add() { this.colors.push({ name: "",hex: "#F59E0B" }); },
             remove(index) { this.colors.splice(index, 1); },
         }'>

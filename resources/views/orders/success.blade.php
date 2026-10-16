@@ -50,7 +50,7 @@
                     <span class="font-medium">
                         @if ($order->is_express)
                             <span class="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-semibold uppercase text-destructive">Express</span>
-                            <span class="text-xs font-normal text-muted-foreground">same-day / &lt;10 hari</span>
+                            <span class="text-xs font-normal text-muted-foreground">same-day / &lt;10 hari{{ \App\Models\CustomOrder::expressFeeLabel() ? ' + biaya '.\App\Models\CustomOrder::expressFeeLabel() : '' }}</span>
                         @else
                             Kaos 3–7 hari, jersey 10–12 hari
                         @endif

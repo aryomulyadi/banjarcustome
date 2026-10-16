@@ -48,7 +48,7 @@ class PagesTest extends TestCase
             ->assertOk()
             ->assertSee('Estimasi Produksi & Pembayaran')
             ->assertSee('Kaos — 3–7 hari kerja')
-            ->assertSee('Jersey — 10–12 hari')
+            ->assertSee('Jersey — 14–25 hari kerja')
             ->assertSee('DP 50%');
     }
 

@@ -100,7 +100,9 @@ class OrderFormTest extends TestCase
     {
         $this->get('/pesan')
             ->assertOk()
-            ->assertSee('kaos 3–7 hari kerja, jersey 10–12 hari')
+            ->assertSee('jersey 14–25 hari kerja (VIP ORDER +Rp10.000, lebih cepat)')
+            ->assertSee('Minimal order jersey 12 pcs')
+            ->assertSee(route('panduan-jersey'), false)
             ->assertSee('name="express"', false)
             ->assertSee('Pesanan Express')
             ->assertSee('same-day');
@@ -112,14 +114,14 @@ class OrderFormTest extends TestCase
 
         $this->get('/pesan')
             ->assertOk()
-            ->assertSee('biaya tambahan Rp15.000');
+            ->assertSee('biaya tambahan Rp 15.000');
 
         config()->set('banjarcustom.express_fee', null);
 
         $this->get('/pesan')
             ->assertOk()
             ->assertSee('biaya tambahan')
-            ->assertDontSee('biaya tambahan Rp15.000');
+            ->assertDontSee('biaya tambahan Rp 15.000');
     }
 
     public function test_express_order_is_saved_and_admins_receive_notification(): void

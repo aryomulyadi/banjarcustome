@@ -27,6 +27,21 @@ Route::get('/pesan/sukses/{token}', [OrderController::class, 'success'])
 Route::get('/cek-pesanan', [TrackOrderController::class, 'create'])->name('track.create');
 Route::post('/cek-pesanan', [TrackOrderController::class, 'store'])->middleware('throttle:10,1')->name('track.store');
 
+Route::get('/lacak/{token}', [TrackOrderController::class, 'token'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->name('track.token');
+Route::get('/lacak/{token}/desain', [TrackOrderController::class, 'downloadDesign'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->name('track.design');
+Route::post('/lacak/{token}/desain/setujui', [TrackOrderController::class, 'approve'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->middleware('throttle:10,1')
+    ->name('track.approve');
+Route::post('/lacak/{token}/desain/revisi', [TrackOrderController::class, 'revision'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->middleware('throttle:10,1')
+    ->name('track.revision');
+
 Route::get('/login', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:6,1')->name('login.store');
 Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
@@ -36,6 +51,7 @@ Route::get('/layanan', [PageController::class, 'layanan'])->name('layanan');
 Route::get('/lokasi', [PageController::class, 'lokasi'])->name('lokasi');
 Route::get('/faq', [PageController::class, 'faq'])->name('faq');
 Route::get('/panduan-ukuran', [PageController::class, 'sizeChart'])->name('size-chart');
+Route::get('/panduan-jersey', [PageController::class, 'panduanJersey'])->name('panduan-jersey');
 Route::get('/kebijakan-privasi', [PageController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
 Route::get('/syarat-ketentuan', [PageController::class, 'syaratKetentuan'])->name('syarat-ketentuan');
 

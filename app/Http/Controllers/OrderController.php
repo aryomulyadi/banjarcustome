@@ -73,6 +73,16 @@ class OrderController extends Controller
         $validated['size_quantities'] = $sizes->all() ?: null;
         unset($validated['sizes']);
 
+        // MOQ jersey (panduan 2026-2027): minimal 12 pcs per pesanan.
+        $minOrder = (int) config('banjarcustom.jersey.min_order', 12);
+
+        if (ServiceTypes::isJerseyTitle($validated['service_type'] ?? null)
+            && (int) ($validated['quantity'] ?? 0) < $minOrder) {
+            return back()
+                ->withErrors(['quantity' => "Minimal pemesanan jersey {$minOrder} pcs (MOQ)."])
+                ->withInput();
+        }
+
         if (! $validated['order_details']) {
             $validated['order_details'] = null;
         }

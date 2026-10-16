@@ -49,9 +49,9 @@
                             value="{{ old('name') }}"
                             required
                             placeholder="Nama Anda / nama tim"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('name') border-destructive @enderror"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('name') border-destructive aria-invalid="true" @enderror"
                         >
-                        @error('name') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                        @error('name') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="space-y-2">
@@ -63,9 +63,9 @@
                             value="{{ old('whatsapp_number') }}"
                             required
                             placeholder="0812xxxxxxx"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('whatsapp_number') border-destructive @enderror"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('whatsapp_number') border-destructive aria-invalid="true" @enderror"
                         >
-                        @error('whatsapp_number') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                        @error('whatsapp_number') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@
                         <select
                             id="product_id"
                             name="product_id"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('product_id') border-destructive @enderror"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('product_id') border-destructive aria-invalid="true" @enderror"
                         >
                             <option value="">Custom (sesuai kebutuhan)</option>
                             @foreach ($products as $product)
@@ -84,7 +84,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('product_id') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                        @error('product_id') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="space-y-2">
@@ -92,14 +92,14 @@
                         <select
                             id="service_type"
                             name="service_type"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('service_type') border-destructive @enderror"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('service_type') border-destructive aria-invalid="true" @enderror"
                         >
                             <option value="">Belum yakin — minta rekomendasi</option>
                             @foreach ($serviceTypes as $type)
                                 <option value="{{ $type }}" @selected(old('service_type') === $type)>{{ $type }}</option>
                             @endforeach
                         </select>
-                        @error('service_type') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                        @error('service_type') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
@@ -120,12 +120,12 @@
                                     min="0"
                                     value="{{ old("sizes.$size", 0) }}"
                                     inputmode="numeric"
-                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-2 text-center text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error("sizes.$size") border-destructive @enderror"
+                                    class="flex h-10 w-full rounded-md border border-input bg-transparent px-2 text-center text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error("sizes.$size") border-destructive aria-invalid="true" @enderror"
                                 >
                             </div>
                         @endforeach
                     </div>
-                    @error('sizes') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('sizes') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
 
                     <div class="grid gap-5 pt-2 sm:grid-cols-2">
                         <div class="space-y-2">
@@ -137,10 +137,10 @@
                                 min="1"
                                 value="{{ old('quantity') }}"
                                 placeholder="mis. 24"
-                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('quantity') border-destructive @enderror"
+                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('quantity') border-destructive aria-invalid="true" @enderror"
                             >
                             <p class="text-xs text-muted-foreground">Biarkan kosong untuk menghitung otomatis dari jumlah per ukuran.</p>
-                            @error('quantity') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                            @error('quantity') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="space-y-2">
@@ -151,10 +151,10 @@
                                 type="date"
                                 min="{{ now()->format('Y-m-d') }}"
                                 value="{{ old('deadline') }}"
-                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('deadline') border-destructive @enderror"
+                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('deadline') border-destructive aria-invalid="true" @enderror"
                             >
-                            @error('deadline') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
-                            <p class="text-xs text-muted-foreground">Estimasi produksi: kaos 3–7 hari kerja, jersey 10–12 hari — dihitung setelah desain disetujui.</p>
+                            @error('deadline') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
+                            <p class="text-xs text-muted-foreground">Estimasi produksi: kaos 3–7 hari kerja, jersey 14–25 hari kerja (VIP ORDER +Rp10.000, lebih cepat) — dihitung setelah desain disetujui. Minimal order jersey 12 pcs. <a href="{{ route('panduan-jersey') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-primary underline hover:no-underline">Panduan Jersey 2026-2027</a></p>
                         </div>
                     </div>
                 </fieldset>
@@ -169,7 +169,7 @@
                             class="mt-0.5 h-4 w-4 border-input accent-[color:var(--color-primary)]"
                         >
                         <span>
-                            <span class="block text-sm font-medium">Pesanan Express <span class="font-normal text-muted-foreground">(opsional, biaya tambahan{{ config('banjarcustom.express_fee') ? ' '.config('banjarcustom.express_fee') : '' }})</span></span>
+                            <span class="block text-sm font-medium">Pesanan Express <span class="font-normal text-muted-foreground">(opsional, biaya tambahan{{ \App\Models\CustomOrder::expressFeeLabel() ? ' '. \App\Models\CustomOrder::expressFeeLabel() : '' }})</span></span>
                             <span class="mt-0.5 block text-xs text-muted-foreground">
                                 Kaos bisa dikerjakan same-day dan pesanan lain di bawah 10 hari. Centang lalu konfirmasi detail &amp; biayanya ke CS sebelum produksi.
                             </span>
@@ -189,7 +189,7 @@
                             Ambil sendiri di workshop
                         </label>
                     </div>
-                    @error('delivery_method') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('delivery_method') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
 
                     <div class="space-y-2 pt-1">
                         <label for="address" class="text-sm font-medium">Alamat Pengiriman <span class="font-normal text-muted-foreground">(wajib jika dikirim)</span></label>
@@ -198,9 +198,9 @@
                             name="address"
                             rows="2"
                             placeholder="Nama penerima, alamat lengkap, kecamatan/kota"
-                            class="flex min-h-[70px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('address') border-destructive @enderror"
+                            class="flex min-h-[70px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('address') border-destructive aria-invalid="true" @enderror"
                         >{{ old('address') }}</textarea>
-                        @error('address') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                        @error('address') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                     </div>
                 </fieldset>
 
@@ -211,9 +211,9 @@
                         name="order_details"
                         rows="5"
                         placeholder="Jelaskan kebutuhan Anda: warna, nama tim/komunitas, catatan desain, dll."
-                        class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('order_details') border-destructive @enderror"
+                        class="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('order_details') border-destructive aria-invalid="true" @enderror"
                     >{{ old('order_details') }}</textarea>
-                    @error('order_details') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('order_details') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">
@@ -224,9 +224,9 @@
                         type="text"
                         value="{{ old('notes') }}"
                         placeholder="mis. minta sample dulu, bayar DP 50%, dst."
-                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('notes') border-destructive @enderror"
+                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('notes') border-destructive aria-invalid="true" @enderror"
                     >
-                    @error('notes') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('notes') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-2">
@@ -236,10 +236,10 @@
                         name="design_file"
                         type="file"
                         accept=".jpg,.jpeg,.png,.webp,.pdf,.ai,.psd,.zip"
-                        class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm file:mr-4 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('design_file') border-destructive @enderror"
+                        class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm file:mr-4 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('design_file') border-destructive aria-invalid="true" @enderror"
                     >
                     <p class="text-xs text-muted-foreground">Format: jpg, png, webp, pdf, ai, psd, zip — maks 5 MB.</p>
-                    @error('design_file') <p class="text-xs text-destructive">{{ $message }}</p> @enderror
+                    @error('design_file') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center">

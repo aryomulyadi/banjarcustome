@@ -11,7 +11,7 @@
             </div>
 
             @if ($errors->any())
-                <div class="mt-6 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+                <div class="mt-6 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive" role="alert">
                     {{ $errors->first() }}
                 </div>
             @endif

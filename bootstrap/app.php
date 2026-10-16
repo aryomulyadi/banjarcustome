@@ -13,7 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append([
+        // prepend: SecurityHeaders harus berjalan paling luar agar exception
+        // dari middleware global lain (mis. PreventRequestsDuringMaintenance →
+        // 503, ValidatePostSize → 413) tetap melewati try/catch dan mendapat
+        // header keamanan.
+        $middleware->prepend([
             SecurityHeaders::class,
         ]);
 

@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Faq;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class SeoTest extends TestCase
@@ -160,6 +163,47 @@ class SeoTest extends TestCase
         $this->assertStringContainsString('Terjadi Gangguan', view('errors.500')->render());
     }
 
+    public function test_security_headers_are_set_on_error_responses(): void
+    {
+        $this->get('/halaman-yang-tidak-ada')
+            ->assertNotFound()
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Referrer-Policy')
+            ->assertHeader('Content-Security-Policy');
+
+        $user = User::factory()->create(['role' => 'user']);
+
+        $this->actingAs($user)
+            ->get('/admin')
+            ->assertForbidden()
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Content-Security-Policy');
+
+        Route::get('/__boom-seo-test', fn () => throw new RuntimeException('boom'));
+
+        $this->get('/__boom-seo-test')
+            ->assertStatus(500)
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('Permissions-Policy');
+    }
+
+    public function test_security_headers_are_set_on_maintenance_response(): void
+    {
+        // PreventRequestsDuringMaintenance (503) dilempar dari global middleware;
+        // header tetap terpasang karena SecurityHeaders didaftarkan paling luar.
+        Artisan::call('down', ['--retry' => 0]);
+
+        try {
+            $this->get('/')
+                ->assertStatus(503)
+                ->assertHeader('X-Content-Type-Options', 'nosniff')
+                ->assertHeader('Content-Security-Policy')
+                ->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+        } finally {
+            Artisan::call('up');
+        }
+    }
+
     public function test_security_headers_are_set_on_responses(): void
     {
         $response = $this->get('/');
@@ -255,7 +299,7 @@ class SeoTest extends TestCase
 
     public function test_content_pages_return_successful_response(): void
     {
-        foreach (['/tentang', '/layanan', '/lokasi', '/faq', '/panduan-ukuran', '/kebijakan-privasi', '/syarat-ketentuan'] as $uri) {
+        foreach (['/tentang', '/layanan', '/lokasi', '/faq', '/panduan-ukuran', '/panduan-jersey', '/kebijakan-privasi', '/syarat-ketentuan'] as $uri) {
             $this->get($uri)->assertOk();
         }
     }

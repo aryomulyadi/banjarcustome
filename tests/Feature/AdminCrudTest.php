@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Gallery;
+use App\Models\MasterOption;
 use App\Models\Product;
 use App\Models\User;
 use App\Support\ImageOptimizer;
@@ -307,5 +308,83 @@ class AdminCrudTest extends TestCase
             ->assertSessionHasErrors('title');
 
         $this->assertDatabaseCount('galleries', 0);
+    }
+
+    public function test_master_data_page_shows_three_groups(): void
+    {
+        MasterOption::create(['kind' => 'material', 'name' => 'Cotton Combed 30s']);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.master.index'))
+            ->assertOk()
+            ->assertSee('Data Master')
+            ->assertSee('Type')
+            ->assertSee('Bahan')
+            ->assertSee('Warna')
+            ->assertSee('Cotton Combed 30s');
+    }
+
+    public function test_master_option_can_be_created_and_deleted(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->post(route('admin.master.store'), [
+                'kind' => 'type',
+                'name' => 'Hoodie',
+            ])
+            ->assertRedirect(route('admin.master.index'));
+
+        $option = MasterOption::where('kind', 'type')->where('name', 'Hoodie')->first();
+        $this->assertNotNull($option);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.master.destroy', $option))
+            ->assertRedirect(route('admin.master.index'));
+
+        $this->assertDatabaseMissing('options', ['id' => $option->id]);
+    }
+
+    public function test_master_option_validation_requires_unique_name_per_kind_and_valid_hex(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->from(route('admin.master.index'))
+            ->post(route('admin.master.store'), ['kind' => 'type', 'name' => ''])
+            ->assertSessionHasErrors('name');
+
+        $this->actingAs($admin)
+            ->post(route('admin.master.store'), ['kind' => 'bogus', 'name' => 'X'])
+            ->assertSessionHasErrors('kind');
+
+        MasterOption::create(['kind' => 'type', 'name' => 'Kaos Polos']);
+
+        $this->actingAs($admin)
+            ->from(route('admin.master.index'))
+            ->post(route('admin.master.store'), ['kind' => 'type', 'name' => 'Kaos Polos'])
+            ->assertSessionHasErrors('name');
+
+        $this->actingAs($admin)
+            ->from(route('admin.master.index'))
+            ->post(route('admin.master.store'), [
+                'kind' => 'color',
+                'name' => 'Lime',
+                'hex' => 'biru',
+            ])
+            ->assertSessionHasErrors('hex');
+
+        $this->assertDatabaseCount('options', 1);
+    }
+
+    public function test_master_data_rejects_guests_and_non_admins(): void
+    {
+        $this->get(route('admin.master.index'))->assertRedirect(route('login'));
+
+        $customer = User::factory()->create();
+
+        $this->actingAs($customer)
+            ->get(route('admin.master.index'))
+            ->assertForbidden();
     }
 }

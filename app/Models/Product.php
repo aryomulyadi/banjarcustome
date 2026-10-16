@@ -18,7 +18,13 @@ class Product extends Model
         'slug',
         'description',
         'price_estimate',
+        'base_price',
+        'price_tiers',
         'image',
+    ];
+
+    protected $casts = [
+        'price_tiers' => 'array',
     ];
 
     public function category(): BelongsTo

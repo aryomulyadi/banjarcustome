@@ -15,10 +15,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\InteractsWithXlsx;
 use Tests\TestCase;
 
 class AdminContentTest extends TestCase
 {
+    use InteractsWithXlsx;
     use RefreshDatabase;
 
     private function admin(): User
@@ -339,8 +341,11 @@ class AdminContentTest extends TestCase
         $admin = $this->admin();
 
         $this->actingAs($admin)
-            ->patch(route('admin.orders.status', $order), ['status' => 'production'])
+            ->patch(route('admin.orders.status', $order), ['status' => 'confirmed'])
             ->assertRedirect(route('admin.orders.show', $order));
+
+        // Setup lompat ke production tanpa lewat guard (uji riwayat saja).
+        $order->forceFill(['status' => CustomOrder::STATUS_PRODUCTION])->save();
 
         $this->actingAs($admin)
             ->patch(route('admin.orders.status', $order), ['status' => 'completed'])
@@ -352,10 +357,65 @@ class AdminContentTest extends TestCase
         $this->assertNull($history[0]->from_status);
         $this->assertSame(CustomOrder::STATUS_PENDING, $history[0]->to_status);
         $this->assertSame(CustomOrder::STATUS_PENDING, $history[1]->from_status);
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, $history[1]->to_status);
+        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $history[1]->to_status);
         $this->assertSame($admin->id, $history[1]->changed_by);
         $this->assertSame(CustomOrder::STATUS_PRODUCTION, $history[2]->from_status);
         $this->assertSame(CustomOrder::STATUS_COMPLETED, $history[2]->to_status);
+    }
+
+    public function test_order_show_has_progress_card_with_current_flags(): void
+    {
+        $order = $this->order([
+            'pesan_bahan_ok' => true,
+            'produksi_ok' => false,
+            'finish_ok' => false,
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.orders.show', $order))
+            ->assertOk()
+            ->assertSee('Progres Produksi')
+            ->assertSee('Pesan Bahan')
+            ->assertSee('Simpan Progres');
+    }
+
+    public function test_progress_flags_can_be_toggled_via_patch(): void
+    {
+        $order = $this->order();
+
+        $this->actingAs($this->admin())
+            ->from(route('admin.orders.show', $order))
+            ->patch(route('admin.orders.progress', $order), [
+                'pesan_bahan_ok' => '1',
+                'produksi_ok' => '1',
+            ])
+            ->assertRedirect(route('admin.orders.show', $order));
+
+        $order->refresh();
+        $this->assertTrue($order->pesan_bahan_ok);
+        $this->assertTrue($order->produksi_ok);
+        $this->assertFalse($order->finish_ok);
+
+        $this->actingAs($this->admin())
+            ->patch(route('admin.orders.progress', $order), [])
+            ->assertRedirect(route('admin.orders.show', $order));
+
+        $order->refresh();
+        $this->assertFalse($order->pesan_bahan_ok);
+        $this->assertFalse($order->produksi_ok);
+    }
+
+    public function test_order_index_shows_progress_column(): void
+    {
+        $order = $this->order(['produksi_ok' => true]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.orders.index'))
+            ->assertOk()
+            ->assertSee('Progres');
+
+        $this->assertSame(false, $order->fresh()->pesan_bahan_ok);
+        $this->assertSame(true, $order->fresh()->produksi_ok);
     }
 
     public function test_order_print_page_shows_order_summary(): void
@@ -372,16 +432,24 @@ class AdminContentTest extends TestCase
             ->assertDontSee('onclick=', false);
     }
 
-    public function test_order_export_downloads_csv_with_orders(): void
+    public function test_order_export_downloads_xlsx_with_orders(): void
     {
         $this->order(['name' => 'Pelanggan Export']);
 
         $response = $this->actingAs($this->admin())->get(route('admin.orders.export'));
 
-        $response->assertOk();
+        $response->assertOk()->assertDownload('laporan-pesanan.xlsx');
 
-        $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
-        $this->assertStringContainsString('Pelanggan Export', $response->streamedContent());
+        $this->assertStringContainsString(
+            'spreadsheetml',
+            (string) $response->headers->get('Content-Type')
+        );
+
+        $text = $this->xlsxText($response);
+
+        $this->assertStringContainsString('Pelanggan Export', $text);
+        $this->assertStringContainsString('customer', $text);
+        $this->assertStringContainsString('BULAN', $text);
     }
 
     public function test_order_export_filters_by_status(): void
@@ -391,12 +459,13 @@ class AdminContentTest extends TestCase
         $selesai = $this->order(['name' => 'Export Selesai']);
         $selesai->forceFill(['status' => CustomOrder::STATUS_COMPLETED])->save();
 
-        $csv = $this->actingAs($this->admin())
-            ->get(route('admin.orders.export', ['status' => 'completed']))
-            ->streamedContent();
+        $response = $this->actingAs($this->admin())
+            ->get(route('admin.orders.export', ['status' => 'completed']));
 
-        $this->assertStringContainsString('Export Selesai', $csv);
-        $this->assertStringNotContainsString('Export Pending', $csv);
+        $text = $this->xlsxText($response);
+
+        $this->assertStringContainsString('Export Selesai', $text);
+        $this->assertStringNotContainsString('Export Pending', $text);
     }
 
     public function test_order_export_searches_by_name(): void
@@ -404,12 +473,13 @@ class AdminContentTest extends TestCase
         $this->order(['name' => 'Dicari Sobat']);
         $this->order(['name' => 'Tidak Terlibat']);
 
-        $csv = $this->actingAs($this->admin())
-            ->get(route('admin.orders.export', ['q' => 'Sobat']))
-            ->streamedContent();
+        $response = $this->actingAs($this->admin())
+            ->get(route('admin.orders.export', ['q' => 'Sobat']));
 
-        $this->assertStringContainsString('Dicari Sobat', $csv);
-        $this->assertStringNotContainsString('Tidak Terlibat', $csv);
+        $text = $this->xlsxText($response);
+
+        $this->assertStringContainsString('Dicari Sobat', $text);
+        $this->assertStringNotContainsString('Tidak Terlibat', $text);
     }
 
     public function test_guest_cannot_access_new_admin_pages(): void
