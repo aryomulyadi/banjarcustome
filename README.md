@@ -16,6 +16,7 @@ Website company profile + pemesanan custom (sablon kaos/dll) berbasis **Laravel 
 
 **Publik**
 - Beranda: slider promo (bisa pause, hormati `prefers-reduced-motion`), galeri, testimoni, statistik.
+- Header (desktop): **Beranda** + dropdown **Kategori** (semua kategori terkumpul di satu panel: nama kategori + chevron + "Semua Produk", tutup saat klik luar/Esc, `aria-expanded`/`aria-controls`) lalu dipisah garis vertical dengan **tombol pill "Katalog Jersey"** berwarna primary + ikon kaos supaya tidak dianggap bagian daftar kategori; menu mobile dikelompokkan: **Beranda** → label **Kategori** → kategori + Semua Produk → garis pemisah → **CTA Katalog Jersey** (dgn subteks "Harga, MOQ &amp; panduan order").
 - Katalog produk: pencarian, filter kategori & warna, pagination (token tema).
 - Detail produk: JSON-LD `Product` (+ array foto galeri), **carousel multi-foto** (Alpine: panah + dots + thumbnail, fallback ke gambar utama/placeholder), estimasi harga, pilihan warna.
 - Pesanan: form terstruktur (produk, jumlah + ukuran, jenis sablon, deadline, opsi **express** (same-day / di bawah 10 hari), pengiriman/alamat, upload file desain), honeypot anti-spam, rate limit 12 request/menit. Hint estimasi: kaos 3–7 hari kerja, jersey **14–25 hari kerja (VIP ORDER +Rp10.000/pcs, lebih cepat)**, skema **DP 50%**; **MOQ jersey 12 pcs divalidasi** (kolom jumlah — di bawah itu ditolak dgn pesan jelas) — tanpa link katalog di dalam form (Katalog Jersey diakses dari header, footer, dan produk berkategori jersey).

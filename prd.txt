@@ -1143,3 +1143,71 @@ PROBE: logout via form gagal - action route('logout') URL absolut
 sehingga selector [action="/logout"] tak cocok -> ganti
 Network.clearBrowserCookies + tunggu form login (retry 2x). Belum
 di-commit.
+
+
+FASE 18 - HEADER NAV: DROPDOWN KATEGORI + CTA KATALOG JERSEY TERPISAH (20 Okt 2026)
+
+Masalah: di bar atas, 6 link kategori (Sablon, Kaos Polos, Jersey Printing,
+Kemeja, Jaket, Merchandise) tampil datar berurutan dengan styling identik
+dgn link "Katalog Jersey" -> pengunjung mengira katalog jersey adalah
+salah satu kategori. Header dipadatkan (logo + 7 link + CS/WA hampir meluap
+di lebar lg).
+
+18A Konfigurasi:
+- .env: BC_ADMIN_EMAIL=banjarcustome@gmail.com (config banjarcustom.admin_email
+  -> NewOrderNotification::recipients() penerima notifikasi pesanan baru
+  bersama akun admin di DB). File gitignored; diisi juga di server produksi
+  (README langkah 2).
+
+18B Header desktop (resources/views/partials/header.blade.php):
+- <nav aria-label="Navigasi utama"> kini: Beranda (state aktif route home)
+  -> dropdown "Kategori" -> divider vertikal (span h-6 w-px bg-border) ->
+  pill "KATALOG JERSEY". Loop kategori datar DIHAPUS.
+- Dropdown Alpine murni (tanpa dependensi): div.relative x-data=kategoriOpen
+  + @click.outside + @keydown.escape.window; button#tombol-kategori
+  aria-haspopup/aria-expanded(:bind)/aria-controls=menu-kategori + chevron
+  (rotate-180 saat buka, ikon state aktif bila $activeCategory !== null).
+- Panel #menu-kategori: absolute top-full z-50 w-60 rounded-xl border
+  bg-card p-2 shadow-lg, x-cloak + x-show + x-transition.origin.top.left;
+  berlabel "KATEGORI PRODUK", isi 6 link kategori (nama + chevron kanan,
+  state aktif per slug) + divider + tautan "Semua Produk" (route
+  produk.index, state aktif). Jarak aman, tidak meluap di lebar lg.
+- Pill jersey: rounded-full bg-primary px-3.5 py-2 font-semibold
+  text-primary-foreground + ikon kaos (path lucide shirt), state aktif
+  ring-2 ring-primary/40 -> jelas CTA, bukan item kategori. Kontrol kanan
+  (theme/Hubungi CS/WA/auth) + spacer tidak diubah.
+
+18C Menu mobile (id menu-mobile):
+- Urutan: Beranda (aktif) -> label <p> "Kategori" (uppercase mikro) -> loop
+  kategori -> "Semua Produk" -> divider my-2 -> CTA "Katalog Jersey"
+  (rounded-md bg-primary py-2.5 + ikon) + subteks "Harga, MOQ & panduan
+  order" -> auth + Hubungi CS. Subteks tanpa frasa "Kalkulator Estimasi
+  Jersey" (dicegah JerseyEstimatorTest home).
+
+18D Test (tests/Feature/HeaderNavTest.php, 3 test):
+- panel dropdown ada + aria-controls/haspopup + label KATEGORI PRODUK;
+  tiap link kategori tepat 3 kemunculan di / (dropdown desktop + menu
+  mobile + footer) dan tepat 1 di dalam nav desktop (bukti tidak ada link
+  datar ganda); panel berisi kategori + Semua Produk.
+- pill jersey tepat 3 route('katalog-jersey') (KatalogJerseyTest:157
+  dipertahankan) + regex rounded-full...bg-primary + divider + subteks.
+- menu mobile: link Beranda, label grup "Kategori", "Semua Produk", CTA
+  jersey primary.
+- Foto katalog/produk MENYUSUL setelah deploy via dashboard: produk (utama +
+  maks 5 galeri), testimoni, galeri, banner slide, opsi kerah/bahan jersey.
+
+VERIFIKASI AKHIR FASE 18: vendor/bin/pint passed; composer test 291 tests /
+1570 assertions (0 gagal; +3 HeaderNavTest); npm run build OK (CSS 74,87 kB
+/ JS 56,12 kB - warning font pre-existing); config('banjarcustom.admin_email')
+terbaca = banjarcustome@gmail.com. Probe Edge (CDP, headless profil terpisah,
+server artisan serve :8000) 15/15 PASS - desktop 1280px: #tombol-kategori
+ada, panel tersembunyi sebelum diklik lalu terbuka (6 kategori + Semua
+Produk), link kategori datar tidak ada langsung di nav, pill bg-primary,
+klik kategori -> /kategori/{slug} dengan h1 terisi, panel tertutup saat klik
+di luar; mobile 375px: hamburger buka menu, label "Kategori", CTA jersey
+primary + subteks, Beranda + Semua Produk; 0 console error. Screenshot
+f18-dropdown-desktop & f18-menu-mobile (dark mode) direview: dropdown rapi
+di bawah tombol, pill kontras, menu mobile berkelompok. Catatan data dev:
+kategori "Jaket Jaket" (slug jaket) adalah data lama di DB dev, bukan akibat
+perubahan ini - bisa dirapihkan lewat menu admin.
+RE-CHECK FASE 18 (setelah poles kelas pill: dedupe bg-primary + shrink-0): vendor/bin/pint --test passed; composer test 291 tests / 1570 assertions; npm run build OK; probe ulang Edge CDP 11/11 PASS (panel buka/tutup + aria-expanded sinkron, pill computed bg primary + flex-shrink 0, klik kategori -> /kategori/, menu mobile label/CTA/subteks, 0 console error); screenshot f18 direview ulang identik rapi.

@@ -19,19 +19,116 @@
             </span>
         </a>
 
-        <nav class="hidden flex-1 items-center gap-0.5 lg:flex">
-            @foreach ($navCategories as $category)
-                <a
-                    href="{{ route('kategori', $category->slug) }}"
-                    class="rounded-md px-3 py-2 text-sm font-medium transition-colors {{ $activeCategory === $category->slug ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+        <nav class="hidden flex-1 items-center gap-1 lg:flex" aria-label="Navigasi utama">
+            <a
+                href="{{ route('home') }}"
+                class="rounded-md px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs('home') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+            >
+                Beranda
+            </a>
+
+            <div
+                class="relative"
+                x-data="{ kategoriOpen: false }"
+                @click.outside="kategoriOpen = false"
+                @keydown.escape.window="kategoriOpen = false"
+            >
+                <button
+                    type="button"
+                    id="tombol-kategori"
+                    @click="kategoriOpen = !kategoriOpen"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    :aria-expanded="kategoriOpen.toString()"
+                    aria-controls="menu-kategori"
+                    class="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors {{ $activeCategory !== null ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
                 >
-                    {{ $category->name }}
-                </a>
-            @endforeach
+                    Kategori
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3.5 w-3.5 transition-transform"
+                        :class="kategoriOpen && 'rotate-180'"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    ><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+
+                <div
+                    id="menu-kategori"
+                    x-cloak
+                    x-show="kategoriOpen"
+                    x-transition.origin.top.left
+                    class="absolute left-0 top-full z-50 mt-2 w-60 rounded-xl border border-border bg-card p-2 shadow-lg"
+                >
+                    <p class="px-2.5 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Kategori Produk
+                    </p>
+                    <ul class="space-y-0.5">
+                        @foreach ($navCategories as $category)
+                            <li>
+                                <a
+                                    href="{{ route('kategori', $category->slug) }}"
+                                    class="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors {{ $activeCategory === $category->slug ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                                >
+                                    <span>{{ $category->name }}</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="h-3.5 w-3.5 shrink-0 opacity-60"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        aria-hidden="true"
+                                    ><path d="m9 18 6-6-6-6" /></svg>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <div class="my-1.5 border-t border-border"></div>
+                    <a
+                        href="{{ route('produk.index') }}"
+                        class="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors {{ request()->routeIs('produk.index') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                    >
+                        <span>Semua Produk</span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5 shrink-0 opacity-60"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                        ><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                    </a>
+                </div>
+            </div>
+
+            <span class="mx-1.5 h-6 w-px bg-border" aria-hidden="true"></span>
+
             <a
                 href="{{ route('katalog-jersey') }}"
-                class="rounded-md px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs('katalog-jersey') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold text-primary-foreground transition-colors bg-primary {{ request()->routeIs('katalog-jersey') ? 'ring-2 ring-primary/40' : 'hover:bg-primary/90' }}"
             >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                ><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" /></svg>
                 Katalog Jersey
             </a>
         </nav>
@@ -122,6 +219,16 @@
 
     <div id="menu-mobile" class="border-t border-border lg:hidden" x-show="mobileOpen" x-cloak>
         <nav class="mx-auto grid max-w-7xl gap-1 px-4 py-3 sm:px-6">
+            <a
+                href="{{ route('home') }}"
+                class="rounded-md px-3 py-2 text-sm font-medium {{ request()->routeIs('home') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+            >
+                Beranda
+            </a>
+
+            <p class="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Kategori
+            </p>
             @foreach ($navCategories as $category)
                 <a
                     href="{{ route('kategori', $category->slug) }}"
@@ -131,11 +238,34 @@
                 </a>
             @endforeach
             <a
-                href="{{ route('katalog-jersey') }}"
-                class="rounded-md px-3 py-2 text-sm font-medium {{ request()->routeIs('katalog-jersey') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                href="{{ route('produk.index') }}"
+                class="rounded-md px-3 py-2 text-sm font-medium {{ request()->routeIs('produk.index') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
             >
+                Semua Produk
+            </a>
+
+            <div class="my-2 border-t border-border"></div>
+
+            <a
+                href="{{ route('katalog-jersey') }}"
+                class="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 {{ request()->routeIs('katalog-jersey') ? 'ring-2 ring-primary/40' : '' }}"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                ><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" /></svg>
                 Katalog Jersey
             </a>
+            <p class="px-3 pb-1 text-center text-[11px] text-muted-foreground">
+                Harga, MOQ &amp; panduan order
+            </p>
             @auth
                 @if (auth()->user()->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary">
