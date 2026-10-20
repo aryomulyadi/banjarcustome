@@ -188,11 +188,11 @@
                 <div class="mt-3 overflow-hidden rounded-md border border-border">
                     <img src="{{ Storage::url($product->image) }}" alt="{{ $product->title }}" class="aspect-[4/3] w-full object-cover">
                 </div>
-                <p class="mt-2 text-xs text-muted-foreground">Gambar saat ini. Pilih file baru untuk mengganti.</p>
+                <p class="mt-2 text-xs text-muted-foreground">Gambar utama. Pilih file baru untuk mengganti.</p>
             @endif
 
             <div class="mt-4 space-y-2">
-                <x-label for="image">Unggah gambar (jpg/png/webp, maks 2 MB)</x-label>
+                <x-label for="image">Unggah gambar utama (jpg/png/webp, maks 2 MB)</x-label>
                 <input
                     id="image"
                     name="image"
@@ -202,7 +202,57 @@
                 >
             </div>
 
-            <p class="mt-3 text-xs text-muted-foreground">Biarkan kosong jika tidak ingin mengubah gambar. Tanpa gambar, situs menampilkan placeholder abu-abu.</p>
+            <p class="mt-3 text-xs text-muted-foreground">Biarkan kosong jika tidak ingin mengubah gambar utama. Tanpa gambar, situs menampilkan placeholder abu-abu.</p>
+
+            @if ($product && $product->images->isNotEmpty())
+                <div class="mt-5 border-t border-border pt-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-sm font-medium">Galeri ({{ $product->images->count() }} foto)</p>
+                        <span class="text-[11px] text-muted-foreground">Maks 5 foto</span>
+                    </div>
+                    <p class="mt-0.5 text-xs text-muted-foreground">Tampil sebagai carousel di halaman produk. Centang "Hapus" untuk membuang foto.</p>
+                    <div class="mt-3 grid grid-cols-3 gap-2">
+                        @foreach ($product->images as $galleryImage)
+                            <label class="cursor-pointer overflow-hidden rounded-md border border-border transition-colors hover:border-primary/50">
+                                <img src="{{ Storage::url($galleryImage->image) }}" alt="{{ $galleryImage->alt ?: $product->title }}" class="aspect-square w-full object-cover">
+                                <span class="flex items-center justify-center gap-1.5 border-t border-border bg-card px-1 py-1.5 text-[11px] font-medium text-destructive">
+                                    <input
+                                        type="checkbox"
+                                        name="remove_images[]"
+                                        value="{{ $galleryImage->id }}"
+                                        class="h-3.5 w-3.5 rounded border-input"
+                                        {{ in_array($galleryImage->id, array_map('intval', old('remove_images', []))) ? 'checked' : '' }}
+                                    >
+                                    Hapus
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="mt-5 space-y-2">
+                <x-label for="images">Tambah ke galeri (boleh pilih lebih dari 1 file, maks 5 foto)</x-label>
+                <input
+                    id="images"
+                    name="images[]"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                @error('images')
+                    <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                @enderror
+                @error('images.*')
+                    <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                @enderror
+                @error('remove_images.*')
+                    <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <p class="mt-3 text-xs text-muted-foreground">Foto galeri dioptimalkan otomatis (webp) seperti gambar utama.</p>
         </div>
     </div>
 </div>

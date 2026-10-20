@@ -154,7 +154,7 @@
                                 class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring @error('deadline') border-destructive aria-invalid="true" @enderror"
                             >
                             @error('deadline') <p class="text-xs text-destructive" role="alert">{{ $message }}</p> @enderror
-                            <p class="text-xs text-muted-foreground">Estimasi produksi: kaos 3–7 hari kerja, jersey 14–25 hari kerja (VIP ORDER +Rp10.000, lebih cepat) — dihitung setelah desain disetujui. Minimal order jersey 12 pcs. <a href="{{ route('panduan-jersey') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-primary underline hover:no-underline">Panduan Jersey 2026-2027</a></p>
+                            <p class="text-xs text-muted-foreground">Estimasi produksi: kaos 3–7 hari kerja, jersey 14–25 hari kerja (VIP ORDER +Rp10.000, lebih cepat) — dihitung setelah desain disetujui. Minimal order jersey 12 pcs.</p>
                         </div>
                     </div>
                 </fieldset>

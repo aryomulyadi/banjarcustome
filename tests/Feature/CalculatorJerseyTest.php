@@ -20,14 +20,14 @@ class CalculatorJerseyTest extends TestCase
         $response = $this->actingAs($this->admin())->get(route('admin.calculator'));
 
         $response->assertOk()
-            ->assertSee('Panel Jersey 2026-2027')
+            ->assertSee('Panel Jersey')
             ->assertSee('VIP ORDER')
             ->assertSee('Biaya desain')
             ->assertSee('Wangky Zipper')
             ->assertSee('Shanghai Zipper')
             ->assertSee('Dryfit Milano')
             ->assertSee('Jaqcuard Camo')
-            ->assertSee(route('panduan-jersey'), false);
+            ->assertSee(route('katalog-jersey'), false);
 
         $content = $response->getContent();
         $this->assertStringContainsString('base_price&quot;:85000', $content);

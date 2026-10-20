@@ -28,6 +28,12 @@
                     {{ $category->name }}
                 </a>
             @endforeach
+            <a
+                href="{{ route('katalog-jersey') }}"
+                class="rounded-md px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs('katalog-jersey') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+            >
+                Katalog Jersey
+            </a>
         </nav>
         <div class="hidden flex-1 lg:block"></div>
 
@@ -51,6 +57,23 @@
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                         Dashboard
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                        >
+                            Keluar
+                        </button>
+                    </form>
+                @elseif (auth()->user()->isProduksi())
+                    <a
+                        href="{{ route('admin.produksi') }}"
+                        class="hidden items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary md:inline-flex"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+                        Antrian Produksi
                     </a>
                     <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
@@ -107,10 +130,26 @@
                     {{ $category->name }}
                 </a>
             @endforeach
+            <a
+                href="{{ route('katalog-jersey') }}"
+                class="rounded-md px-3 py-2 text-sm font-medium {{ request()->routeIs('katalog-jersey') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+            >
+                Katalog Jersey
+            </a>
             @auth
                 @if (auth()->user()->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary">
                         Dashboard Admin
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-secondary">
+                            Keluar
+                        </button>
+                    </form>
+                @elseif (auth()->user()->isProduksi())
+                    <a href="{{ route('admin.produksi') }}" class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary">
+                        Antrian Produksi
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

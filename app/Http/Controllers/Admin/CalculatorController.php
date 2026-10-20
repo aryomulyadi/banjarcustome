@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Support\JerseyCatalog;
 use App\Support\PriceCalculator;
 use App\Support\ServiceTypes;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class CalculatorController extends Controller
             'expressFee' => PriceCalculator::expressFeeNumber(),
             'serviceTypes' => ServiceTypes::titles(),
             'sizeSurcharges' => config('banjarcustom.size_surcharges', []),
-            'jersey' => config('banjarcustom.jersey', []),
+            'jersey' => JerseyCatalog::config(),
         ]);
     }
 

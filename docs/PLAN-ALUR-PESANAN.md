@@ -197,13 +197,13 @@ beralasan.
 
 | Fase | Isi | Status |
 |------|-----|--------|
-| 9A | Tambah status `confirmed`/`design`/`ready` + guard transisi + alasan batal | belum |
-| 9B | Form Spesifikasi Produksi (validasi ukuran = qty, syarat naik status, cek DP) | belum |
-| 9C | Cetak Kartu Kerja + **SPK jalur sublim** + template pesan WA per tahap (§2) | belum |
-| 9D | Upload desain admin + approval customer (setujui/revisi via link lacak) | belum |
-| 9E | Flag lewat deadline + SLA per tahap di daftar admin | belum |
-| 9F | Timeline riwayat di halaman lacak pelanggan | belum |
-| 9G | (opsional) Role `produksi` + halaman antrian / `assigned_operator` | belum |
+| 9A | Tambah status `confirmed`/`design`/`ready` + guard transisi + alasan batal | **selesai** |
+| 9B | Form Spesifikasi Produksi (validasi ukuran = qty, syarat naik status, cek DP) | **selesai** |
+| 9C | Cetak Kartu Kerja + **SPK jalur sublim** + template pesan WA per tahap (§2) | **selesai** |
+| 9D | Upload desain admin + approval customer (setujui/revisi via link lacak) | **selesai** |
+| 9E | Flag lewat deadline + SLA per tahap di daftar admin | **selesai** |
+| 9F | Timeline riwayat di halaman lacak pelanggan | **selesai** |
+| 9G | (opsional) Role `produksi` + halaman antrian / `assigned_operator` | **selesai** (Fase 17, prd.txt) |
 | — | Nota baris per ukuran + surcharge + `size_prices` + kalkulator multi-baris | **selesai** |
 
 Urutan disarankan: 9A → 9B → 9E → 9C → 9F → 9D → 9G.

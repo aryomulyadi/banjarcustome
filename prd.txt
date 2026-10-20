@@ -849,3 +849,297 @@ uppercase -> cek case-insensitive, JSON_HEX utk x-data yg di-{{ }} escape
 jadi &quot; (bukan \u0022). Artefak dibersihkan: data probe (user
 probe@local.test, order jersey #5, order MOQ), server 8099, Edge headless,
 file temp probe12/shots*. Belum di-commit.
+
+FASE 13 - KATALOG JERSEY TERPISAH (RENAME + MASTER OPSI BERFOTO + AKSES MUDAH)
+
+13A Rename total panduan -> Katalog Jersey: route baru GET /katalog-jersey
+(PageController::katalogJersey -> view pages/katalog-jersey; name route
+katalog-jersey) + redirect 301 /panduan-jersey -> /katalog-jersey; title/h1/
+breadcrumb/pill "Katalog Jersey" (buang "2026-2027"); entry sitemap pakai
+route('katalog-jersey'). Label direname: banner produk kategori jersey
+("Lihat Katalog Jersey"), link admin Spesifikasi Nota ("Katalog Jersey"),
+panel kalkulator ("Panel Jersey" tanpa tahun + link baru). View lama
+pages/jersey-guide dihapus.
+
+13B Form pesanan bersih dari katalog: hint estimasi TETAP (kaos 3-7 hari,
+jersey 14-25 hari VIP +Rp10.000, dihitung setelah desain disetujui, MOQ
+12 pcs) tapi TANPA link/promosi katalog (orders/create:157 hapus <a>).
+
+13C Akses mudah (pilihan user): link "Katalog Jersey" di nav header desktop
+(setelah loop kategori, highlight routeIs('katalog-jersey')) + menu mobile
++ footer kolom Informasi; banner produk kategori jersey tetap (13A).
+Halaman publik = 3 link (2 header + 1 footer); halaman produk jersey = 4.
+
+13D Master opsi kerah/bahan editable + berfoto:
+- Migrasi 2026_10_16_000001: options + fee (unsigned default 0), image
+  (nullable), active (boolean default true), sort (unsigned default 0) +
+  index (kind, active, sort).
+- MasterOption: KIND_COLLAR/KIND_FABRIC di KINDS + JERSEY_KINDS,
+  $fillable fee/image/active/sort, casts (fee int, active bool, sort int),
+  scopeActive/scopeOrdered, isJerseyKind().
+- JerseyOptionSeeder (idempoten, dipanggil DatabaseSeeder): isi 12 collar +
+  12 fabric dari config banjarcustom.jersey bila jenis masih kosong.
+- App\Support\JerseyCatalog: collars()/fabrics() = query DB (active, ordered)
+  -> fallback per-jenis ke config bila kosong; config() = rules config +
+  opsi DB (sumber kalkulator admin).
+- MasterDataController: store validasi fee (integer 0..1e9) + image
+  (image|mimes:jpg,jpeg,png,webp|max:2048) utk jenis jersey, simpan via
+  ImageOptimizer::store(..., 'jersey-options'); edit()/update() BARU
+  (admin.master.edit|update - selain jenis jersey 404): nama/fee/sort/
+  active + ganti foto (foto lama dihapus, tanpa file = dipertahankan);
+  destroy hapus file foto (+webp).
+- View admin/master/index: label+deskripsi Kerah/Bahan Jersey, form tambah
+  dgn input fee + file foto (enctype), list jenis jersey: thumbnail, badge
+  fee (Standar/+n), badge Nonaktif, tombol Edit; view baru
+  admin/master/edit (nama, fee, urutan, preview foto, checkbox "Tampil di
+  Katalog Jersey").
+- Konsumen pindah ke JerseyCatalog: kalkulator admin (JerseyCatalog::config)
+  + datalist Model Kerah di Spesifikasi Nota. Aturan tetap config: min_order
+  (MOQ OrderController), design_fee (cetak penawaran).
+
+13E Halaman katalog struktur baru: breadcrumb + h1 "Katalog Jersey Custom",
+hero harga dasar Rp85.000 + spec; SECTION "Produk Jersey" (grid
+x-product-card utk product berkategori name/slug like %jersey%, limit 8,
+disembunyikan bila kosong); 4 kartu aturan (MOQ/leadtime+VIP/DP/desain);
+GRID card berfoto opsi kerah & bahan (x-img utk foto, placeholder label
+KERAH/BAHAN bila belum ada foto, badge "Standar (Rp 0)"/"+Rp n"; opsi
+nonaktif tidak tampil); contoh perhitungan (fee V-Neck & Embos dari data,
+fallback 5000/15000); CTA form + WhatsApp.
+
+VERIFIKASI AKHIR FASE 13: vendor/bin/pint passed; composer test 257 tests /
+1370 assertions (0 gagal; +13 dari 244: KatalogJerseyTest 9 (rewrite dari
+PanduanJerseyTest 4 + grid produk/promosi/redirect/hide) +
+JerseyOptionCrudTest 8; test lama disesuaikan: OrderFormTest tanpa link
+katalog, CalculatorJerseyTest label+route, SeoTest /katalog-jersey); npm
+run build OK (CSS 73,07 kB / JS 56,12 kB); migrate + JerseyOptionSeeder DB
+dev (12 collar / 12 fabric); probe Edge headless (CDP) 33/33 PASS - katalog
+(judul/h1, section produk, grid opsi, badge fee, img jersey-options, link=3,
+contoh), redirect 301 /panduan-jersey, form pesan tanpa teks panduan + hint
+MOQ utuh + 0 link katalog di dalam form, banner produk (link=4), admin
+(login, section Kerah/Bahan Jersey, thumbnail, form edit fee/foto/active,
+update fee via UI 16000 -> revert). Screenshot review: f13-katalog,
+f13-master-index, f13-master-edit, f13-form-pesan. BUG PASCA-PROBE: title
+double-escape "&amp;" tampil literal (:title pakai &amp; dlm string PHP ->
+ganti jadi &, escape tunggal Blade); fee Double V-Neck sempat 15000 (probe
+revert salah target; verifikasi ulang semua fee DB vs config = ALL MATCH,
+restore 8000). Foto collar sementara jersey-options/probe-collar.* masih
+terpasang utk review visual - dibersihkan di akhir rangkaian fase. Belum
+di-commit.
+
+FASE 14 - KALKULATOR ESTIMASI PUBLIK DI KATALOG JERSEY
+
+14A Kartu "Kalkulator Estimasi Jersey" di pages/katalog-jersey (antara
+Contoh Perhitungan & CTA): Alpine inline x-data (pola json_encode utk
+payload dgn quote di-escape Blade jadi &quot; - browser decode, Alpine
+jalan) dgn state qty (default/min = min_order 12), select Kerah & Bahan
+(server-rendered dari JerseyCatalog::collars()/fabrics() @selected utk
+default O-Neck/Dryfit Milano, label fee "+Rp n"/"Standar", opsi nonaktif
+tidak tampil), checkbox VIP ORDER & Biaya desain; getter unitTotal = base +
+collarFee + fabricFee + vip, total = unitTotal x qty + designFee (sekali),
+qtyValid (>= min_order); rincian dl (Harga dasar/Kerah/Bahan/VIP/desain/
+Per pcs) + Estimasi Total angka besar + peringatan merah "Jumlah minimal
+12 pcs" (x-show !qtyValid).
+
+14B Dua aksi: "Pesan via WhatsApp" (href default di-render PHP dgn
+rawurlencode teks lengkap utk opsi default - kerah/bahan terpilih, qty,
+VIP/desain, estimasi total 12 pcs O-Neck/Milano = Rp1.020.000;
+x-bind :href=waHref memperbarui teks otomatis dgn encodeURIComponent tiap
+perubahan state, target _blank) + "Isi Form Pesanan" (route pesan).
+Batas bawah input dgn @disabled bila dgn qty 1 < min_order (dihitung dari
+JS utk hindari mismatch server).
+
+VERIFIKASI AKHIR FASE 14: vendor/bin/pint passed; composer test 261 tests /
+1392 assertions (0 gagal; +4 JerseyEstimatorTest: kartu+min order+getter,
+href WA default ter-prefill + total default, payload dgn opsi DB aktif +
+label fee + fallback bahan, kartu tidak muncul di halaman lain); npm run
+build OK (CSS 73,11 kB / JS 56,12 kB); probe Edge (CDP) 12/12 PASS -
+interaktivitas Alpine: default 12 pcs Rp1.020.000 -> qty15 Rp1.275.000 ->
+Wangky Zipper Rp1.500.000 -> Embos Tofo Rp1.725.000 -> VIP Rp1.875.000 ->
+desain Rp1.925.000; WA href ter-update (Jumlah%3A%2015, VIP ya, kerah,
+total); peringatan MOQ muncul qty5; reset default. Screenshot f14-estimator.
+BUG YANG DIPERBAIKI: defaultWaText semula memakai fee contoh V-Neck+Embos
+(1.260.000) - salah, ganti unit opsi default pertama (1.020.000); assert
+payload: PHP di mesin ini TIDAK menerapkan JSON_HEX_* flags, quote di-escape
+Blade jadi &quot; (bukan \u0022) -> assert &quot;fee&quot;:4500. Belum
+di-commit.
+
+FASE 15 - FAQ KATALOG + SEO STRUCTURED DATA
+
+15A Bagian FAQ "Tanya Jawab Jersey" di pages/katalog-jersey (setelah kartu
+kalkulator, sebelum CTA): 6 Q&A statis via <details>/<summary> (pola
+identik halaman /faq - plus ikon + berputar jadi x saat open, bg muted
+saat open): MOQ 12 pcs, lead time 14-25 + VIP, DP 50% hangus batal, biaya
+desain Rp50.000 + revisi bebas, beda opsi kerah/bahan (+fee per pcs +
+referensi kalkulator), cara pesan (form/WA). Jawaban memakai nilai config
+($j: min_order/lead_time/vip_fee/dp_percent/design_fee) lewat helper $rp.
+Link promo "FAQ umum ->" ke route('faq') di judul section.
+
+15B SEO structured data (semua dgn nonce CSP, JSON_UNESCAPED_SLASHES|
+UNESCAPED_UNICODE, json_encode Blade):
+- <x-jsonld-breadcrumbs> BreadcrumbList Beranda -> Katalog Jersey (di
+  bawah nav breadcrumb visual; komponen sudah dipakai catalog/index dll).
+- FAQPage JSON-LD dari array $faqItems yang sama (Question + acceptedAnswer,
+  6 entri) di akhir view.
+- ItemList JSON-LD "Produk Jersey Banjar Custome" dari $jerseyProducts
+  (position, name, url route produk.show, image asset bila ada) - dirender
+  hanya bila produk jersey ada (array_filter buang image null).
+- Meta sudah unik dari F13 (title & description khusus katalog); canonical
+  layout = url()->current() -> /katalog-jersey (default, tidak di-set
+  manual).
+
+VERIFIKASI AKHIR FASE 15: vendor/bin/pint passed; composer test 265 tests /
+1415 assertions (0 gagal; +4: SeoTest 3 - FAQPage+BreadcrumbList+canonical,
+ItemList dgn produk (url + image), ItemList hidden tanpa produk;
+KatalogJerseyTest 1 - section FAQ tampil 6 Q + link FAQ umum); npm run
+build OK (CSS 73,11 kB / JS 56,12 kB); probe Edge (CDP) 14/14 PASS - nav
+breadcrumb, 4 skrip JSON-LD ter-parse (BreadcrumbList 2 entri, FAQPage 6 Q
+dgn acceptedAnswer, ItemList 3 produk jersey dgn url /produk/), heading FAQ,
+6 <details>, link FAQ umum -> /faq, klik summary buka jawaban (isi "12 pcs"),
+Q terakhir, canonical = /katalog-jersey, meta description unik, 0 console
+error. Screenshot f15-faq. Catatan: komponen produk di type-hint closure
+tanpa kelas (Blade tanpa use) -> fn ($product, int $index). Belum di-commit.
+
+FASE 16 - MULTI-FOTO PRODUK (GALERI + CAROUSEL)
+
+16A Skema: migrasi 2026_10_16_000002 product_images (id, product_id FK
+cascadeOnDelete, image string, sort unsignedSmall default 0, alt string 255
+nullable, timestamps); model ProductImage (fillable product_id/image/sort/
+alt, cast sort int, belongsTo product); Product::images() = hasMany orderBy
+sort,id.
+
+16B Admin ProductController:
+- validateProduct($request, ?Product $product): rules baru images (array
+  max:5) + images.* (image mimes jpg,jpeg,png,webp max:2048); utk update
+  +remove_images (array) + remove_images.* (integer, distinct, Rule::exists
+  scoped ke product_id -> tolak id milik produk lain). Pesan khusus per
+  file (mimes/max) + array.
+- store: syncGallery(files). update: CEPAT balik bila count - remove + new
+  > 5 ("Maksimal 5 foto galeri per produk (hapus sebagian dulu)."), lalu
+  update utama + syncGallery. destroy: file gambar utama + SEMUA file
+  galeri dihapus dulu, colors()->delete(), product->delete() (FK cascade
+  buang baris).
+- syncGallery($product, $files, $removeIds): hapus baris+file (file via
+  ImageOptimizer::delete -> auto webp), insert file baru sort =
+  max(sort)+1..seq, alt = $product->title; file tidak valid dilewati.
+- edit() load(['colors', 'images']).
+
+16C Form admin products/_form bagian "Gambar Produk": label "gambar
+utama"; blok Galeri (bila edit + ada foto): thumbnail grid 3 kolom
+(aspect-square) + checkbox "Hapus" (name remove_images[] value id, checked
+ikut old() saat validasi gagal), info "Maks 5 foto"; input multi-file
+name="images[]" multiple accept sama; @error images/images.*/remove_images.*.
+
+16D Halaman detail catalog/show: @php $gallery = $product->images->values()
++ $ogImagePath = image utama ?: galeri pertama (ogImage ikut fallback).
+Carousel div x-data="{ index: 0 }" HANYA bila galeri > 1; slide div x-show
+"index === i" (i>0 dgn style display:none pra-Alpine -> tanpa flash),
+x-img per foto (fetchpriority high utk i=0, alt = alt ?: judul); panah
+kiri/kanan (aria-label Foto sebelumnya/berikutnya, wrap modulo), dots
+absolute bottom (x-bind:class bg-primary aktif), strip thumbnail bawah
+(border-primary aktif, klik pindah index). Galeri kosong -> layout lama
+(image utama / placeholder). CatalogController::show eager load 'images'.
+Product JSON-LD 'image' = array (utama + seluruh galeri, asset storage)
+atau string banner bila nihil.
+
+VERIFIKASI AKHIR FASE 16: vendor/bin/pint passed; composer test 273 tests
+/ 1462 assertions (0 gagal; +8 ProductGalleryTest: store 2 foto (row, sort
+0/1, alt, file ada), update append + remove (file hilang, max sort 2,
+data inti utuh), validasi max 6 file & mime txt (images/images.0),
+remove_images id produk lain ditolak, destroy hapus file+baris, detail
+carousel tampil (x-data/panah/2 slide/url storage/alt), tanpa galeri ->
+placeholder tanpa carousel, JSON-LD memuat url galeri); npm run build OK
+(CSS 73,90 kB / JS 56,12 kB); migrate jalan di DB dev (product_images);
+probe Edge (CDP) 14/14 PASS - login (tahan sesi lama), cleanup idempoten,
+awal tanpa carousel, upload 2 JPEG via DataTransfer di input #images UI
+-> submit -> "Galeri (2 foto)" + 2 checkbox, detail carousel 2 slide
+index0 -> klik berikutnya -> index1 + thumbnail border-primary aktif,
+screenshot f16-carousel, hapus semua via checkbox -> gallery kosong ->
+fallback placeholder, 0 console error. BUG PROBE: path admin produk =
+/admin/produk (BUKAN /admin/products - 404); race Page.navigate (eval
+sebelum commit -> readyState page lama complete) -> goto() kini tunggu
+href+readyState STABIL 3x poll; file foto probe dibuat PHP GD
+(probe-gal1/2.jpg). Dev DB: produk id6 (jersey-basket-printing) dipakai
+probe, kondisi dikembalikan (galeri kosong, main image null). Belum
+di-commit.
+
+FASE 17 - ROLE PRODUKSI + HALAMAN ANTRIAN (PLAN 9G)
+
+17A Akses & role:
+- Middleware baru App\Http\Middleware\EnsureUserRole: handle(...$roles)
+  abort_unless role user in_array -> 403; alias 'role' di
+  bootstrap/app.php (alias 'admin' lama dipertahankan).
+- User: const ROLE_ADMIN/ROLE_PRODUKSI + isProduksi() + isStaff().
+- Migrasi 2026_10_17_000001: users.role enum -> ['admin','user',
+  'produksi'] via change() - CHECK constraint SQLite lama menolak nilai
+  'produksi' (BUG: 13 test gagal sebelum migrasi, dijalankan di DB dev).
+- LoginController: create() -> homeFor() (admin ke dashboard, produksi
+  ke admin.produksi, selain itu home); store() izinkan isStaff();
+  redirectTo() - intended /admin dihormati hanya utk jalur produksi
+  valid (/admin/produksi, /admin/profil, /admin/pesanan/<id>), selain
+  itu (mis. /admin pasca logout dari dashboard) fallback admin.produksi
+  supaya tidak 403.
+
+17B routes/admin.php direstrukturisasi: outer middleware ['auth'] saja;
+grup 'role:admin' DIDAHULUKAN (dashboard, pesanan index/export/import/
+cetak/status/harga/spesifikasi/design/dp/serah-terima, kalkulator,
+produk, kategori, galeri, faq, testimoni, master, pengaturan) supaya
+path literal /pesanan/export & /pesanan/import tidak tertangkap
+{order}; grup 'role:admin,produksi' (GET /admin/produksi =
+admin.produksi, orders.show, orders.progress, orders.card, orders.spk,
+profile.edit/update).
+
+17C Antrian:
+- ProductionQueueController::index: query status IN (ready,production)
+  + filter ?status whitelist (ready/production) + ?milik=1 ->
+  assigned_operator = nama akun, urut deadline NULL belakang -> deadline
+  -> id desc; counts ready/production utk chip.
+- View admin/produksi/index: chip (Semua/1/2/Milik Saya) + note, grid 2
+  kolom kartu: #id + pill status + badge Express/Lewat deadline/Milik
+  saya, nama+WA, dl (produk/qty/jenis/deadline/operator), form progres
+  (3 checkbox + hidden redirect=queue) PATCH orders.progress, aksi
+  Lihat Detail/Kartu Kerja/SPK; empty state.
+- OrderController::updateProgress: input redirect=queue -> kembali ke
+  antrian (default tetap ke show).
+
+17D Detail pesanan (admin/orders/show.blade): @php $isAdmin; back link
+-> admin.produksi utk produksi ("Kembali ke antrian produksi"); blok
+dalam @if($isAdmin): Cetak Nota, Spesifikasi Nota, Harga, Perbarui
+Status, Desain, DP, form Serah Terima (Simpan Operator), kartu Pesan
+WhatsApp + tautan Chat Pelanggan. Tampil utk KEDUA role: Informasi,
+Detail, Riwayat, Progres Produksi, Serah Terima (judul + tombol Kartu
+Kerja/SPK). FIX BUG lama: field warna echo tak tertutup
+(value="{{ old(...) }" -> "... }}").
+
+17E Navigasi & akun:
+- Sidebar admin: Dashboard/Pesanan/Produk/Kalkulator/Kategori/Master/
+  Galeri/FAQ/Testimoni/Pengaturan dibungkus @if($isAdmin); item
+  "Antrian Produksi" utk semua staf (highlight orders.* milik produksi);
+  profil/lihat situs/keluar tetap. Header publik: cabang @elseif
+  isProduksi (desktop + mobile) tautan Antrian Produksi + Keluar.
+- DatabaseSeeder: produksi@banjarcustom.test / password (name
+  "Operator Produksi", ROLE_PRODUKSI).
+
+VERIFIKASI AKHIR FASE 17: vendor/bin/pint passed; composer test 288
+tests / 1542 assertions (0 gagal; +15 ProductionQueueTest: login
+produksi -> antrian, intended /admin fallback ke antrian, guest
+redirect, role user 403, antrian hanya ready+production, filter status,
+filter milik (assigned_operator = nama), detail tanpa kartu admin +
+back link antrian, admin lihat semua kartu, toggle progres redirect
+queue/show, kartu-kerja & spk 200, 14 rute admin 403 utk produksi,
+profil + admin buka antrian, sidebar produksi tanpa Data Master/
+Pengaturan, header publik Antrian Produksi); npm run build OK (CSS
+74,03 kB / JS 56,12 kB); migrate enum role jalan di DB dev; seeder
+data antrian (2 order: ready + production milik operator). Probe Edge
+(CDP) 34/34 PASS - Network.clearBrowserCookies utk matikan sesi admin
+lama, login produksi -> /admin/produksi, sidebar tanpa menu admin
+(Dashboard/Data Master/Pengaturan), kedua order tampil + badge LEWAT
+DEADLINE, filter milik & ready via href kartu (bukan teks chip - chip
+label selalu ada), simpan progres tetap di antrian, detail: ada Progres
+Produksi, tanpa Cetak Nota/Spesifikasi/Perbarui Status/Simpan Harga/
+Simpan DP/Pesan WhatsApp, kartu-kerja & spk 200, 5 rute admin 403,
+profil 200, header "Antrian Produksi", screenshot f17-antrian &
+f17-detail direview, 0 console error (log 403 sengaja disaring). BUG
+PROBE: logout via form gagal - action route('logout') URL absolut
+sehingga selector [action="/logout"] tak cocok -> ganti
+Network.clearBrowserCookies + tunggu form login (retry 2x). Belum
+di-commit.

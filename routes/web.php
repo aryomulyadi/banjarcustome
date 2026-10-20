@@ -51,7 +51,8 @@ Route::get('/layanan', [PageController::class, 'layanan'])->name('layanan');
 Route::get('/lokasi', [PageController::class, 'lokasi'])->name('lokasi');
 Route::get('/faq', [PageController::class, 'faq'])->name('faq');
 Route::get('/panduan-ukuran', [PageController::class, 'sizeChart'])->name('size-chart');
-Route::get('/panduan-jersey', [PageController::class, 'panduanJersey'])->name('panduan-jersey');
+Route::get('/katalog-jersey', [PageController::class, 'katalogJersey'])->name('katalog-jersey');
+Route::redirect('/panduan-jersey', '/katalog-jersey', 301);
 Route::get('/kebijakan-privasi', [PageController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
 Route::get('/syarat-ketentuan', [PageController::class, 'syaratKetentuan'])->name('syarat-ketentuan');
 

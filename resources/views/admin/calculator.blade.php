@@ -256,10 +256,10 @@
                 {{-- Panel jersey: upgrade kerah/bahan, VIP, biaya desain (hanya utk jenis berlabel jersey) --}}
                 <div x-show="isJersey" x-cloak class="space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-primary">Panel Jersey 2026-2027</p>
+                        <p class="text-xs font-semibold uppercase tracking-widest text-primary">Panel Jersey</p>
                         <p class="text-xs text-muted-foreground">
                             Dasar <strong x-text="rp(jersey.base_price)"></strong>/pcs ·
-                            <a href="{{ route('panduan-jersey') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-primary underline hover:no-underline">Panduan Jersey</a>
+                            <a href="{{ route('katalog-jersey') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-primary underline hover:no-underline">Katalog Jersey</a>
                         </p>
                     </div>
 

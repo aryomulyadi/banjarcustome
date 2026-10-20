@@ -37,6 +37,11 @@ class Product extends Model
         return $this->hasMany(ProductColor::class);
     }
 
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort')->orderBy('id');
+    }
+
     protected static function booted(): void
     {
         $forget = fn () => Cache::forget('home.products');

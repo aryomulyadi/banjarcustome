@@ -8,7 +8,9 @@ use App\Models\Product;
 use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -59,6 +61,7 @@ class ProductController extends Controller
         ]);
 
         $this->syncColors($product, $validated['colors'] ?? []);
+        $this->syncGallery($product, $request->file('images', []), []);
 
         return redirect()
             ->route('admin.products.index')
@@ -68,19 +71,26 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         return view('admin.products.edit', [
-            'product' => $product->load('colors'),
+            'product' => $product->load(['colors', 'images']),
             'categories' => Category::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
     {
-        $validated = $this->validateProduct($request);
+        $validated = $this->validateProduct($request, $product);
 
         $oldImage = $product->image;
 
         if ($request->hasFile('image')) {
             $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
+        }
+
+        $removeIds = array_map('intval', $validated['remove_images'] ?? []);
+        $newFiles = array_values(array_filter($request->file('images', [])));
+
+        if ($product->images()->count() - count($removeIds) + count($newFiles) > 5) {
+            return back()->withErrors(['images' => 'Maksimal 5 foto galeri per produk (hapus sebagian dulu).']);
         }
 
         $product->update([
@@ -98,6 +108,7 @@ class ProductController extends Controller
         }
 
         $this->syncColors($product, $validated['colors'] ?? []);
+        $this->syncGallery($product, $newFiles, $removeIds);
 
         return redirect()
             ->route('admin.products.index')
@@ -110,6 +121,10 @@ class ProductController extends Controller
             ImageOptimizer::delete($product->image);
         }
 
+        foreach ($product->images as $galleryImage) {
+            ImageOptimizer::delete($galleryImage->image);
+        }
+
         $product->colors()->delete();
         $product->delete();
 
@@ -118,9 +133,9 @@ class ProductController extends Controller
             ->with('status', 'Produk berhasil dihapus.');
     }
 
-    private function validateProduct(Request $request): array
+    private function validateProduct(Request $request, ?Product $product = null): array
     {
-        return $request->validate([
+        $rules = [
             'title' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'description' => ['nullable', 'string', 'max:3000'],
@@ -147,13 +162,31 @@ class ProductController extends Controller
             'price_tiers.*.min_qty' => ['required', 'integer', 'min:1', 'max:1000000'],
             'price_tiers.*.unit_price' => ['required', 'integer', 'min:0', 'max:100000000000'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:5'],
+            'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'colors' => ['nullable', 'array'],
             'colors.*.name' => ['required', 'string', 'max:50'],
             'colors.*.hex' => ['required', 'string', 'max:7', 'regex:/^#[0-9A-Fa-f]{6}$/'],
-        ], [
+        ];
+
+        if ($product) {
+            $rules['remove_images'] = ['nullable', 'array'];
+            $rules['remove_images.*'] = [
+                'integer',
+                'distinct',
+                Rule::exists('product_images', 'id')->where('product_id', $product->id),
+            ];
+        }
+
+        return $request->validate($rules, [
             'colors.*.hex.regex' => 'Format warna harus berupa heksadesimal seperti #F59E0B.',
             'image.mimes' => 'Format gambar harus jpg, jpeg, png, atau webp.',
             'image.max' => 'Ukuran gambar maksimal 2 MB.',
+            'images.array' => 'Maksimal 5 foto galeri per produk.',
+            'images.max' => 'Maksimal 5 foto galeri per produk.',
+            'images.*.mimes' => 'Format foto galeri harus jpg, jpeg, png, atau webp.',
+            'images.*.max' => 'Ukuran tiap foto galeri maksimal 2 MB.',
+            'remove_images.*.exists' => 'Foto galeri tidak valid.',
         ]);
     }
 
@@ -178,6 +211,35 @@ class ProductController extends Controller
             $product->colors()->create([
                 'name' => $color['name'],
                 'hex' => $color['hex'],
+            ]);
+        }
+    }
+
+    /**
+     * @param  array<int, UploadedFile>  $files
+     * @param  array<int, int>  $removeIds
+     */
+    private function syncGallery(Product $product, array $files, array $removeIds): void
+    {
+        if ($removeIds !== []) {
+            foreach ($product->images()->whereIn('id', $removeIds)->get() as $row) {
+                ImageOptimizer::delete($row->image);
+            }
+
+            $product->images()->whereIn('id', $removeIds)->delete();
+        }
+
+        $next = (int) ($product->images()->max('sort') ?? -1) + 1;
+
+        foreach ($files as $file) {
+            if (! $file instanceof UploadedFile || ! $file->isValid()) {
+                continue;
+            }
+
+            $product->images()->create([
+                'image' => ImageOptimizer::store($file, 'products'),
+                'sort' => $next++,
+                'alt' => $product->title,
             ]);
         }
     }

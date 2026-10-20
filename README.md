@@ -17,11 +17,11 @@ Website company profile + pemesanan custom (sablon kaos/dll) berbasis **Laravel 
 **Publik**
 - Beranda: slider promo (bisa pause, hormati `prefers-reduced-motion`), galeri, testimoni, statistik.
 - Katalog produk: pencarian, filter kategori & warna, pagination (token tema).
-- Detail produk: JSON-LD `Product`, estimasi harga, pilihan warna.
-- Pesanan: form terstruktur (produk, jumlah + ukuran, jenis sablon, deadline, opsi **express** (same-day / di bawah 10 hari), pengiriman/alamat, upload file desain), honeypot anti-spam, rate limit 12 request/menit. Hint estimasi: kaos 3–7 hari kerja, jersey **14–25 hari kerja (VIP ORDER +Rp10.000/pcs, lebih cepat)**, skema **DP 50%**; **MOQ jersey 12 pcs divalidasi** (kolom jumlah — di bawah itu ditolak dgn pesan jelas) + link **Panduan Jersey**.
+- Detail produk: JSON-LD `Product` (+ array foto galeri), **carousel multi-foto** (Alpine: panah + dots + thumbnail, fallback ke gambar utama/placeholder), estimasi harga, pilihan warna.
+- Pesanan: form terstruktur (produk, jumlah + ukuran, jenis sablon, deadline, opsi **express** (same-day / di bawah 10 hari), pengiriman/alamat, upload file desain), honeypot anti-spam, rate limit 12 request/menit. Hint estimasi: kaos 3–7 hari kerja, jersey **14–25 hari kerja (VIP ORDER +Rp10.000/pcs, lebih cepat)**, skema **DP 50%**; **MOQ jersey 12 pcs divalidasi** (kolom jumlah — di bawah itu ditolak dgn pesan jelas) — tanpa link katalog di dalam form (Katalog Jersey diakses dari header, footer, dan produk berkategori jersey).
 - Sukses: nomor order, ringkasan (estimasi + DP), tombol **kirim ringkasan ke admin via WhatsApp**.
 - Tracking order (belum perlu login) via nomor order + WhatsApp, atau **link lacak token** `/lacak/{token}` (dipakai admin di template WA): riwayat tahap, deadline, unduh desain hasil, tombol **Setujui Desain** / **Minta Revisi**.
-- Halaman: Layanan (termasuk estimasi produksi & pembayaran), **Panduan Jersey 2026-2027** (`/panduan-jersey`: harga dasar Rp85.000/pcs + spec dasar, MOQ 12 pcs, produksi 14–25 hari + VIP, DP 50%, biaya desain Rp50.000, tabel upgrade kerah & bahan, contoh perhitungan — di-sitemap & dilink dari produk berkategori jersey), Lokasi (`LocalBusiness`, embed koordinat presisi + link listing Google Maps), FAQ (`FAQPage`), Ukuran, Tentang, Kebijakan Privasi, Syarat & Ketentuan.
+- Halaman: Layanan (termasuk estimasi produksi & pembayaran), **Katalog Jersey** (`/katalog-jersey`; `/panduan-jersey` redirect 301 — harga dasar Rp85.000/pcs + spec dasar, MOQ 12 pcs, produksi 14–25 hari + VIP, DP 50%, biaya desain Rp50.000, **grid produk jersey**, **grid opsi kerah & bahan bergambar** (sumber Data Master, fee per pcs), **kalkulator estimasi interaktif** (qty/kerah/bahan/VIP/desain → total live + "Pesan via WhatsApp" dgn pesan ter-prefill), **FAQ "Tanya Jawab Jersey"** (6 Q + `FAQPage` JSON-LD), **`BreadcrumbList` + `ItemList` JSON-LD**, canonical — contoh perhitungan — di-sitemap, link di header/footer & banner produk berkategori jersey), Lokasi (`LocalBusiness`, embed koordinat presisi + link listing Google Maps), FAQ (`FAQPage`), Ukuran, Tentang, Kebijakan Privasi, Syarat & Ketentuan.
 - `sitemap.xml`, `robots.txt`, meta SEO/OG/Twitter, `noindex` untuk halaman form/transaksi.
 
 **Admin** (`/admin`, login dulu di `/login`)
@@ -36,11 +36,12 @@ Website company profile + pemesanan custom (sablon kaos/dll) berbasis **Laravel 
 - **Timeline pelanggan**: halaman lacak menampilkan riwayat tahap (tanpa nama admin), deadline + badge **Lewat deadline**, unduh desain, kartu persetujuan; badge lewat deadline juga di daftar pesanan.
 - **Biaya desain jersey**: Rp50.000 di awal (hint di kartu Harga + template WA nota; revisi tetap gratis) — ubah di `config/banjarcustom.php` → `design_fee_jersey`.
 - **Impor riwayat pesanan Excel/CSV** (`/admin/pesanan/import`): template .xlsx **16 kolom** (`BULAN, customer, jenis, waktu pengambilan, type, bahan, warna, pesan bahan, produksi, finish, TOTAL, jumlah, ukuran, whatsapp, status, catatan`) — judul dicocokkan berdasar nama (urutan bebas, kolom ekstra diabaikan, wajib hanya `customer`), semua baris divalidasi dulu (1 baris error = tidak ada data masuk, transaksional), `jenis` divalidasi ketat ke daftar layanan (asing ditolak), nilai `type`/`bahan`/`warna` baru otomatis jadi **master data** + tercatat di laporan impor, flag `ok`/`nok`, **`BULAN` diturunkan jadi tanggal pesanan** (tgl 1 bulan tsb — "Oktober 2026"/"2026-10"; gagal parse = peringatan + tanggal impor), `ukuran` `S:6, M:12` → jumlah per ukuran (fallback jumlah), status key/label, badge **Impor** + filter Sumber.
-- **Data Master** (`/admin/master-data`): CRUD **Type, Bahan, Warna** (tabel `options`, unik per jenis, swatch hex utk warna) — dipakai admin di kartu Spesifikasi & memvalidasi kolom impor; form pesanan publik tidak berubah.
+- **Data Master** (`/admin/master-data`): CRUD **Type, Bahan, Warna** (tabel `options`, unik per jenis, swatch hex utk warna) + **Kerah Jersey & Bahan Jersey** (fee per pcs, foto via `ImageOptimizer` ke `jersey-options`, urutan, aktif/nonaktif — diedit lewat halaman Edit terpisah; tampil di Katalog Jersey & kalkulator; sumber `App\Support\JerseyCatalog` dgn fallback config) — dipakai admin di kartu Spesifikasi & memvalidasi kolom impor; form pesanan publik tidak berubah.
 - **Progres Produksi**: 3 penanda pelengkap status — **Pesan Bahan / Produksi / Finish** (`ok`/`nok`) diisi via kartu **Progres Produksi** di detail pesanan, tampil sebagai 3 titik di kolom **Progres** daftar pesanan, ikut ekspor/impor.
-- **Harga pesanan**: admin mengisi harga satuan/total di detail pesanan (total terhitung otomatis dari rincian ukuran, atau satuan × jumlah tanpa rincian; peringatan bila total ≠ rincian) + kartu **Spesifikasi Nota** (Bahan/Type/Warna/**Model Kerah** — kolom `collar_model` utk jersey, ada datalist opsi dari Panduan Jersey) + **harga per ukuran** (`size_prices`, kosong = otomatis harga dasar + surcharge: XXL +10.000, 4XL +30.000, dst — ubah di `config/banjarcustom.php`); tampil di halaman detail, nota (Σ per baris + baris "Penyesuaian manual" bila ada selisih), dan export Excel — tidak ditampilkan ke pelanggan.
-- **Kalkulator harga** (`/admin/kalkulator`): isian Nama Customer, Jenis, Bahan, Type, Warna + ukuran `S:10, M:12` → **tabel perhitungan baris per ukuran** identik dengan nota cetak, kolom Harga tiap baris bisa diedit (default = harga dasar + surcharge), biaya express, salin ringkasan + **Cetak Penawaran** (lembar penawaran tanpa nomor order). **Panel Jersey 2026-2027** muncul otomatis saat Jenis mengandung "jersey": select **Kerah** & **Bahan** (fee dari `config → banjarcustom.jersey`, default Rp85.000/pcs), checkbox **VIP ORDER (+Rp10.000/pcs)** & **Biaya desain (Rp50.000 sekali)** — menambah harga tiap baris/total otomatis, ringkasan & cetak penawaran menyebutnya.
-- Produk, Kategori, Galeri: CRUD + pencarian; gambar lama dihapus aman setelah penggantian.
+- **Role Produksi + Antrian** (`/admin/produksi`): role `produksi` (contoh `produksi@banjarcustom.test` / `password`) login → langsung ke **Antrian Produksi**: pesanan **Siap Produksi & Sedang Diproses** saja, urut deadline, badge Express/Lewat deadline/Milik saya, filter status + **Milik Saya** (=`assigned_operator`), centang progres langsung dari kartu; di detail pesanan kartu admin (Spesifikasi/Harga/Status/Desain/DP/form Serah Terima/Pesan WA) tersembunyi — yang tampil info, riwayat, Progres, dan cetak **Kartu Kerja/SPK**; sidebar & header menyusut jadi menu Antrian, seluruh rute admin lain diblokir (403).
+- **Harga pesanan**: admin mengisi harga satuan/total di detail pesanan (total terhitung otomatis dari rincian ukuran, atau satuan × jumlah tanpa rincian; peringatan bila total ≠ rincian) + kartu **Spesifikasi Nota** (Bahan/Type/Warna/**Model Kerah** — kolom `collar_model` utk jersey, ada datalist opsi dari Katalog Jersey) + **harga per ukuran** (`size_prices`, kosong = otomatis harga dasar + surcharge: XXL +10.000, 4XL +30.000, dst — ubah di `config/banjarcustom.php`); tampil di halaman detail, nota (Σ per baris + baris "Penyesuaian manual" bila ada selisih), dan export Excel — tidak ditampilkan ke pelanggan.
+- **Kalkulator harga** (`/admin/kalkulator`): isian Nama Customer, Jenis, Bahan, Type, Warna + ukuran `S:10, M:12` → **tabel perhitungan baris per ukuran** identik dengan nota cetak, kolom Harga tiap baris bisa diedit (default = harga dasar + surcharge), biaya express, salin ringkasan + **Cetak Penawaran** (lembar penawaran tanpa nomor order). **Panel Jersey** muncul otomatis saat Jenis mengandung "jersey": select **Kerah** & **Bahan** (fee dari Data Master via `JerseyCatalog` — fallback `config → banjarcustom.jersey`, default Rp85.000/pcs), checkbox **VIP ORDER (+Rp10.000/pcs)** & **Biaya desain (Rp50.000 sekali)** — menambah harga tiap baris/total otomatis, ringkasan & cetak penawaran menyebutnya.
+- Produk, Kategori, Galeri: CRUD + pencarian; **galeri multi-foto produk** (tabel `product_images`, maks 5 — unggah multi-file sekaligus, centang untuk menghapus, urutan `sort`, file ikut terhapus saat produk dihapus); gambar lama dihapus aman setelah penggantian.
 - FAQ, Testimoni, Pengaturan (jam buka, jenis sablon & teknik, slide & statistik beranda), Profil (ganti password dengan konfirmasi password saat ini).
 
 **Keamanan & performa**
@@ -76,7 +77,7 @@ php artisan serve
 
 ```bash
 vendor/bin/pint                # format kode (laravel preset)
-composer test                  # 244 test (unit + feature) - config:clear dulu
+composer test                  # 288 test (unit + feature) - config:clear dulu
 npm run build                  # build aset produksi
 ```
 
@@ -89,11 +90,14 @@ npm run build                  # build aset produksi
 ```
 app/Http/Controllers/          # Publik: Home, Catalog, Order, Track, Page, Sitemap
 app/Http/Controllers/Admin/    # Dashboard, Orders, Calculator, MasterData, Products,
-                               # Categories, Galleries, Faq, Testimonial, Setting, Profile
-app/Http/Middleware/           # SecurityHeaders (global, menangkap exception → header error)
+                               # Categories, Galleries, Faq, Testimonial, Setting, Profile,
+                               # ProductionQueue (antrian role produksi)
+app/Http/Middleware/           # SecurityHeaders (global, menangkap exception → header error),
+                               # EnsureRoleIsAdmin + EnsureUserRole (alias admin/role)
 app/Models/                    # CustomOrder (+ riwayat status, progres produksi), MasterOption
-                               # (master Type/Bahan/Warna), Faq, Testimonial, Setting…
+                               # (master Type/Bahan/Warna/Kerah/Bahan Jersey), Faq, Testimonial, Setting…
 app/Support/HomeContent.php    # Sumber data slider & statistik beranda
+app/Support/JerseyCatalog.php  # Opsi kerah/bahan jersey dari Data Master (fallback config)
 app/Support/PriceCalculator.php # Harga satuan kalkulator (tangga qty murni, unit-test)
 config/banjarcustom.php        # Kontak, jam buka, ukuran, link sosial, Google Maps
 routes/web.php                 # Rute publik + sitemap/robots + fallback 404

@@ -33,12 +33,22 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::firstOrCreate(
+            ['email' => 'produksi@banjarcustom.test'],
+            [
+                'name' => 'Operator Produksi',
+                'password' => 'password',
+                'role' => User::ROLE_PRODUKSI,
+            ]
+        );
+
         $this->call([
             CategorySeeder::class,
             ProductSeeder::class,
             GallerySeeder::class,
             FaqSeeder::class,
             TestimonialSeeder::class,
+            JerseyOptionSeeder::class,
         ]);
     }
 }

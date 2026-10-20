@@ -296,7 +296,9 @@ class OrderController extends Controller
         ])->save();
 
         return redirect()
-            ->route('admin.orders.show', $order)
+            ->to($request->input('redirect') === 'queue'
+                ? route('admin.produksi')
+                : route('admin.orders.show', $order))
             ->with('status', 'Progres produksi pesanan diperbarui.');
     }
 

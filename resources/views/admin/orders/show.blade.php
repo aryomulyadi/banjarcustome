@@ -1,10 +1,12 @@
 <x-layouts.admin :title="'Detail Pesanan #'.$order->id">
+    @php $isAdmin = auth()->user()?->isAdmin(); @endphp
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+        <a href="{{ $isAdmin ? route('admin.orders.index') : route('admin.produksi') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            Kembali ke daftar pesanan
+            {{ $isAdmin ? 'Kembali ke daftar pesanan' : 'Kembali ke antrian produksi' }}
         </a>
+        @if ($isAdmin)
         <a
             href="{{ route('admin.orders.print', $order) }}"
             target="_blank"
@@ -14,6 +16,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
             Cetak Nota
         </a>
+        @endif
     </div>
 
     <div class="mt-4 grid gap-5 lg:grid-cols-3">
@@ -182,6 +185,7 @@
         </div>
 
         <div class="space-y-5">
+            @if ($isAdmin)
             <div class="rounded-xl border border-border bg-card p-5">
                 <h2 class="text-base font-semibold">Spesifikasi Nota</h2>
                 <p class="mt-1.5 text-xs text-muted-foreground">Diisi admin sebelum cetak nota — tampil di kolom Bahan, Type, dan Warna.</p>
@@ -208,7 +212,7 @@
 
                     <div class="space-y-1.5">
                         <x-label for="warna">Warna</x-label>
-                        <x-input id="warna" name="warna" value="{{ old('warna', $order->warna) ?>" placeholder="cth. Navy / Hitam" maxlength="120" />
+                        <x-input id="warna" name="warna" value="{{ old('warna', $order->warna) }}" placeholder="cth. Navy / Hitam" maxlength="120" />
                         @error('warna')
                             <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
                         @enderror
@@ -218,11 +222,11 @@
                         <x-label for="collar_model">Model Kerah <span class="font-normal text-muted-foreground">(jersey)</span></x-label>
                         <x-input id="collar_model" name="collar_model" list="collar-options" value="{{ old('collar_model', $order->collar_model) }}" placeholder="cth. Wangky Zipper" maxlength="60" />
                         <datalist id="collar-options">
-                            @foreach (config('banjarcustom.jersey.collars', []) as $collar)
+                            @foreach (\App\Support\JerseyCatalog::collars() as $collar)
                                 <option value="{{ $collar['name'] }}"></option>
                             @endforeach
                         </datalist>
-                        <p class="text-xs text-muted-foreground">Opsi upgrade lihat <a href="{{ route('panduan-jersey') }}" target="_blank" class="underline hover:text-foreground">Panduan Jersey</a>.</p>
+                        <p class="text-xs text-muted-foreground">Opsi upgrade lihat <a href="{{ route('katalog-jersey') }}" target="_blank" class="underline hover:text-foreground">Katalog Jersey</a>.</p>
                         @error('collar_model')
                             <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
                         @enderror
@@ -378,6 +382,7 @@
                     </form>
                 @endif
             </div>
+            @endif
 
             <div class="rounded-xl border border-border bg-card p-5">
                 <h2 class="text-base font-semibold">Progres Produksi</h2>
@@ -408,6 +413,7 @@
                 </form>
             </div>
 
+            @if ($isAdmin)
             <div class="rounded-xl border border-border bg-card p-5">
                 <h2 class="text-base font-semibold">Desain</h2>
 
@@ -484,7 +490,9 @@
                     </a>
                 @endif
             </div>
+            @endif
 
+            @if ($isAdmin)
             <div class="rounded-xl border border-border bg-card p-5">
                 <h2 class="text-base font-semibold">DP 50%</h2>
 
@@ -528,11 +536,13 @@
                     <x-button type="submit" class="w-full">Simpan DP</x-button>
                 </form>
             </div>
+            @endif
 
             <div class="rounded-xl border border-border bg-card p-5">
                 <h2 class="text-base font-semibold">Serah Terima Produksi</h2>
                 <p class="mt-1.5 text-xs text-muted-foreground">Kartu Kerja untuk jalur konveksi; SPK untuk over ke operator sublim (jersey).</p>
 
+                @if ($isAdmin)
                 <form method="POST" action="{{ route('admin.orders.handover', $order) }}" class="mt-4 space-y-4">
                     @csrf
                     @method('PATCH')
@@ -553,6 +563,7 @@
 
                     <x-button type="submit" class="w-full">Simpan Operator</x-button>
                 </form>
+                @endif
 
                 <div class="mt-3 grid grid-cols-2 gap-2">
                     <a
@@ -574,6 +585,7 @@
                 </div>
             </div>
 
+            @if ($isAdmin)
             <div
                 class="rounded-xl border border-border bg-card p-5"
                 x-data='{
@@ -653,6 +665,7 @@
             >
                 Chat Pelanggan via WhatsApp
             </a>
+            @endif
         </div>
     </div>
 

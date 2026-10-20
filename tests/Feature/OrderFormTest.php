@@ -102,7 +102,7 @@ class OrderFormTest extends TestCase
             ->assertOk()
             ->assertSee('jersey 14–25 hari kerja (VIP ORDER +Rp10.000, lebih cepat)')
             ->assertSee('Minimal order jersey 12 pcs')
-            ->assertSee(route('panduan-jersey'), false)
+            ->assertDontSee('Panduan Jersey 2026-2027')
             ->assertSee('name="express"', false)
             ->assertSee('Pesanan Express')
             ->assertSee('same-day');

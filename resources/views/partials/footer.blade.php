@@ -54,6 +54,7 @@
                 <li><a href="{{ route('lokasi') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Lokasi Workshop</a></li>
                 <li><a href="{{ route('track.create') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Cek Status Pesanan</a></li>
                 <li><a href="{{ route('size-chart') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Panduan Ukuran</a></li>
+                <li><a href="{{ route('katalog-jersey') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Katalog Jersey</a></li>
                 <li><a href="{{ route('kebijakan-privasi') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Kebijakan Privasi</a></li>
                 <li><a href="{{ route('syarat-ketentuan') }}" class="text-sm text-muted-foreground transition-colors hover:text-primary">Syarat &amp; Ketentuan Pemesanan</a></li>
             </ul>

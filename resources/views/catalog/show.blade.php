@@ -1,7 +1,11 @@
+@php
+    $gallery = $product->images->values();
+    $ogImagePath = $product->image ?: $gallery->first()?->image;
+@endphp
 <x-layouts.app
     :title="$product->title . ' — Banjar Custome'"
     :description="Str::limit(strip_tags($product->description ?: 'Pesan ' . $product->title . ' custom di Banjar Custome, Banjarmasin. Sablon awet, produksi rapi, ecer & grosir.'), 160)"
-    :ogImage="$product->image ? asset('storage/' . $product->image) : asset('images/banner-1.jpg')"
+    :ogImage="$ogImagePath ? asset('storage/' . $ogImagePath) : asset('images/banner-1.jpg')"
     :ogImageWidth="800"
     :ogImageHeight="600"
     :ogType="'product'"
@@ -29,11 +33,69 @@
 
         <div class="grid gap-8 lg:grid-cols-2">
             {{-- Gambar --}}
-            <div class="overflow-hidden rounded-2xl border border-border bg-card">
-                @if ($product->image)
-                    <x-img :src="$product->image" :alt="$product->title" width="800" height="600" fetchpriority="high" decoding="async" class="aspect-[4/3] w-full object-cover" />
+            <div class="overflow-hidden rounded-2xl border border-border bg-card" @if ($gallery->count() > 1) x-data="{ index: 0 }" @endif>
+                @if ($gallery->isEmpty())
+                    @if ($product->image)
+                        <x-img :src="$product->image" :alt="$product->title" width="800" height="600" fetchpriority="high" decoding="async" class="aspect-[4/3] w-full object-cover" />
+                    @else
+                        <x-placeholder-image label="Foto Produk" class="aspect-[4/3]" />
+                    @endif
                 @else
-                    <x-placeholder-image label="Foto Produk" class="aspect-[4/3]" />
+                    <div class="relative">
+                        @foreach ($gallery as $i => $galleryImage)
+                            <div @if ($i > 0) style="display: none;" @endif x-show="index === {{ $i }}">
+                                <x-img
+                                    :src="$galleryImage->image"
+                                    :alt="$galleryImage->alt ?: $product->title"
+                                    width="800"
+                                    height="600"
+                                    fetchpriority="{{ $i === 0 ? 'high' : 'auto' }}"
+                                    decoding="async"
+                                    class="aspect-[4/3] w-full object-cover"
+                                />
+                            </div>
+                        @endforeach
+
+                        @if ($gallery->count() > 1)
+                            <button
+                                type="button"
+                                x-on:click="index = (index - 1 + {{ $gallery->count() }}) % {{ $gallery->count() }}"
+                                class="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow transition-colors hover:bg-background"
+                                aria-label="Foto sebelumnya"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                            </button>
+                            <button
+                                type="button"
+                                x-on:click="index = (index + 1) % {{ $gallery->count() }}"
+                                class="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow transition-colors hover:bg-background"
+                                aria-label="Foto berikutnya"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+                                @foreach ($gallery as $i => $galleryImage)
+                                    <button
+                                        type="button"
+                                        x-on:click="index = {{ $i }}"
+                                        class="h-2 w-2 rounded-full transition-colors"
+                                        x-bind:class="index === {{ $i }} ? 'bg-primary' : 'bg-background/60'"
+                                        aria-label="Foto ke-{{ $i + 1 }}"
+                                    ></button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+
+                    @if ($gallery->count() > 1)
+                        <div class="flex gap-2 border-t border-border p-2">
+                            @foreach ($gallery as $i => $galleryImage)
+                                <button type="button" x-on:click="index = {{ $i }}" class="shrink-0 overflow-hidden rounded-md border-2 transition-colors" x-bind:class="index === {{ $i }} ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'">
+                                    <x-img :src="$galleryImage->image" :alt="$galleryImage->alt ?: $product->title.' foto '.($i + 1)" loading="lazy" class="h-14 w-14 object-cover" />
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                 @endif
             </div>
 
@@ -53,8 +115,8 @@
                 <p class="mt-1 text-xs text-muted-foreground">Harga estimasi — final menyesuaikan bahan, jumlah, dan tingkat kerumitan desain.</p>
 
                 @if (\App\Support\ServiceTypes::isJerseyTitle($product->title) || \App\Support\ServiceTypes::isJerseyTitle($product->category?->name))
-                    <a href="{{ route('panduan-jersey') }}" class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm font-semibold transition-colors hover:bg-primary/10">
-                        <span>Panduan Jersey 2026-2027 — harga dasar, minimal order, upgrade kerah &amp; bahan</span>
+                    <a href="{{ route('katalog-jersey') }}" class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm font-semibold transition-colors hover:bg-primary/10">
+                        <span>Lihat Katalog Jersey — harga dasar, minimal order, upgrade kerah &amp; bahan</span>
                         <span aria-hidden="true">→</span>
                     </a>
                 @endif
@@ -116,7 +178,14 @@
             '@type' => 'Product',
             'name' => $product->title,
             'description' => Str::limit(strip_tags($product->description ?? ''), 200),
-            'image' => $product->image ? asset('storage/'.$product->image) : asset('images/banner-1.jpg'),
+            'image' => ($product->image || $gallery->isNotEmpty())
+                ? collect([$product->image])
+                    ->concat($gallery->pluck('image'))
+                    ->filter()
+                    ->map(fn (string $path) => asset('storage/'.$path))
+                    ->values()
+                    ->all()
+                : asset('images/banner-1.jpg'),
             'url' => route('produk.show', $product->slug),
             'brand' => ['@type' => 'Brand', 'name' => 'Banjar Custome'],
             'offers' => [

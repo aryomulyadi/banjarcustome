@@ -270,6 +270,43 @@ class SeoTest extends TestCase
             ->assertSee('"@type":"BreadcrumbList"', false);
     }
 
+    public function test_katalog_jersey_has_faq_and_breadcrumb_json_ld(): void
+    {
+        $this->get('/katalog-jersey')
+            ->assertOk()
+            ->assertSee('"@type":"BreadcrumbList"', false)
+            ->assertSee('"name":"Katalog Jersey"', false)
+            ->assertSee('"@type":"FAQPage"', false)
+            ->assertSee('"name":"Berapa minimal pemesanan jersey?"', false)
+            ->assertSee('"name":"Bagaimana cara memesan jersey?"', false)
+            ->assertSee('<link rel="canonical" href="'.route('katalog-jersey').'"', false);
+    }
+
+    public function test_katalog_jersey_lists_jersey_products_in_item_list_json_ld(): void
+    {
+        $category = Category::create(['name' => 'Jersey Futsal', 'slug' => 'jersey-futsal']);
+        $product = Product::create([
+            'category_id' => $category->id,
+            'title' => 'Jersey Item List Tes',
+            'slug' => 'jersey-item-list-tes',
+            'image' => 'products/jersey-item-list.jpg',
+        ]);
+
+        $this->get('/katalog-jersey')
+            ->assertOk()
+            ->assertSee('"@type":"ItemList"', false)
+            ->assertSee('"name":"Jersey Item List Tes"', false)
+            ->assertSee(route('produk.show', $product->slug), false)
+            ->assertSee(asset('storage/products/jersey-item-list.jpg'), false);
+    }
+
+    public function test_katalog_jersey_item_list_hidden_without_products(): void
+    {
+        $this->get('/katalog-jersey')
+            ->assertOk()
+            ->assertDontSee('"@type":"ItemList"', false);
+    }
+
     public function test_sitemap_includes_lastmod_and_image_for_products(): void
     {
         $category = Category::create(['name' => 'Jersey', 'slug' => 'jersey']);
@@ -299,7 +336,7 @@ class SeoTest extends TestCase
 
     public function test_content_pages_return_successful_response(): void
     {
-        foreach (['/tentang', '/layanan', '/lokasi', '/faq', '/panduan-ukuran', '/panduan-jersey', '/kebijakan-privasi', '/syarat-ketentuan'] as $uri) {
+        foreach (['/tentang', '/layanan', '/lokasi', '/faq', '/panduan-ukuran', '/katalog-jersey', '/kebijakan-privasi', '/syarat-ketentuan'] as $uri) {
             $this->get($uri)->assertOk();
         }
     }
