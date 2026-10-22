@@ -12,14 +12,14 @@
                 href="{{ route('admin.orders.index', $chipQuery(['status' => null])) }}"
                 class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ ! $activeStatus ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
             >
-                Semua <span class="opacity-70">({{ $statusCounts['all'] ?? 0 }})</span>
+                Semua <span>({{ $statusCounts['all'] ?? 0 }})</span>
             </a>
             @foreach ($statusLabels as $key => $label)
                 <a
                     href="{{ route('admin.orders.index', $chipQuery(['status' => $key])) }}"
                     class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === $key ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
                 >
-                    {{ $label }} <span class="opacity-70">({{ $statusCounts[$key] ?? 0 }})</span>
+                    {{ $label }} <span>({{ $statusCounts[$key] ?? 0 }})</span>
                 </a>
             @endforeach
         </div>

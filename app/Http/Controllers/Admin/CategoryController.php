@@ -63,6 +63,7 @@ class CategoryController extends Controller
 
         $category->update([
             'name' => $validated['name'],
+            'slug' => $this->uniqueSlug($validated['name'], $category->id),
             'description' => $validated['description'] ?? null,
         ]);
 
@@ -86,13 +87,19 @@ class CategoryController extends Controller
             ->with('status', 'Kategori berhasil dihapus.');
     }
 
-    private function uniqueSlug(string $name): string
+    private function uniqueSlug(string $name, int $exceptId = 0): string
     {
         $base = Str::slug($name) ?: 'kategori';
         $slug = $base;
         $suffix = 2;
 
-        while (Category::where('slug', $slug)->exists()) {
+        $taken = function (string $candidate) use ($exceptId) {
+            return Category::where('slug', $candidate)
+                ->when($exceptId, fn ($query) => $query->where('id', '!=', $exceptId))
+                ->exists();
+        };
+
+        while ($taken($slug)) {
             $slug = $base.'-'.$suffix++;
         }
 

@@ -1,4 +1,17 @@
-@props(['product'])
+@props(['product', 'highlightColor' => null])
+
+@php
+    $swatches = $product->colors->take(6);
+
+    if ($highlightColor) {
+        $matched = $product->colors->firstWhere('name', $highlightColor);
+
+        if ($matched) {
+            $swatches = collect([$matched])
+                ->concat($product->colors->where('name', '!=', $highlightColor)->take(5));
+        }
+    }
+@endphp
 
 <a
     href="{{ route('produk.show', $product->slug) }}"
@@ -13,6 +26,7 @@
                 height="600"
                 loading="lazy"
                 decoding="async"
+                sizes="(min-width: 1024px) 400px, (min-width: 640px) calc(50vw - 32px), calc(100vw - 32px)"
                 class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
         @else
@@ -39,9 +53,9 @@
             </span>
             @if ($product->colors->isNotEmpty())
                 <div class="flex -space-x-1.5">
-                    @foreach ($product->colors->take(6) as $color)
+                    @foreach ($swatches as $color)
                         <span
-                            class="h-4 w-4 rounded-full border-2 border-card"
+                            class="h-4 w-4 rounded-full border-2 border-card {{ $highlightColor && $color->name === $highlightColor ? 'ring-2 ring-ring ring-offset-1 ring-offset-card' : '' }}"
                             style="background-color: {{ $color->hex }}"
                             title="{{ $color->name }}"
                         ></span>

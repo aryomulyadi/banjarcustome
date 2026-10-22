@@ -96,6 +96,7 @@ class ProductController extends Controller
         $product->update([
             'category_id' => $validated['category_id'],
             'title' => $validated['title'],
+            'slug' => $this->uniqueSlug($validated['title'], $product->id),
             'description' => $validated['description'] ?? null,
             'price_estimate' => $validated['price_estimate'] ?? null,
             'base_price' => $validated['base_price'] ?? null,
@@ -190,13 +191,19 @@ class ProductController extends Controller
         ]);
     }
 
-    private function uniqueSlug(string $title): string
+    private function uniqueSlug(string $title, int $exceptId = 0): string
     {
         $base = Str::slug($title) ?: 'produk';
         $slug = $base;
         $suffix = 2;
 
-        while (Product::where('slug', $slug)->exists()) {
+        $taken = function (string $candidate) use ($exceptId) {
+            return Product::where('slug', $candidate)
+                ->when($exceptId, fn ($query) => $query->where('id', '!=', $exceptId))
+                ->exists();
+        };
+
+        while ($taken($slug)) {
             $slug = $base.'-'.$suffix++;
         }
 

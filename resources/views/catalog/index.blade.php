@@ -52,31 +52,43 @@
                     </div>
 
                     <fieldset class="mt-6">
-                        <legend class="text-sm font-semibold uppercase tracking-wider">Warna</legend>
-                        <div class="mt-3 space-y-2">
-                            <label class="flex cursor-pointer items-center gap-2.5">
+                        <legend class="text-sm font-semibold uppercase tracking-wider">Warna Tersedia</legend>
+                        <p class="mt-1 text-xs text-muted-foreground">Produk yang tersedia dalam warna pilihan.</p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <label class="cursor-pointer">
                                 <input type="radio" name="warna" value="" class="peer sr-only" @checked(request('warna') === null || request('warna') === '')>
-                                <span class="h-5 w-5 rounded-full border border-border bg-muted peer-checked:ring-2 peer-checked:ring-ring peer-checked:ring-offset-2 peer-checked:ring-offset-background"></span>
-                                <span class="text-sm text-muted-foreground">Semua warna</span>
+                                <span class="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors peer-checked:border-primary peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background">
+                                    Semua
+                                </span>
                             </label>
 
                             @foreach ($colors as $color)
-                                <label class="flex cursor-pointer items-center gap-2.5">
-                                    <input type="radio" name="warna" value="{{ $color->name }}" class="peer sr-only" @checked(request('warna') === $color->name)>
-                                    <span class="h-5 w-5 rounded-full border border-border peer-checked:ring-2 peer-checked:ring-ring peer-checked:ring-offset-2 peer-checked:ring-offset-background" style="background-color: {{ $color->hex }}"></span>
-                                    <span class="text-sm text-muted-foreground">{{ $color->name }}</span>
+                                <label class="cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="warna"
+                                        value="{{ $color->name }}"
+                                        class="peer sr-only"
+                                        aria-label="{{ $color->name }}, {{ $color->products_count }} produk"
+                                        @checked(request('warna') === $color->name)
+                                    >
+                                    <span
+                                        class="block h-7 w-7 rounded-full border border-border transition-shadow peer-checked:ring-2 peer-checked:ring-ring peer-checked:ring-offset-2 peer-checked:ring-offset-background peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+                                        style="background-color: {{ $color->hex }}"
+                                        title="{{ $color->name }} — {{ $color->products_count }} produk"
+                                    ></span>
                                 </label>
                             @endforeach
                         </div>
                     </fieldset>
 
                     <div class="mt-6 flex gap-2">
-                        <button type="submit" class="inline-flex h-9 flex-1 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+                        <x-button type="submit" size="sm" class="flex-1">
                             Terapkan
-                        </button>
-                        <a href="{{ route('produk.index') }}" class="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-secondary">
+                        </x-button>
+                        <x-button href="{{ request()->url() }}" size="sm" variant="outline">
                             Reset
-                        </a>
+                        </x-button>
                     </div>
                 </form>
 
@@ -105,24 +117,46 @@
                             <span class="rounded-full bg-secondary px-3 py-1">Pencarian: "{{ request('q') }}"</span>
                         @endif
                         @if (request('warna'))
-                            <span class="rounded-full bg-secondary px-3 py-1">Warna: {{ request('warna') }}</span>
+                            <span class="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1">
+                                @php $activeColorHex = $colors->firstWhere('name', request('warna'))?->hex; @endphp
+                                @if ($activeColorHex)
+                                    <span class="h-3 w-3 rounded-full border border-border" style="background-color: {{ $activeColorHex }}"></span>
+                                @endif
+                                Warna: {{ request('warna') }}
+                            </span>
                         @endif
                     </div>
                 @endif
 
-                @if ($products->isEmpty())
+                @php $isJerseyCategory = $activeCategory && \Illuminate\Support\Str::contains(strtolower($activeCategory->name), 'jersey'); @endphp
+
+                @if ($isJerseyCategory)
+                    <a
+                        href="{{ route('katalog-jersey') }}"
+                        class="mb-6 flex items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 px-5 py-4 text-sm font-semibold transition-colors hover:bg-primary/10"
+                    >
+                        <span>
+                            Jersey custom — harga dasar Rp 85.000/pcs, minimal 12 pcs, upgrade kerah &amp; bahan ada di Katalog Jersey.
+                        </span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                @endif
+
+                @if ($products->isEmpty() && ! $isJerseyCategory)
                     <div class="rounded-xl border border-dashed border-border p-12 text-center">
                         <p class="font-medium">Produk tidak ditemukan</p>
                         <p class="mt-1 text-sm text-muted-foreground">Coba ubah kata kunci atau hapus filter warna.</p>
-                        <a href="{{ route('produk.index') }}" class="mt-4 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+                        <x-button href="{{ route('produk.index') }}" size="sm" class="mt-4">
                             Lihat Semua Produk
-                        </a>
+                        </x-button>
                     </div>
+                @elseif ($products->isEmpty())
+                    {{-- Kategori jersey: banner di atas sudah menjadi ajakan utama. --}}
                 @else
                     <p class="mb-4 text-sm text-muted-foreground">{{ $products->total() }} produk ditemukan</p>
                     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         @foreach ($products as $product)
-                            <x-product-card :product="$product" />
+                            <x-product-card :product="$product" :highlight-color="request()->filled('warna') ? request('warna') : null" />
                         @endforeach
                     </div>
 

@@ -334,6 +334,25 @@ class SeoTest extends TestCase
             ->assertSee('rel="apple-touch-icon"', false);
     }
 
+    public function test_og_image_file_exists_and_matches_declared_dimensions(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertSame(
+            1,
+            preg_match('/<meta property="og:image" content="([^"]+)"/', $html, $m),
+            'Meta og:image tidak ditemukan di halaman home.'
+        );
+
+        $path = public_path(parse_url($m[1], PHP_URL_PATH));
+        $this->assertFileExists($path, 'File og:image tidak ada: '.$path);
+
+        $size = getimagesize($path);
+        $this->assertNotFalse($size, 'getimagesize gagal untuk '.$path);
+        $this->assertSame(1600, (int) $size[0], 'Lebar file og:image harus 1600 (sesuai meta).');
+        $this->assertSame(700, (int) $size[1], 'Tinggi file og:image harus 700 (sesuai meta).');
+    }
+
     public function test_content_pages_return_successful_response(): void
     {
         foreach (['/tentang', '/layanan', '/lokasi', '/faq', '/panduan-ukuran', '/katalog-jersey', '/kebijakan-privasi', '/syarat-ketentuan'] as $uri) {

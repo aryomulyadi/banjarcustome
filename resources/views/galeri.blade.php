@@ -58,7 +58,7 @@
                                     class="block"
                                     @click.prevent="open({{ $index }})"
                                 >
-                                    <x-img :src="$gallery->image" :alt="$gallery->title" width="800" height="600" loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                                    <x-img :src="$gallery->image" :alt="$gallery->title" width="800" height="600" loading="lazy" decoding="async" sizes="(min-width: 1024px) 400px, (min-width: 640px) calc(50vw - 32px), calc(100vw - 32px)" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                                 </a>
                             @else
                                 <x-placeholder-image label="Galeri" class="transition-transform duration-300 group-hover:scale-105" />
@@ -82,6 +82,7 @@
 
                 <dialog
                     x-ref="dialog"
+                    aria-label="Pratinjau foto galeri"
                     @click="if ($event.target === $el) close()"
                     @keydown.left.prevent="prev()"
                     @keydown.right.prevent="next()"
@@ -102,6 +103,8 @@
                                 :alt="current?.title"
                                 width="800"
                                 height="600"
+                                loading="lazy"
+                                decoding="async"
                                 class="max-h-[70vh] w-auto max-w-full object-contain"
                             >
                         </div>

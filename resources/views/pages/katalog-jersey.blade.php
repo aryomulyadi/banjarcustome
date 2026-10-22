@@ -285,18 +285,18 @@
             </p>
 
             <div class="mt-4 flex flex-wrap gap-3">
-                <a
+                <x-button
                     href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode($defaultWaText) }}"
-                    :href="waHref"
+                    x-bind:href="waHref"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-bold text-primary-foreground transition-transform hover:-translate-y-0.5"
+                    size="lg"
                 >
                     Pesan via WhatsApp
-                </a>
-                <a href="{{ route('pesan.create') }}" class="inline-flex h-11 items-center rounded-md border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary">
+                </x-button>
+                <x-button href="{{ route('pesan.create') }}" size="lg" variant="outline">
                     Isi Form Pesanan
-                </a>
+                </x-button>
             </div>
         </div>
 
@@ -355,12 +355,12 @@
                 Minimal {{ $j['min_order'] ?? 12 }} pcs - kirim desain tim Anda, kami bantu cek kesiapan cetak.
             </p>
             <div class="mt-3 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('pesan.create') }}" class="inline-flex h-12 items-center rounded-md bg-primary-foreground px-8 text-sm font-bold text-primary transition-transform hover:-translate-y-0.5">
+                <x-button href="{{ route('pesan.create') }}" size="xl" variant="invert">
                     Isi Form Pesanan
-                </a>
-                <a href="{{ config('banjarcustom.whatsapp_link') }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-12 items-center rounded-md border border-primary-foreground/40 px-8 text-sm font-semibold transition-colors hover:bg-primary-foreground/10">
+                </x-button>
+                <x-button href="{{ config('banjarcustom.whatsapp_link') }}" size="xl" variant="invert-outline" target="_blank" rel="noopener noreferrer">
                     Konsultasi WhatsApp
-                </a>
+                </x-button>
             </div>
         </div>
     </div>

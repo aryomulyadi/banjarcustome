@@ -68,12 +68,12 @@
                 Konsultasikan kebutuhan Anda sekarang — gratis, tanpa minimal pesanan untuk konsultasi.
             </p>
             <div class="mt-5 flex flex-wrap gap-3">
-                <a href="{{ route('pesan.create') }}" class="inline-flex h-11 items-center rounded-md bg-primary-foreground px-6 text-sm font-bold text-primary transition-transform hover:-translate-y-0.5">
+                <x-button href="{{ route('pesan.create') }}" size="lg" variant="invert">
                     Buat Pesanan
-                </a>
-                <a href="{{ config('banjarcustom.whatsapp_link') }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-11 items-center rounded-md border border-primary-foreground/40 px-6 text-sm font-semibold transition-colors hover:bg-primary-foreground/10">
+                </x-button>
+                <x-button href="{{ config('banjarcustom.whatsapp_link') }}" size="lg" variant="invert-outline" target="_blank" rel="noopener noreferrer">
                     Chat WhatsApp
-                </a>
+                </x-button>
             </div>
         </div>
     </div>

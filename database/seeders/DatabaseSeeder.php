@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,6 +17,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new RuntimeException(
+                'DatabaseSeeder hanya untuk local/development — jangan jalankan db:seed di produksi. '
+                .'Buat akun admin via CLI: php artisan tinker --execute="App\Models\User::create([...])".'
+            );
+        }
+
         User::firstOrCreate(
             ['email' => 'admin@banjarcustom.test'],
             [
@@ -43,12 +52,12 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
-            CategorySeeder::class,
-            ProductSeeder::class,
             GallerySeeder::class,
             FaqSeeder::class,
             TestimonialSeeder::class,
             JerseyOptionSeeder::class,
         ]);
+
+        Artisan::call('catalog:sync');
     }
 }

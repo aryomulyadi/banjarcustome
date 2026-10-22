@@ -73,7 +73,7 @@ class NotaTableTest extends TestCase
     public function test_print_omits_deadline_estimation_delivery_and_address(): void
     {
         $order = $this->order([
-            'deadline' => '2026-10-23',
+            'deadline' => '2099-12-24',
             'is_express' => false,
             'delivery_method' => 'kirim',
             'address' => 'Jl. Contoh No. 1, Banjarmasin',
@@ -88,7 +88,7 @@ class NotaTableTest extends TestCase
         $this->assertStringNotContainsString('>Estimasi<', $content);
         $this->assertStringNotContainsString('>Pengiriman<', $content);
         $this->assertStringNotContainsString('>Alamat<', $content);
-        $this->assertStringNotContainsString('23 Oktober 2026', $content);
+        $this->assertStringNotContainsString('24 Desember 2099', $content);
         $this->assertStringNotContainsString('kaos 3-7 hari kerja', $content);
         $this->assertStringNotContainsString('Jl. Contoh No. 1', $content);
     }

@@ -141,7 +141,7 @@ class AdminCrudTest extends TestCase
         $product->refresh();
 
         $this->assertSame('Produk Terbaru', $product->title);
-        $this->assertSame('produk-lama', $product->slug);
+        $this->assertSame('produk-terbaru', $product->slug, 'Rename produk ikut menyinkronkan slug (Fase 24).');
         Storage::disk('public')->assertMissing('products/lama.png');
         Storage::disk('public')->assertMissing('products/lama.webp');
         Storage::disk('public')->assertExists($product->image);
@@ -251,7 +251,7 @@ class AdminCrudTest extends TestCase
         $category->refresh();
         $this->assertSame('Sablon & Cetak', $category->name);
         $this->assertSame('Deskripsi kategori diperbarui.', $category->description);
-        $this->assertSame('sablon', $category->slug);
+        $this->assertSame('sablon-cetak', $category->slug, 'Rename kategori ikut menyinkronkan slug (Fase 24).');
     }
 
     public function test_category_update_requires_name(): void
@@ -386,5 +386,63 @@ class AdminCrudTest extends TestCase
         $this->actingAs($customer)
             ->get(route('admin.master.index'))
             ->assertForbidden();
+    }
+
+    public function test_renaming_category_syncs_slug(): void
+    {
+        $admin = $this->admin();
+        $category = Category::create(['name' => 'Jaket Lama', 'slug' => 'jaket-lama', 'description' => null]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.categories.update', $category), [
+                'name' => 'Sweater',
+                'description' => 'Jaket & sweater custom.',
+            ])
+            ->assertRedirect(route('admin.categories.index'));
+
+        $category->refresh();
+
+        $this->assertSame('Sweater', $category->name);
+        $this->assertSame('sweater', $category->slug, 'Rename kategori harus ikut menyinkronkan slug (Fase 24).');
+        $this->assertSame('Jaket & sweater custom.', $category->description);
+    }
+
+    public function test_renaming_category_keeps_slug_when_name_unchanged(): void
+    {
+        $admin = $this->admin();
+        $category = Category::create(['name' => 'Kaos', 'slug' => 'kaos', 'description' => null]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.categories.update', $category), [
+                'name' => 'Kaos',
+                'description' => 'Kaos custom.',
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('kaos', $category->fresh()->slug, 'Nama sama = slug tidak boleh di-suffix.');
+    }
+
+    public function test_renaming_product_syncs_slug(): void
+    {
+        $admin = $this->admin();
+        $category = $this->category();
+        $product = Product::create([
+            'category_id' => $category->id,
+            'title' => 'Produk Lama',
+            'slug' => 'produk-lama',
+            'price_estimate' => 'Rp 10.000',
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.products.update', $product), [
+                'category_id' => $category->id,
+                'title' => 'Produk Baru',
+            ])
+            ->assertRedirect(route('admin.products.index'));
+
+        $product->refresh();
+
+        $this->assertSame('Produk Baru', $product->title);
+        $this->assertSame('produk-baru', $product->slug, 'Rename produk harus ikut menyinkronkan slug (Fase 24).');
     }
 }

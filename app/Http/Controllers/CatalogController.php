@@ -69,8 +69,10 @@ class CatalogController extends Controller
 
         $categories = Category::withCount('products')->orderBy('name')->get();
 
-        $colors = ProductColor::select('name', 'hex')
-            ->distinct()
+        $colors = ProductColor::query()
+            ->select('name', 'hex')
+            ->selectRaw('COUNT(DISTINCT product_id) AS products_count')
+            ->groupBy('name', 'hex')
             ->orderBy('name')
             ->get();
 

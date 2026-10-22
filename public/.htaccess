@@ -23,3 +23,37 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# --- Fase 23: Kompresi (aman bila modul tidak tersedia) ----------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE application/xml
+</IfModule>
+
+# --- Fase 23: Cache-Control aset Vite ber-hash (immutable) -------------------
+# Pola: nama-<hash>.css|js (hash Rollup >=7 karakter). fonts.css TIDAK match.
+<IfModule mod_headers.c>
+    <FilesMatch "^.+-[A-Za-z0-9_-]{7,}\.(css|js|map)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# --- Fase 23: Masa hidup statis. Upload /storage sengaja TIDAK ikut (bisa --
+# ditimpa dengan nama sama). Konten dinamis (HTML via index.php) tidak -------
+# terpengaruh ExpiresByType.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+</IfModule>

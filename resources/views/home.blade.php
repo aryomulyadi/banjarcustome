@@ -9,12 +9,28 @@
             @foreach ($slides as $i => $slide)
                 <div
                     x-cloak
-                    class="absolute inset-0 transition-opacity duration-700"
-                    :class="index === {{ $i }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
+                    x-show="index === {{ $i }}"
+                    x-transition.opacity.duration.700ms
+                    class="absolute inset-0"
                 >
+                    @php
+                        $slideImage = $slide['image'] ?? '';
+                        $slideWebp = preg_replace('/\.(jpe?g)$/i', '.webp', $slideImage);
+                        $slideSrc = preg_match('/\.(jpe?g)$/i', $slideImage) && file_exists(public_path($slideWebp))
+                            ? $slideWebp
+                            : $slideImage;
+                        $slideSrcset = null;
+                        if (str_ends_with($slideSrc, '.webp')) {
+                            $slideVariant = preg_replace('/\.webp$/i', '-1024.webp', $slideSrc);
+                            if ($slideVariant !== $slideSrc && file_exists(public_path($slideVariant))) {
+                                $slideSrcset = asset($slideVariant).' 1024w, '.asset($slideSrc).' 1600w';
+                            }
+                        }
+                    @endphp
                     @if (! empty($slide['image']) && file_exists(public_path($slide['image'])))
                         <img
-                            src="{{ asset($slide['image']) }}"
+                            src="{{ asset($slideSrc) }}"
+                            @if ($slideSrcset) srcset="{{ $slideSrcset }}" sizes="(min-width: 1280px) 1216px, calc(100vw - 32px)" @endif
                             alt="{{ $slide['title'] }}"
                             width="1600"
                             height="700"
@@ -35,12 +51,12 @@
                             {{ $slide['subtitle'] }}
                         </p>
                         <div class="mt-2 flex flex-wrap gap-3">
-                            <a href="{{ route('produk.index') }}" class="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+                            <x-button href="{{ route('produk.index') }}" size="lg">
                                 Lihat Katalog
-                            </a>
-                            <a href="{{ route('pesan.create') }}" class="inline-flex h-11 items-center rounded-md border border-border bg-background/80 px-6 text-sm font-semibold text-foreground transition-colors hover:bg-secondary">
+                            </x-button>
+                            <x-button href="{{ route('pesan.create') }}" size="lg" variant="outline">
                                 Mulai Pesan
-                            </a>
+                            </x-button>
                         </div>
                     </div>
                 </div>
@@ -65,15 +81,19 @@
                     <svg x-show="!paused" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect width="6" height="14" x="4" y="5" rx="1"/><rect width="6" height="14" x="14" y="5" rx="1"/></svg>
                 </button>
 
-                <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+                <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1">
                     @foreach ($slides as $i => $slide)
                         <button
                             type="button"
                             @click="index = {{ $i }}"
-                            class="h-2.5 rounded-full transition-all"
-                            :class="index === {{ $i }} ? 'w-6 bg-primary' : 'w-2.5 bg-muted-foreground/40 hover:bg-muted-foreground/70'"
+                            class="flex h-6 w-6 items-center justify-center"
                             aria-label="Slide {{ $i + 1 }}"
-                        ></button>
+                        >
+                            <span
+                                class="block h-2.5 rounded-full transition-all"
+                                :class="index === {{ $i }} ? 'w-6 bg-primary' : 'w-2.5 bg-muted-foreground/40 hover:bg-muted-foreground/70'"
+                            ></span>
+                        </button>
                     @endforeach
                 </div>
             @endif
@@ -151,17 +171,18 @@
                     Mulai dari satuan hingga grosir.
                 </p>
                 <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
-                    <a href="{{ route('pesan.create') }}" class="inline-flex h-12 items-center rounded-md bg-primary-foreground px-8 text-sm font-bold text-primary transition-transform hover:-translate-y-0.5">
+                    <x-button href="{{ route('pesan.create') }}" size="xl" variant="invert">
                         Mulai Pesan Sekarang
-                    </a>
-                    <a
+                    </x-button>
+                    <x-button
                         href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya mau konsultasi custom seragam/kaos.') }}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex h-12 items-center rounded-md border border-primary-foreground/40 px-8 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
+                        size="xl"
+                        variant="invert-outline"
                     >
                         Chat WhatsApp
-                    </a>
+                    </x-button>
                 </div>
             </div>
         </div>
@@ -183,7 +204,7 @@
             @forelse ($galleries as $gallery)
                 <figure class="group overflow-hidden rounded-xl border border-border bg-card">
                     @if ($gallery->image)
-                        <x-img :src="$gallery->image" :alt="$gallery->title" width="800" height="600" loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <x-img :src="$gallery->image" :alt="$gallery->title" width="800" height="600" loading="lazy" decoding="async" sizes="(min-width: 1024px) 400px, (min-width: 640px) calc(50vw - 32px), calc(100vw - 32px)" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     @else
                         <x-placeholder-image label="Galeri" class="transition-transform duration-300 group-hover:scale-105" />
                     @endif
@@ -221,7 +242,7 @@
                         <figcaption class="flex items-center gap-3">
                             @if ($testimonial->photo)
                                 <span class="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-primary/15">
-                                    <x-img :src="$testimonial->photo" :alt="$testimonial->name" width="88" height="88" loading="lazy" decoding="async" class="h-11 w-11 object-cover" />
+                                    <x-img :src="$testimonial->photo" :alt="$testimonial->name" width="88" height="88" loading="lazy" decoding="async" sizes="88px" class="h-11 w-11 object-cover" />
                                 </span>
                             @else
                                 <span aria-hidden="true" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
@@ -243,7 +264,7 @@
                             </div>
                         </figcaption>
 
-                        <div class="mt-3 flex items-center gap-1 text-primary" aria-label="Rating {{ $testimonial->rating }} dari 5">
+                        <div class="mt-3 flex items-center gap-1 text-primary" role="img" aria-label="Rating {{ $testimonial->rating }} dari 5">
                             @for ($i = 1; $i <= 5; $i++)
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="{{ $i <= $testimonial->rating ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.123 2.123 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
                             @endfor

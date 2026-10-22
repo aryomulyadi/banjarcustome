@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotFoundController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\SitemapController;
@@ -61,6 +62,4 @@ Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 require __DIR__.'/admin.php';
 
-Route::fallback(function () {
-    return response()->view('errors.404', [], 404);
-})->name('fallback');
+Route::fallback(NotFoundController::class)->name('fallback');

@@ -19,6 +19,7 @@
             })();
         </script>
 
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen bg-background text-foreground">

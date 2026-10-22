@@ -77,12 +77,12 @@
                 Konsultasikan kebutuhan seragam, kaos tim, atau merchandise Anda — gratis tanpa minimum konsultasi.
             </p>
             <div class="mt-3 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('pesan.create') }}" class="inline-flex h-12 items-center rounded-md bg-primary-foreground px-8 text-sm font-bold text-primary transition-transform hover:-translate-y-0.5">
+                <x-button href="{{ route('pesan.create') }}" size="xl" variant="invert">
                     Isi Form Pesanan
-                </a>
-                <a href="{{ route('lokasi') }}" class="inline-flex h-12 items-center rounded-md border border-primary-foreground/40 px-8 text-sm font-semibold transition-colors hover:bg-primary-foreground/10">
+                </x-button>
+                <x-button href="{{ route('lokasi') }}" size="xl" variant="invert-outline">
                     Lokasi Workshop
-                </a>
+                </x-button>
             </div>
         </div>
     </div>

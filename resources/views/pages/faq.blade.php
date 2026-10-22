@@ -35,9 +35,15 @@
         <div class="mt-10 rounded-2xl border border-border bg-muted/40 p-6 text-center">
             <h2 class="text-lg font-bold">Masih ada pertanyaan?</h2>
             <p class="mt-1 text-sm text-muted-foreground">Kami siap membantu memilih bahan, desain, dan estimasi harga.</p>
-            <a href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya punya pertanyaan tentang pesanan.') }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+            <x-button
+                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya punya pertanyaan tentang pesanan.') }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="lg"
+                class="mt-4"
+            >
                 Chat via WhatsApp
-            </a>
+            </x-button>
         </div>
     </div>
 

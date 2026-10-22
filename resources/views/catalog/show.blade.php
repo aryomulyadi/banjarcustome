@@ -36,7 +36,7 @@
             <div class="overflow-hidden rounded-2xl border border-border bg-card" @if ($gallery->count() > 1) x-data="{ index: 0 }" @endif>
                 @if ($gallery->isEmpty())
                     @if ($product->image)
-                        <x-img :src="$product->image" :alt="$product->title" width="800" height="600" fetchpriority="high" decoding="async" class="aspect-[4/3] w-full object-cover" />
+                        <x-img :src="$product->image" :alt="$product->title" width="800" height="600" fetchpriority="high" decoding="async" sizes="(min-width: 1024px) 600px, calc(100vw - 32px)" class="aspect-[4/3] w-full object-cover" />
                     @else
                         <x-placeholder-image label="Foto Produk" class="aspect-[4/3]" />
                     @endif
@@ -51,6 +51,7 @@
                                     height="600"
                                     fetchpriority="{{ $i === 0 ? 'high' : 'auto' }}"
                                     decoding="async"
+                                    sizes="(min-width: 1024px) 600px, calc(100vw - 32px)"
                                     class="aspect-[4/3] w-full object-cover"
                                 />
                             </div>
@@ -73,15 +74,19 @@
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                             </button>
-                            <div class="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
+                            <div class="absolute inset-x-0 bottom-2 flex justify-center gap-1">
                                 @foreach ($gallery as $i => $galleryImage)
                                     <button
                                         type="button"
                                         x-on:click="index = {{ $i }}"
-                                        class="h-2 w-2 rounded-full transition-colors"
-                                        x-bind:class="index === {{ $i }} ? 'bg-primary' : 'bg-background/60'"
+                                        class="flex h-6 w-6 items-center justify-center"
                                         aria-label="Foto ke-{{ $i + 1 }}"
-                                    ></button>
+                                    >
+                                        <span
+                                            class="block h-2 w-2 rounded-full transition-colors"
+                                            x-bind:class="index === {{ $i }} ? 'bg-primary' : 'bg-background/60'"
+                                        ></span>
+                                    </button>
                                 @endforeach
                             </div>
                         @endif
@@ -91,7 +96,7 @@
                         <div class="flex gap-2 border-t border-border p-2">
                             @foreach ($gallery as $i => $galleryImage)
                                 <button type="button" x-on:click="index = {{ $i }}" class="shrink-0 overflow-hidden rounded-md border-2 transition-colors" x-bind:class="index === {{ $i }} ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'">
-                                    <x-img :src="$galleryImage->image" :alt="$galleryImage->alt ?: $product->title.' foto '.($i + 1)" loading="lazy" class="h-14 w-14 object-cover" />
+                                    <x-img :src="$galleryImage->image" :alt="$galleryImage->alt ?: $product->title.' foto '.($i + 1)" loading="lazy" sizes="56px" class="h-14 w-14 object-cover" />
                                 </button>
                             @endforeach
                         </div>
@@ -122,35 +127,41 @@
                 @endif
 
                 @if ($product->description)
-                    <p class="mt-4 leading-relaxed text-muted-foreground">{{ $product->description }}</p>
+                    <p class="mt-4 leading-relaxed text-muted-foreground">{!! nl2br(e($product->description)) !!}</p>
                 @endif
 
                 @if ($product->colors->isNotEmpty())
                     <div class="mt-6">
                         <h2 class="text-sm font-semibold uppercase tracking-wider">Warna Tersedia</h2>
+                        <p class="mt-1 text-xs text-muted-foreground">Klik warna untuk melihat semua produk yang tersedia dalam warna tersebut.</p>
                         <div class="mt-3 flex flex-wrap gap-3">
                             @foreach ($product->colors as $color)
-                                <span class="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm">
+                                <a
+                                    href="{{ route('produk.index', ['warna' => $color->name]) }}"
+                                    class="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    aria-label="Filter katalog, warna {{ $color->name }}"
+                                >
                                     <span class="h-4 w-4 rounded-full border border-border" style="background-color: {{ $color->hex }}"></span>
                                     {{ $color->name }}
-                                </span>
+                                </a>
                             @endforeach
                         </div>
                     </div>
                 @endif
 
                 <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="{{ route('pesan.create', ['produk' => $product->slug]) }}" class="inline-flex h-12 items-center rounded-md bg-primary px-7 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">
+                    <x-button href="{{ route('pesan.create', ['produk' => $product->slug]) }}" size="xl">
                         Pesan Produk Ini
-                    </a>
-                    <a
+                    </x-button>
+                    <x-button
                         href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya mau tanya produk: '.$product->title) }}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex h-12 items-center rounded-md border border-border px-7 text-sm font-semibold transition-colors hover:bg-secondary"
+                        size="xl"
+                        variant="outline"
                     >
                         Tanya via WhatsApp
-                    </a>
+                    </x-button>
                 </div>
 
                 <div class="mt-6 rounded-xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">

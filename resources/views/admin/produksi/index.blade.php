@@ -5,19 +5,19 @@
             href="{{ route('admin.produksi') }}"
             class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === '' && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
         >
-            Semua <span class="opacity-70">({{ $counts[App\Models\CustomOrder::STATUS_READY] + $counts[App\Models\CustomOrder::STATUS_PRODUCTION] }})</span>
+            Semua <span>({{ $counts[App\Models\CustomOrder::STATUS_READY] + $counts[App\Models\CustomOrder::STATUS_PRODUCTION] }})</span>
         </a>
         <a
             href="{{ route('admin.produksi', array_filter(['status' => App\Models\CustomOrder::STATUS_READY])) }}"
             class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === App\Models\CustomOrder::STATUS_READY && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
         >
-            Siap Produksi <span class="opacity-70">({{ $counts[App\Models\CustomOrder::STATUS_READY] }})</span>
+            Siap Produksi <span>({{ $counts[App\Models\CustomOrder::STATUS_READY] }})</span>
         </a>
         <a
             href="{{ route('admin.produksi', array_filter(['status' => App\Models\CustomOrder::STATUS_PRODUCTION])) }}"
             class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === App\Models\CustomOrder::STATUS_PRODUCTION && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
         >
-            Sedang Diproses <span class="opacity-70">({{ $counts[App\Models\CustomOrder::STATUS_PRODUCTION] }})</span>
+            Sedang Diproses <span>({{ $counts[App\Models\CustomOrder::STATUS_PRODUCTION] }})</span>
         </a>
         <a
             href="{{ route('admin.produksi', array_filter(['status' => $activeStatus ?: null, 'milik' => 1])) }}"
@@ -63,15 +63,15 @@
                     </div>
                     <div class="flex justify-between gap-2">
                         <dt class="text-muted-foreground">Qty</dt>
-                        <dd class="text-right font-medium">{{ $order->quantity ? $order->quantity.' pcs' : '—' }}</dd>
+                        <dd class="text-right font-medium">{{ $order->quantity ? $order->quantity.' pcs' : 'â€”' }}</dd>
                     </div>
                     <div class="flex justify-between gap-2">
                         <dt class="text-muted-foreground">Jenis</dt>
-                        <dd class="text-right font-medium">{{ $order->service_type ?? '—' }}</dd>
+                        <dd class="text-right font-medium">{{ $order->service_type ?? 'â€”' }}</dd>
                     </div>
                     <div class="flex justify-between gap-2">
                         <dt class="text-muted-foreground">Deadline</dt>
-                        <dd class="text-right font-medium">{{ $order->deadline?->translatedFormat('d M Y') ?? '—' }}</dd>
+                        <dd class="text-right font-medium">{{ $order->deadline?->translatedFormat('d M Y') ?? 'â€”' }}</dd>
                     </div>
                     <div class="col-span-2 flex justify-between gap-2">
                         <dt class="text-muted-foreground">Operator</dt>
@@ -137,3 +137,4 @@
     </div>
 
 </x-layouts.admin>
+

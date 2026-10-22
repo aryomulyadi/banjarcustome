@@ -168,15 +168,16 @@
                                     @csrf
                                     <div class="space-y-1.5">
                                         <x-label for="revision_reason">Yang perlu diubah</x-label>
-                                        <textarea
+                                        <x-textarea
                                             id="revision_reason"
                                             name="revision_reason"
                                             rows="3"
                                             maxlength="1000"
                                             required
                                             placeholder="cth. Logo diperbesar, warna biru diganti navy."
-                                            class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                        >{{ old('revision_reason') }}</textarea>
+                                            :class="$errors->has('revision_reason') ? 'border-destructive!' : ''"
+                                            aria-invalid="{{ $errors->has('revision_reason') ? 'true' : 'false' }}"
+                                        >{{ old('revision_reason') }}</x-textarea>
                                         @error('revision_reason')
                                             <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
                                         @enderror
@@ -194,20 +195,18 @@
                 @endif
 
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <a
+                    <x-button
                         href="{{ $order->whatsappLink() }}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                        size="lg"
+                        class="flex-1"
                     >
                         Tanya via WhatsApp
-                    </a>
-                    <a
-                        href="{{ route('track.create') }}"
-                        class="inline-flex h-11 flex-1 items-center justify-center rounded-md border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary"
-                    >
+                    </x-button>
+                    <x-button href="{{ route('track.create') }}" size="lg" variant="outline" class="flex-1">
                         Cek Pesanan Lain
-                    </a>
+                    </x-button>
                 </div>
             </div>
         @endif

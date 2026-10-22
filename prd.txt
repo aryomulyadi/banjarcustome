@@ -25,7 +25,7 @@ Fase 1 — Situs publik (SELESAI)
 Fase 2 — Auth admin + lacak pesanan (SELESAI)
 - LOGIN KHUSUS ADMIN. Tidak ada register, tidak ada akun customer,
   tidak ada lupa password. Admin dibuat via seeder/tinker
-  (admin@banjarcustom.test / password).
+  (akun demo local - email & password lihat DatabaseSeeder).
 - Auth MANUAL, tanpa Laravel Breeze — breeze:install bersifat destruktif
   (menimpa routes/web.php, app.css, app.js, vite.config.js dan menurunkan
   Tailwind v4 ke v3); project ini bukan git repo sehingga tak bisa rollback.
@@ -273,7 +273,7 @@ dari phpunit.xml diabaikan, sehingga RefreshDatabase menjalankan
 migrate:fresh ke database ASLI (run pertama saat config cache aktif =
 40 gagal adalah gejala yang sama). Ini kesalahan verifikasi, bukan bug app.
 PEMULIHAN:
-- php artisan db:seed: users=2 (admin@banjarcustom.test / password),
+- php artisan db:seed: users=2 (akun demo local),
   kategori=6, produk=13, galeri=8, FAQ=10, testimoni=3.
 - File foto TIDAK hilang (8 produk png + 8 galeri jpg masih di
   storage/app/public). New command `php artisan photos:relink [--dry-run]`
@@ -297,7 +297,7 @@ VERIFIKASI FASE 7P
   gaya RelinkPhotos). vendor/bin/pint --test passed.
 - npm run build sukses (CSS 81,30 kB / JS 107,48 kB).
 - photos:relink --dry-run lalu relink: 8 produk + 8 galeri ditautkan.
-- Menunggu input user: login admin@banjarcustom.test / password; cek
+- Menunggu input user: login akun demo admin (lihat DatabaseSeeder); cek
   katalog & galeri, perbaiki pasangan foto yang meleset lewat form edit;
   lanjut Fase 7Q (lightbox galeri, avatar testimoni, dst).
 
@@ -1116,7 +1116,7 @@ Kerja/SPK). FIX BUG lama: field warna echo tak tertutup
   "Antrian Produksi" utk semua staf (highlight orders.* milik produksi);
   profil/lihat situs/keluar tetap. Header publik: cabang @elseif
   isProduksi (desktop + mobile) tautan Antrian Produksi + Keluar.
-- DatabaseSeeder: produksi@banjarcustom.test / password (name
+- DatabaseSeeder: akun produksi demo (name
   "Operator Produksi", ROLE_PRODUKSI).
 
 VERIFIKASI AKHIR FASE 17: vendor/bin/pint passed; composer test 288
@@ -1211,3 +1211,451 @@ di bawah tombol, pill kontras, menu mobile berkelompok. Catatan data dev:
 kategori "Jaket Jaket" (slug jaket) adalah data lama di DB dev, bukan akibat
 perubahan ini - bisa dirapihkan lewat menu admin.
 RE-CHECK FASE 18 (setelah poles kelas pill: dedupe bg-primary + shrink-0): vendor/bin/pint --test passed; composer test 291 tests / 1570 assertions; npm run build OK; probe ulang Edge CDP 11/11 PASS (panel buka/tutup + aria-expanded sinkron, pill computed bg primary + flex-shrink 0, klik kategori -> /kategori/, menu mobile label/CTA/subteks, 0 console error); screenshot f18 direview ulang identik rapi.
+
+
+FASE 18B - CI HIJAU + KEBERSIHAN DOKUMEN PUBLIK (SELESAI)
+Konteks: 2 run GitHub Actions gagal di step "Run test suite" (Pint + Vite
+build lulus); repo PUBLIK (private=false); prd/README memuat kredensial
+seed (admin/user/produksi@banjarcustom.test / password) + README
+menginstruksikan db:seed -> risiko bila dipakai di produksi.
+18A Akar masalah CI: .github/workflows/ci.yml extensions =
+  "mbstring, dom, fileinfo, pdo_sqlite, sqlite3" TANPA gd & zip, padahal
+  ImageOptimizer (app/Support/ImageOptimizer.php) memakai Intervention
+  Image Gd Driver (wajib gd) dan AdminOrderImportTest membangun/membaca
+  .xlsx via openspout (butuh zip/xmlwriter). Lokal PHP punya gd+zip ->
+  selalu lulus; runner CI tidak. FIX: extensions ->
+  mbstring, dom, fileinfo, pdo_sqlite, sqlite3, gd, zip, intl, exif,
+  bcmath. Verifikasi final = push lalu pantau run via API publik GitHub.
+18B Dokumen publik dibersihkan (keputusan user: repo TETAP publik):
+  - README:42 kredensial produksi@... / password -> "akun demo local
+    dibuat db:seed"; README baris db:seed -> "LOCAL/DEV ONLY ... lihat
+    DatabaseSeeder"; catatan penting + contoh CLI buat admin produksi
+    via tinker --execute (password kuat milik sendiri); checklist deploy
+    dapat poin larangan db:seed di produksi; angka "288 test" basi ->
+    "seluruh suite".
+  - prd.txt: 4 penyebutan kredensial (baris ~28, 276, 300, 1119)
+    diganti placeholder "akun demo local - lihat DatabaseSeeder".
+  - docs/PLAN-ALUR-PESANAN.md bersih (tanpa kredensial). Email tanpa
+    password di tests/ & DatabaseSeeder tetap (kode perlu; guard
+    production membuatnya aman).
+18B Guard kode: DatabaseSeeder::run() melempar RuntimeException saat
+  app()->environment('production') dengan pesan larangan + contoh CLI
+  buat admin. Test baru SeederSafetyTest (2 test): (1) env production ->
+  RuntimeException "DatabaseSeeder hanya untuk local/development";
+  (2) di luar production -> 3 akun demo ter-create (admin/user/produksi).
+  Keputusan user: seed HANYA untuk local; produksi pakai CLI password
+  kuat (README bagian Menjalankan + checklist deploy).
+VERIFIKASI AKHIR FASE 18B: vendor/bin/pint --test passed; composer test
+  293 tests / 1575 assertions (0 gagal; +2 SeederSafetyTest); npm run
+  build OK (CSS 74,90 kB / JS 56,12 kB - warning font pre-existing,
+  non-fatal); grep kredensial README/prd/docs = 0 sisa. Sisa: user push
+  ke GitHub -> CI harus hijau (pantau via API); bila masih merah minta
+  log job "Run test suite".
+
+FASE 19 - DARK MODE + KONTRAS WCAG AA + REGRESI WARNA (SELESAI)
+Konteks: pengguna melaporkan dropdown status gelap-tak-terbaca di dark
+mode + sisa ketidaksesuaian warna. Akar masalah: app.css TANPA
+color-scheme dan tanpa rule select/option -> 12 select (status pesanan,
+kalkulator, katalog jersey, form pesanan) memakai warna UA.
+19A resources/css/app.css:
+  - :root { color-scheme: light dark } + .dark { color-scheme: dark }
+    -> kontrol native (popup select di Windows) ikut tema tersimpan.
+  - Rule base select, option { color/bg: var token } (utility tetap
+    menang; select admin pakai bg-transparent).
+  - Token: light --primary 39%->35% (primaryFg/primary 4.67, link/
+    primary-vs-bg 5.19); light --destructive 0 84.2% 60.2% -> 0 78% 50%
+    (teks-error/badge-vs-bg 4.72, fg 4.52; memperbaiki ~25 tempat
+    text-destructive); dark --destructive 0 62.8% 40.6% -> 0 86% 65% +
+    dark --destructive-foreground ink 20 14% 4% (teks-error-vs-bg 6.0,
+    label tombol/badge-on-red 6.0); light --ring ikut primary 5.19;
+    light --muted-foreground 44.7%->43% (4.69 di panel secondary,
+    5.19 di putih - sebelumnya 4.4 GAGAL di bg muted/hero/pill).
+  - PENCUALIAN DICATAT: --border/--input (1.26-1.30) dibiarkan rendah
+    (keputusan user; input punya border 1px + ring tebal) - WCAG 1.4.11.
+19B Halaman error 403/404/500: layout SEBELUMNYA tanpa script tema ->
+  pengunjung dark mode melihat error terang. Ditambahkan script
+  localStorage theme + class dark (dengan nonce CSP) identik app layout.
+19C Regresi markup: span.opacity-70 pada hitungan tab status
+  (admin/orders/index + admin/produksi/index) -> dihapus (dengan
+  opacity teks turun ke 2.73-3.13 GAGAL AA; tanpa opacity 4.67+/4.8+).
+  thumbnail carousel produk (opacity-70) & label disabled DIPERTAHANKAN
+  (komponen nonaktif - pengecualian WCAG 1.4.11/1.4.3).
+19D Test baru:
+  - ThemeContrastTest (7 test): parse app.css -> HSL->RGB->luminance->
+    rasio WCAG untuk 22 pasangan token light+dark (teks 4.5, non-teks
+    ring 3.0); guard color-scheme root/dark; guard rule select/option;
+    halaman 404 memuat script localStorage theme.
+  - BladeSyntaxGuardTest (2 test): SEMUA blade bebas literal "{{ ... ?"
+    tak tertutup (bentuk bug insiden 999b5e2); field warna order show
+    memakai echo tertutup "old('warna', $order->warna) }}".
+  - AdminOrderImportTest: assertion markup tab disesuaikan (span tanpa
+    opacity-70).
+  - Catatan: bug "{{ old('warna', $order->warna) ?>" sudah diperbaiki
+    di HEAD (show.blade.php:215); bila user masih melihatnya = view
+    cache lama -> php artisan view:clear (+ view:cache saat deploy).
+19E Probe Edge CDP (headless profil terpisah :9222 + serve :8000):
+  24 run (12 halaman x light+dark: /, /pesan, /cek-pesanan,
+  /katalog-jersey, /produk, /faq, /login,404, /admin/pesanan,
+  /admin/produksi, /admin/kalkulator, /admin/pesanan/9-login admin):
+  TOTAL_OFFENDERS=0 (audit computed-style tiap elemen ber-teks vs bg
+  efektif, ambang 4.5/3.0 per ukuran font); scheme "light dark" di
+  theme light & "dark" di theme dark di SEMUA halaman termasuk404;
+  select dark: colorScheme=dark + color token fg (popup native gelap);
+  0 console error. Screenshot f19_* (light+dark) direview: badge
+  SEDANG DIPROSES ink-on-amber terbaca, hero dark rapi.
+VERIFIKASI AKHIR FASE 19: vendor/bin/pint --test passed; composer test
+  300 tests / 1752 assertions (0 gagal; +7 ThemeContrastTest +2
+  BladeSyntaxGuardTest); npm run build OK (CSS 75,31 kB / JS 56,12 kB).
+
+FASE 20 - AKSESIBILITAS PENUH (SELESAI)
+Audit keyboard/focus/aria/motion/hierarki; temuan nyata diperbaiki:
+20A Hero slider (home.blade.php): slide sebelumnya hanya opacity-0
+  (masih di tab order + a11y tree) -> link tersembunyi "Lihat Katalog/
+  Mulai Pesan" kejangkar Tab & N h1 terekspos screen reader. FIX:
+  x-show="index === N" + x-transition.opacity.duration.700ms ->
+  display:none utk slide nonaktif (fade tetap ada).
+20B Header dropdown kategori (partials/header.blade.php):
+  - @keydown.arrow-down.prevent pada tombol -> buka menu + pindah
+    fokus ke link pertama (via $refs.menuKategori, x-ref ditambahkan).
+  - @focusout pada wrapper -> menu tertutup saat Tab keluar (click.outside
+    tidak menangkap tab-out).
+  - Menu mobile: @keydown.escape.window -> tutup dengan Escape.
+20C app.css (layer base):
+  - :focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px }
+    -> cincin fokus keyboard konsisten WCAG 2.4.7 di semua link/tombol
+    tanpa gaya sendiri; utility focus-visible:ring komponen tetap menang
+    (layer utilities > base). Warnanya ikut theme token.
+  - @media (prefers-reduced-motion: reduce) global: animation/transition
+    dipangkas (WCAG 2.3.3); autoplay hero slider sudah diguard app.js
+    via matchMedia (dicek test).
+20D Form pesanan (orders/create.blade.php): error summary kini
+  id="error-summary" tabindex="-1" + script nonce CSP focus() ->
+  keyboard/screen reader langsung ke ringkasan error (role=alert sudah
+  ada; aria-invalid per-field sudah ada dari Fase lama).
+20E Galeri: dialog lightbox diberi aria-label "Pratinjau foto galeri".
+20F Bonus temuan review: SEMUA pesan validasi berbahasa Inggris (app
+  tanpa lang/). Dibuat lang/id/validation.php (rule yang dipakai app:
+  required/string/integer/numeric/array/email/file/image/mimes/mimetypes/
+  extensions/max/min/size/in/regex/confirmed/exists/nullable/boolean/date/
+  + blok password rule + custom whatsapp regex/hex + attributes map
+  ~40 field ID). Kunci tak tercantum tetap fallback en (aman bertahap).
+  Tidak ada test yang mengunci teks Inggris (diverifikasi).
+20G Test baru (tests/Feature):
+  - AccessibilityTest (8 test): hero pakai x-show bukan opacity; dropdown
+    keyboard (arrow-down/focusout/x-ref); mobile Escape; CSS focus-visible
+    + prefers-reduced-motion; app.js guard reduced-motion; error summary
+    focusable+role=alert; dialog lightbox punya aria-label; 9 halaman
+    publik (/pesan /cek-pesanan /galeri /produk /katalog-jersey /faq
+    /tentang /layanan /login) tepat 1 <h1>.
+  - ValidationLocalizationTest (2 test): pesan validasi form pesanan &
+    login bahasa Indonesia (assertDontSee "field is required").
+Probe Edge CDP keyboard (headless :9222, viewport 1280x800, serve :8000)
+7/7 PASS: Tab ke #tombol-kategori (4 tab dari awal, skip-link dulu);
+ArrowDown buka menu + fokus link pertama (aria-expanded=true); Escape
+tutup; focusout saat Tab ke header lain menutup menu; slide hero
+nonaktif display:none (1 link "Lihat Katalog" + 1 h1 visible dari 3);
+:focus-visible aktif via Tab nyata = outline solid 2px rgb(165,89,13);
+error summary POST kosong -> document.activeElement.id=error-summary.
+Screenshot f20-dropdown-keyboard-open & f20-error-summary-focus direview
+(menu terbuka dgn ring fokus oranye di item pertama; ring di kotak error).
+Catatan probe: viewport headless default 800px membuat nav desktop
+hidden (false negative pertama); .focus() programatik TIDAK memicu
+:focus-visible (wajib uji via key Tab nyata).
+VERIFIKASI AKHIR FASE 20: vendor/bin/pint --test passed; composer test
+  310 tests / 1794 assertions (0 gagal; +8 AccessibilityTest +2
+  ValidationLocalizationTest); npm run build OK (JS 56,12 kB).
+
+FASE 21 - PERFORMA + SEO (SELESAI)
+21A Warning build font (diagnosis salah: bukan file hilang): semua 8 woff2
+  ADA di public/fonts; akar masalah url('/fonts/...') absolut di @font-face
+  app.css tak di-resolve Vite (warning "didn't resolve" tiap build). FIX:
+  8 @font-face dipindah utuh ke public/fonts/fonts.css (statis, komentar
+  ASCII utk hindari mojibake) + <link rel=stylesheet> di app layout, admin
+  layout, errors/403-404-500; preload ditambah instrument-sans-700-latin
+  (heading above-fold, 17kB) — 400+500 sudah ada dari Fase lama. Hasil:
+  warning build = 0; CSS app turun 75,31 -> 73,04 kB (varian responsif
+  menaikkannya lagi ke 73,19 kB - srcset utils; wajar).
+21B Audit gambar runtime (CDP, 6 halaman): SEMUA <img> sudah punya
+  width+height (0 offender); tanpa loading = hanya logo.svg header/footer
+  (di atas fold - benar EAGER). Temuan: img lightbox galeri belum punya
+  loading=lazy -> ditambah (dialog tertutup tetap fokus render). OG image
+  diverifikasi file-based: banner-1.jpg = 1600x700 = meta 1600x700 + alt
+  ada (SeoTest kini assert getimagesize bukan cuma string meta).
+21C Lighthouse run #1 (Edge headless, :8000) temukan 4 kegagalan nyata:
+  - aria-prohibited-attr: div rating testimoni (home:247) pakai aria-label
+    tanpa role -> role="img" (dashboard sudah benar sbg contoh). Test baru
+    memindai 6 halaman via DOMXPath: [aria-label] hanya pada tag
+    semantik/interaktif/landmark (nav/header/footer/main/aside/form/search/
+    dialog/section/fieldset punya role implisit - whitelist ARIA in HTML).
+  - color-contrast 3.68: placeholder produk = text-muted-foreground/70 di
+    atas bg-muted (hitung: 2.59 light / 3.78 dark; bahkan muted penuh cuma
+    4.36 light). FIX text-foreground/60 = 5.09 light / 6.16 dark (diuji
+    ThemeContrastTest via pasangan alpha baru - 5 elemen, komposit RGB).
+  - target-size: titik slider 10px & 8px. SOLUSI PERTAMA (pseudo
+    after:-inset-2 8px) DITOLAK Lighthouse - audit tidak menghitung
+    pseudo-element (hanya getBoundingClientRect tombol). SOLUSI FINAL:
+    tombol 24x24 nyata (flex h-6 w-6) + pill visual jadi <span> dalam;
+    gap dikurangi 2->1 agar jarak visual titik tetap rapat. Verify CDP:
+    rect 24x24, Lighthouse target-size 0 -> 1.
+  - modern-image-formats + uses-responsive-images (190ms/112KB):
+    banner statis dikonversi webp (115->70, 213->138, 131->70 kB; hemat
+    35-46%) + varian -1024.webp (36/74/37 kB) -> hero srcset 1024w/1600w
+    sizes="(min-width:1280px) 1216px, calc(100vw - 32px)". Slider pilih
+    webp via @php deteksi sibling (fallback jpg bila file tak ada).
+    ImageOptimizer::store kini menulis varian -400w/-800w.webp (lebih
+    kecil dari sumber saja), responsiveVariants()/responsivePath() baru,
+    delete() ikut membersihkannya; komponen x-img emit <source srcset>
+    bila varian ada + prop $sizes; callsite diberi sizes: product-card
+    & 2 grid galeri (400px@lg / 50vw / 100vw), detail produk 600px,
+    thumb 56px, avatar testimoni 88px. Backfill lokal 25 varian (storage
+    tak di-commit; produksi varian terbentuk otomatis saat upload).
+  Lighthouse run #2: aria-prohibited 1, color-contrast 1, target-size 1,
+  modern-image-formats 1, uses-responsive-images 1, font-display 1;
+  LCP 3538 -> 3084 ms, TBT 27ms, CLS 0.000. Sisa skor 0 = bukan kode:
+  uses-text-compression + uses-long-cache-ttl + render-blocking (fonts.css
+  3,4kB) & unused-javascript (Alpine ~19kB gzip) = artifact artisan serve
+  (tanpa gzip/Expires) -> ditangani Fase 23 via public/.htaccess
+  (mod_deflate + Expires/Cache-Control); Alpine dibiarkan (ukuran kecil).
+  Praktik probe: PS node -e dengan quote/backtick SEMUA gagal - wajib
+  tulis file .mjs dulu; file .mjs dari Windows utk glob pattern kena CRLF
+  di -replace (selalu tulis ulang lewat write tool).
+21D Test baru/diperluas (tests/Feature):
+  - PerformaTest (9 test): fonts.css ada + 8 face + app.css bebas
+    @font-face + 8 file woff2; layouts (app/admin/403/404/500) link
+    fonts.css + preload 700; home link fonts.css; webp banner same-dim +
+    lebih kecil; hero src webp + srcset 1024w/1600w + sizes; banner
+    -1024.webp file; 3 view kartu punya sizes; ImageOptimizer fungsional
+    (store buat 400+800w; sumber 600px hanya 400w; delete hapus varian).
+  - ThemeContrastTest: dukungan alpha (pasangan ke-5) + 2 pasangan
+    foreground/60-over-muted.
+  - AccessibilityTest +3: aria-label valid via DOMXPath (6 halaman);
+    dot tombol 24x24; placeholder pakai text-foreground/60.
+  - SeoTest +1: file og:image getimagesize == meta 1600x700.
+VERIFIKASI AKHIR FASE 21: vendor/bin/pint --test passed; composer test
+  325 tests / 1873 assertions (0 gagal; +9 PerformaTest, +3 a11y,
+  +1 SeoTest, +2 pasangan kontras alpha); npm run build OK (CSS 73,19 kB
+  / JS 56,12 kB, warning font 0); screenshot f21-home-final direview
+  (dots hero rapi, tema gelap utuh).
+
+FASE 22 - KONSISTENSI UI (SELESAI)
+  Tujuan: satu sumber kebenaran tombol & field form publik; hapus
+  markup CTA/input ad-hoc; perbaiki bug aria-invalid yang tidak pernah
+  dirender.
+22A Komponen kanonik:
+  - x-button ditulis ulang: sizes sm h-9 px-4 / default h-10 px-4 /
+    lg h-11 px-6 / xl h-12 px-8 (semua text-sm) / icon h-10 w-10;
+    weight font-semibold (sebelumnya ada font-bold ad-hoc);
+    variants default/secondary/outline (border + bg-background/80)/
+    ghost/link/invert (bg-primary-foreground text-primary)/
+    invert-outline (border-primary-foreground/40).
+  - x-select baru (base set x-input tanpa pseudo file:/placeholder:).
+  - x-textarea: base tanpa min-h-[90px] (rows mengatur; usage 0).
+22B Migrasi CTA ad-hoc -> x-button (13 view publik): home (hero +
+  band amber), errors 403/404/500, orders/create (submit xl + Chat CS
+  xl outline), orders/success, orders/track (2 CTA lg flex-1),
+  pages/faq, catalog/index (Terapkan/Reset sm + Lihat Semua),
+  catalog/show, pages/layanan, pages/tentang, pages/katalog-jersey
+  (hero + CTA kalkulator estimator). Pengecualian custom-by-design
+  TETAP: header (pill Katalog Jersey, Hubungi CS hidden/sm:inline-flex,
+  ikon WA h-9 w-9 - toggle display/active-ring responsif tidak muat
+  di komponen statis), lightbox & hero arrow/dots/pause, WA FAB,
+  file input (file:bg-* kalah urutan Tailwind), checkbox/radio/honeypot.
+22C Form pesanan -> komponen shared: create (name, whatsapp_number,
+  product_id, service_type, sizes[6] text-center via :class, quantity,
+  deadline, address min-h-[70px], order_details min-h-[120px], notes)
+  + track revision_reason -> x-input/x-select/x-textarea. Pola error
+  BARU: :class="$errors->has(...) ? 'border-destructive!' : ''" dan
+  aria-invalid="{{ ... ? 'true' : 'false' }}" (selalu ter-render).
+  Pola LAMA rusak: @error('x') border-destructive aria-invalid="true"
+  @enderror DI DALAM class= memutus quote atribut sehingga aria-invalid
+  TIDAK PERNAH sampai ke DOM (bug lama; kini terbukti test + probe).
+22D Jebakan yang ditemukan & dipecahkan:
+  - Alpine :href="waHref" pada tag <x-button> dievaluasi Blade sbg
+    PHP -> "Undefined constant waHref". Solusi: x-bind:href="waHref"
+    (lolos utuh ke HTML; Alpine tetap mengikat saat runtime).
+  - value="{{ old("sizes.$size", 0) }}" (quote ganda bersarang)
+    memutus parser tag komponen multi-baris -> <x-input literal lolos
+    ke output (input ukuran hilang di render). Solusi:
+    old('sizes.'.$size, 0). Scan view:cache semua compiled view: bersih.
+  - Tailwind v4: .border-input (idx 23464) setelah .border-destructive
+    (22434) -> border error kalah (tetap abu). Solusi: important
+    border-destructive! pada semua ternary error field.
+  - Ekspresi :class komponen jangan memakai \" (backslash-quote):
+    kompilasi Blade jatuh ke "syntax error, unexpected token \"".
+  - PS inline node -e / -replace kembali menggagalkan probe (CRLF) -
+    praktik lama berlaku: tulis file .mjs via write tool.
+22E Test baru: UiConsistencyTest (4 test/53 assertions): create.be
+  bebas raw class="flex h-10 w-full rounded-md border border-input"
+  + bebas pola @error lama + memakai <x-input>/<x-select>/<x-textarea>;
+  POST /pesan kosong -> GET /pesan render aria-invalid="true"; 13 view
+  publik mengandung <x-button> + bebas "inline-flex h-9|11|12 ... +
+  bg-primary" + bebas <a ... font-bold>; x-button memuat token
+  kanonik (h-9 px-4, h-10 px-4, h-11 px-6, h-12 px-8, h-10 w-10,
+  font-semibold). Guard sadar jebakan: assertStringContainsString
+  '<x-input' TIDAK cukup (teks literal juga mengandungnya) - wajib
+  verifikasi render nyata (test POST + screenshot probe menangkap
+  bug input sizes yang literal; guard diperkuat via cek view:cache).
+VERIFIKASI AKHIR FASE 22: vendor/bin/pint --test passed; composer test
+  329 tests / 1927 assertions (0 gagal; +4 UiConsistencyTest); npm run
+  build OK (CSS 74,52 kB / JS 56,12 kB); screenshot f22-* direview:
+  home terang+gelap (hero + band amber), form pesan normal (input
+  ukuran tampil) + error (border MERAH + pesan), /produk, katalog-
+  jersey CTA estimator, layanan & tentang band amber (invert +
+  invert-outline), 404 - semua rapi & konsisten.
+
+FASE 24 - KATALOG & KATEGORI ASLI (SELESAI)
+24A Masalah akar: CategoryController@update hanya update name/description
+  - rename via admin meninggalkan slug basi; DB lokal berantakan
+  (Kemeja x3, Tumbler menampung kaos, Jersey berisi jaket, dst).
+  Keputusan user: rapikan total + ganti 4 kaos/polo, non-kaos
+  dipertahankan; jersey dikeluarkan dari katalog utama (banner link ke
+  /katalog-jersey); harga 2 varian lengan jadi 1 produk "Mulai Rp"
+  (LPanjang di deskripsi); goodie bag 3 produk terpisah; tumbler 1
+  produk gabungan; topi 4 produk per BAHAN (user: Twill Drill/Jaring/
+  Trucker 15-35k, American Drill/Ribstop 25-27k, Raphel 26-35k, Canvas/
+  Laken 30-40k); mekanisme artisan catalog:sync idempoten.
+24B Sumber data tunggal: app/Support/CatalogData.php - 8 kategori
+  (Tumbler/Kaos/Polo/Jersey/Jaket/Kemeja/Topi/Merchandise), 15 produk
+  nyata (harga "Mulai Rp" + base_price + palet 38 warna name=>hex;
+  kaos/polo moq_lusin -> price_tiers [{min_qty:12, unit_price}]),
+  replaceSlugs (10 slug basi), reassign (kemeja koko -> Kemeja).
+24C Command: php artisan catalog:sync {--dry-run} (idempoten):
+  hapus produk replace + file gambar (ImageOptimizer) -> sinkron
+  kategori name+slug (2 fase anti-bentrok: blocker slug target !=
+  name dipindah tmp-{id}; keeper = slug==target else id terkecil;
+  freeSlug kecuali id sendiri) -> cleanup kategori sisa (pindah
+  produk ke keeper nama sama, hapus) -> updateOrCreate produk by
+  slug + syncColors updateOrCreate + hapus ekstra -> reassignKept
+  -> Cache::forget home.products/nav.categories. DatabaseSeeder
+  kini memanggil Artisan catalog:sync; CategorySeeder+ProductSeeder
+  DIHAPUS (seed lokal & jalur update produksi = command yang sama).
+24D Bug fix: CategoryController@update & ProductController@update
+  kini sinkronkan slug saat rename (uniqueSlug kecuali id sendiri;
+  nama sama = slug stabil tanpa suffix). rename kategori/produk
+  tidak lagi meninggalkan slug basi.
+24E Tampilan: deskripsi produk multi-baris via nl2br (catalog/show);
+  kategori Jersey di /kategori/* menampilkan kartu banner link ke
+  /katalog-jersey (harga dasar 85k, minimal 12 pcs) menggantikan
+  empty-state; foto produk placeholder (belum ada aset).
+24F Test: CatalogSyncTest (3 test: 15 produk + harga/estimate/base
+  + 7&38 warna + tiers; legacy dibersihkan + kategori sinkron +
+  kemeja koko pindah; idempoten 2x) + AdminCrudTest +3 (rename
+  kategori -> slug sinkron; nama sama = slug stabil; rename produk
+  -> slug sinkron) + update 2 test lama yang mengunci slug basi +
+  HomePageTest: Topi Custom Bordir -> Tumbler Custom (topi custom
+  bordir dihapus dari katalog).
+VERIFIKASI AKHIR FASE 24: catalog:sync lokal OK (15 produk, 8
+  kategori name=slug, 158 warna, jersey 0 produk); pint --test
+  passed; composer test 335 tests / 2047 assertions (0 gagal; +6
+  test); npm run build OK (CSS 74,55 kB / JS 56,12 kB); screenshot
+  f24-* direview: /produk 15 produk, /kategori/topi 4 produk harga
+  15-30k, /kategori/jersey banner (terang+gelap), detail kaos 24s
+  deskripsi multi-baris + 7 chip warna - rapi.
+
+FASE 25 - FILTER WARNA = FILTER KETERSEDIAAN (SELESAI)
+25A Konteks: user menilai filter warna "useless" karena foto statis
+  (placeholder) - tidak ada sinyal visual saat memilih warna. FOTO
+  PER WARMA DITOLAK (ratusan aset, produk custom biasanya difoto
+  1-2 sampel). Filter memang BERFUNGSI (whereHas colors = produk
+  tersedia warna tsb) - solusinya memperjelas jadi filter
+  ketersediaan + membuat efeknya terlihat (keputusan user).
+25B Sidebar: legend "Warna" -> "WARNA TERSEDIA" + teks bantu
+  "Tampilkan produk yang tersedia dalam warna pilihan."; tiap opsi
+  warna mendapat badge jumlah produk (COUNT(DISTINCT product_id)
+  per name/hex - groupBy, query tunggal di CatalogController).
+25C Kartu produk (x-product-card): prop opsional highlightColor -
+  saat ?warna=X aktif, swatch warna yang cocok dipindah ke posisi
+  pertama (bila di luar 6 teratas) dan diberi ring
+  ring-2 ring-ring ring-offset-1 - tiap kartu menunjukkan warna
+  yang dicocokkan. Chip filter aktif di atas grid kini memuat dot
+  warna (hex dari daftar sidebar).
+25D Halaman detail: chip "Warna Tersedia" dari <span> pasif ->
+  <a> ke /produk?warna=X (hover border-primary + aria-label
+  "Filter katalog, warna X") + teks bantu "Klik warna untuk melihat
+  semua produk...".
+25E Test (CatalogTest +3): sidebar tampilkan label + count per
+  warna (regex Hitam</span> -> ml-auto ...>2<); chip detail = link
+  filter (route absolut + aria-label); swatch match dpt ring saat
+  filter aktif (regex ring-ring di span border-card, atribut
+  multi-baris -> pakai \s+; guard negatif: tanpa filter tidak ada
+  ring; urutan: swatch cocok didahulukan).
+VERIFIKASI AKHIR FASE 25: pint --test passed; composer test 338
+  tests / 2063 assertions (0 gagal; +3 CatalogTest); npm run build
+  OK (CSS 74,83 kB / JS 56,12 kB); screenshot f25-* direview:
+  /produk?warna=Navy terang+gelap (legend baru + count per warna,
+  ring highlight dot pertama tiap kartu), detail kaos 30s (chip
+  warna = pill link, teks bantu) - rapi.
+
+FASE 26 - SWATCH GRID KOMPAK + FIX RESET (SELESAI)
+26A Keluhan user: 38 baris radio+teks warna (~1.400px) memakan
+  layout & scroll; section Kategori tenggelam; buruk di mobile.
+  Keputusan user: swatch grid kompak (tanpa sort/tanpa chip-x).
+26B Sidebar: 38 radio panjang -> grid flex-wrap dot h-7 w-7 (~7
+  per baris, ~200px total) + pill "Semua" di awal; nama & jumlah
+  pindah ke tooltip title="Navy — 12 produk" + aria-label pada
+  input radio (sr-only tetap dipertahankan: keyboard + submit form
+  jalan); selected = ring, focus-visible = ring (a11y). Pencarian
+  -> Warna (kompak) -> Kategori kini muat satu layar (terang +
+  gelap, desktop + mobile).
+26C Fix Reset: href {{ request()->url() }} - sebelumnya selalu
+  route('produk.index') sehingga dari /kategori/topi tombol Reset
+  melempar ke /produk (konteks kategori hilang). Kini Reset =
+  path saat ini tanpa query string.
+26D Test: CatalogTest update (count di tooltip title=Hitam — 2
+  produk + aria-label accessible name; hapus regex ml-auto lama)
+  + test_reset_button_keeps_current_path (regex anchor Reset ->
+  url('/kategori/...') tanpa query).
+VERIFIKASI AKHIR FASE 26: pint --test passed; composer test 339
+  tests / 2067 assertions (0 gagal; +1 test); npm run build OK
+  (CSS 75,96 kB / JS 56,12 kB); screenshot f26-* direview:
+  /kategori/topi terang+gelap (sidebar muat satu layar: search +
+  swatch grid + Terapkan/Reset + Kategori), /produk?warna=Navy
+  (dot Navy selected ring + chip "Warna: Navy" dgn dot) - rapi.
+
+FASE 23 - KESIAPAN DEPLOY (SELESAI)
+23A BUG route:cache: Route::fallback(function(){...}) di web.php
+  memakai closure -> php artisan route:cache PASTI gagal ("Unable
+  to prepare route for serialization"), padahal checklist deploy
+  menyuruh menjalankannya. FIX: NotFoundController invokable
+  (__invoke -> response errors.404 404) + Route::fallback(-
+  NotFoundController::class). Perilaku identik, kini serializable.
+23B public/.htaccess: blok TAMBAHAN setelah blok rewrite asli
+  (blok lama tidak disentuh), semua dijaga IfModule agar host
+  tanpa modul tetap jalan: mod_deflate (html/css/js/json/svg/xml),
+  mod_headers FilesMatch pola nama Vite ber-hash
+  (^.+-[A-Za-z0-9_-]{7,}\.(css|js|map)$ - divalidasi thd file
+  build nyata: app-SuelSvu8.css match, fonts.css TIDAK) ->
+  Cache-Control immutable 1 tahun; mod_expires: woff2/font 1
+  tahun, gambar statis 1 bulan. Upload /storage sengaja TIDAK
+  immutable (bisa ditimpa nama sama).
+23C Test baru DeployReadinessTest (4 test): .htaccess mengandung
+  deflate+immutable+expires+guard IfModule; route:cache+
+  view:cache sukses (finally clear; config:cache sengaja TIDAK
+  di-test karena merusak env phpunit); URL acak -> 404 custom;
+  GET /up 200 (health check bawaan bootstrap/app.php health:'/up').
+23D README: Langkah umum + Checklist dilengkapi: catalog:sync
+  setelah migrate --force (sumber data produk produksi, idempoten,
+  JANGAN diganti db:seed), smoke /up+/produk+404, catatan .htaccess
+  (gzip/immutable/expires) + padanan nginx. Guard db:seed produksi
+  sudah ada + dites (SeederSafetyTest) sejak Fase 20-an.
+23E TEMUAN & FIX ekstra saat verifikasi:
+  - resources/css/app.css punya @source storage/framework/views
+    (*.php) -> Tailwind memindai compiled view basi -> ukuran CSS
+    fluktuatif antar-build (74-76 kB, tergantung isi folder
+    compiled). FIX: baris @source dihapus -> build DETERMINISTIK
+    (CSS bersih 57,93 kB; kelas kritis diverifikasi: peer-checked,
+    ring-offset-card, peer-focus-visible, border-destructive!,
+    invert variants).
+  - NotaTableTest date-bomb: deadline hardcode '2026-10-23' +
+    assertDontSee '23 Oktober 2026' - gagal setelah tengah malam
+    WITA 22/23 Okt 2026 karena baris Tanggal (created_at now
+    WITA+8) sah memuat tanggal sama. FIX: deadline '2099-12-24' +
+    assert '24 Desember 2099' (tidak akan pernah = hari ini).
+VERIFIKASI AKHIR FASE 23: config:cache+route:cache+view:cache
+  sukses -> serve -> smoke / 200, /up 200, /produk 200, URL acak
+  404 dgn view custom -> cache di-clear (mode normal pulih);
+  pint --test passed; composer test 343 tests / 2081 assertions
+  (0 gagal; +4 DeployReadinessTest, +1 fix NotaTableTest); npm
+  run build OK (CSS 57,93 kB deterministik / JS 56,12 kB);
+  screenshot f23-* direview: home terang, /produk gelap (swatch
+  grid utuh dgn CSS bersih), 404 - rapi.

@@ -32,11 +32,13 @@
                 x-data="{ kategoriOpen: false }"
                 @click.outside="kategoriOpen = false"
                 @keydown.escape.window="kategoriOpen = false"
+                @focusout="if (!$el.contains($event.relatedTarget)) kategoriOpen = false"
             >
                 <button
                     type="button"
                     id="tombol-kategori"
                     @click="kategoriOpen = !kategoriOpen"
+                    @keydown.arrow-down.prevent="kategoriOpen = true; $nextTick(() => $refs.menuKategori.querySelector('a').focus())"
                     aria-haspopup="true"
                     aria-expanded="false"
                     :aria-expanded="kategoriOpen.toString()"
@@ -60,6 +62,7 @@
 
                 <div
                     id="menu-kategori"
+                    x-ref="menuKategori"
                     x-cloak
                     x-show="kategoriOpen"
                     x-transition.origin.top.left
@@ -217,7 +220,7 @@
         </div>
     </div>
 
-    <div id="menu-mobile" class="border-t border-border lg:hidden" x-show="mobileOpen" x-cloak>
+    <div id="menu-mobile" class="border-t border-border lg:hidden" x-show="mobileOpen" x-cloak @keydown.escape.window="mobileOpen = false">
         <nav class="mx-auto grid max-w-7xl gap-1 px-4 py-3 sm:px-6">
             <a
                 href="{{ route('home') }}"

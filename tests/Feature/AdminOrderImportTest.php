@@ -635,7 +635,7 @@ class AdminOrderImportTest extends TestCase
         $this->assertStringContainsString('source=import', $response->getContent());
 
         // Count mengikuti filter sumber: "Semua" = 2 (bukan total 3).
-        $response->assertSee('Semua <span class="opacity-70">(2)</span>', false);
+        $response->assertSee('Semua <span>(2)</span>', false);
 
         $searchResponse = $this->actingAs($admin)
             ->get(route('admin.orders.index', ['source' => 'import', 'q' => '0']))

@@ -6,6 +6,15 @@
         <meta name="robots" content="noindex, nofollow">
         <title>500 — Terjadi Gangguan | Banjar Custome</title>
         @include('partials.favicon')
+        <script nonce="{{ request()->attributes->get('csp_nonce') }}">
+            (function () {
+                var stored = localStorage.getItem('theme');
+                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                }
+            })();
+        </script>
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
         @vite(['resources/css/app.css'])
     </head>
     <body class="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-foreground">
@@ -17,12 +26,12 @@
                 atau hubungi kami langsung via WhatsApp.
             </p>
             <div class="mt-7 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('home') }}" class="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+                <x-button href="{{ route('home') }}" size="lg">
                     Muat Ulang Beranda
-                </a>
-                <a href="{{ config('banjarcustom.whatsapp_link') }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-11 items-center rounded-md border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary">
+                </x-button>
+                <x-button href="{{ config('banjarcustom.whatsapp_link') }}" size="lg" variant="outline" target="_blank" rel="noopener noreferrer">
                     Hubungi Kami
-                </a>
+                </x-button>
             </div>
         </main>
     </body>

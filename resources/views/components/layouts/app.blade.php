@@ -40,6 +40,8 @@
 
         <link rel="preload" href="{{ asset('fonts/instrument-sans-400-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
         <link rel="preload" href="{{ asset('fonts/instrument-sans-500-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="{{ asset('fonts/instrument-sans-700-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
 
         <script nonce="{{ request()->attributes->get('csp_nonce') }}">
             (function () {

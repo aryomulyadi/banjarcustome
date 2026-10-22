@@ -6,6 +6,15 @@
         <meta name="robots" content="noindex, nofollow">
         <title>404 — Halaman Tidak Ditemukan | Banjar Custome</title>
         @include('partials.favicon')
+        <script nonce="{{ request()->attributes->get('csp_nonce') }}">
+            (function () {
+                var stored = localStorage.getItem('theme');
+                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                }
+            })();
+        </script>
+        <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
         @vite(['resources/css/app.css'])
     </head>
     <body class="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-foreground">
@@ -17,12 +26,12 @@
                 Silakan kembali ke beranda atau telusuri katalog kami.
             </p>
             <div class="mt-7 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('home') }}" class="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+                <x-button href="{{ route('home') }}" size="lg">
                     Kembali ke Beranda
-                </a>
-                <a href="{{ route('produk.index') }}" class="inline-flex h-11 items-center rounded-md border border-border px-6 text-sm font-semibold transition-colors hover:bg-secondary">
+                </x-button>
+                <x-button href="{{ route('produk.index') }}" size="lg" variant="outline">
                     Lihat Katalog
-                </a>
+                </x-button>
             </div>
         </main>
     </body>

@@ -30,7 +30,7 @@ class HomePageTest extends TestCase
             ->assertSee('Sablon Awet')
             ->assertSee('Melayani Ecer')
             ->assertSee('Buat Seragam/Kaos Custom Anda Sendiri!')
-            ->assertSee('Topi Custom Bordir')
+            ->assertSee('Tumbler Custom')
             ->assertDontSee('Kaos Promosi Custom')
             ->assertSee('Jl Veteran komplek halim ruko No.01')
             ->assertSee('0813-4813-8440')
