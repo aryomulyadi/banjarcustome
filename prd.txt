@@ -1659,3 +1659,37 @@ VERIFIKASI AKHIR FASE 23: config:cache+route:cache+view:cache
   run build OK (CSS 57,93 kB deterministik / JS 56,12 kB);
   screenshot f23-* direview: home terang, /produk gelap (swatch
   grid utuh dgn CSS bersih), 404 - rapi.
+FASE 27 - DIAGNOSA & FIX CI: VITE MANIFEST (SELESAI)
+  Masalah: job CI "Pint & Test" gagal exit code 2 sejak >= 16 Okt
+  (run 38925317227, 39408196738, 39812748825); pint & Vite build
+  job hijau; log API mentok 403 (butuh auth) - dapat dari paste
+  user: hanya test yang MERENDER halaman yg gagal (Accessibility,
+  AdminContent, dst), test baca-file/POST/DB lolos.
+27A ROOT CAUSE (terkonfirmasi):
+  - public/build/ di-gitignore (.gitignore:16) -> manifest.json
+    TIDAK di-commit (git ls-files kosong); job test CI hanya
+    composer install+pint+composer test, TIDAK pernah npm build;
+    job "Vite build" terpisah & hasilnya tak dipakai job test.
+  - TestCase tak pernah withoutVite() -> Vite::manifest() (Vite.php
+    :946) MELEMPAR ViteManifestNotFoundException utk tiap render;
+    @vite dipakai x-layouts.app, x-layouts.admin, errors/*, spk.
+  - Rantai: render -> @vite lempar -> handler render errors/500
+    (juga @vite!) -> lempar LAGI -> exception lolos handler ->
+    PHPUnit ERROR -> exit code 2 (bukan assertion failure).
+27B BUKTI REPRODUKSI (lokal, simulasi CI): public/build dipindah
+  ke temp -> pre-fix composer test = 164 failed / 179 passed,
+  "error code 2", exception identik "Vite manifest not found at:
+  public/build/manifest.json" (contoh: WorkCardTest SPK). Pola
+  cocok 100% dgn paste CI.
+27C FIX: tests/TestCase.php + setUp() override -> parent::setUp()
+  lalu $this->withoutVite() (+ komentar penjelas CI). Diverifikasi
+  aman: 0 test meng-assert tag aset Vite (grep assets/|manifest|
+  Vite::), 0 view pakai Vite::asset, asset() fonts.css tetap jalan,
+  view:cache DeployReadinessTest tak evaluasi @vite saat compile.
+  Job "Vite build" tetap menjaga npm run build sukses.
+VERIFIKASI AKHIR FASE 27: simulasi CI (manifest disembunyikan)
+  post-fix composer test 343 tests / 2081 assertions HIJAU;
+  pint --test passed; state normal (manifest ada) composer test
+  343/2081 hijau; npm run build OK (CSS 57,93 kB deterministik /
+  JS 56,12 kB). Menunggu push user -> pantau CI via API; bila ada
+  sisa gagal (log tadi terpotong), iterasi batch berikutnya.

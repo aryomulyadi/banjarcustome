@@ -6,6 +6,16 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // CI tidak membangun aset Vite (public/build di-gitignore, job test tanpa npm build).
+        // Tanpa ini, setiap render halaman melempar ViteManifestNotFoundException dan seluruh
+        // test yang merender view gagal. Validasi build aset tetap di job "Vite build" CI.
+        $this->withoutVite();
+    }
+
     protected function setUpTraits(): void
     {
         $connection = (string) config('database.default');
