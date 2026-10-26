@@ -278,6 +278,26 @@ class AdminOrderFlowTest extends TestCase
             ->assertSee('DP 50%');
     }
 
+    public function test_show_page_puts_status_update_before_editor_cards(): void
+    {
+        $order = $this->order(['status' => CustomOrder::STATUS_PENDING]);
+
+        $html = $this->actingAs($this->admin())
+            ->get(route('admin.orders.show', $order))
+            ->assertOk()
+            ->getContent();
+
+        $status = strpos($html, 'Perbarui Status');
+        $progress = strpos($html, 'Progres Produksi');
+        $spec = strpos($html, 'Spesifikasi Nota');
+
+        $this->assertNotFalse($status, 'Kartu status harus tampil.');
+        $this->assertNotFalse($progress, 'Kartu progres harus tampil.');
+        $this->assertNotFalse($spec, 'Kartu spesifikasi harus tampil.');
+        $this->assertLessThan($spec, $status, 'Perbarui Status harus kartu pertama — update tanpa scroll (Fase 28).');
+        $this->assertLessThan($spec, $progress, 'Progres Produksi harus sebelum kartu editor (Fase 28).');
+    }
+
     public function test_completed_and_cancelled_have_final_state_in_show(): void
     {
         $completed = $this->order(['status' => CustomOrder::STATUS_COMPLETED]);

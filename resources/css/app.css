@@ -7,7 +7,7 @@
 
 /* Shadcn-style design tokens â€” Banjar Custome (Amber / Oranye Kekuningan) */
 :root {
-    color-scheme: light dark;
+    color-scheme: light;
     --background: 0 0% 100%;
     --foreground: 20 14% 4%;
     --card: 0 0% 100%;
@@ -99,11 +99,55 @@
         display: contents;
     }
 
-    /* Native form controls (select popup, option) ikut token â€” WCAG 1.4.3 */
-    select,
-    option {
-        color: var(--foreground);
-        background-color: var(--background);
+    /* Select tertutup ikut token. */
+    select {
+        color: hsl(var(--foreground));
+        background-color: hsl(var(--background));
+    }
+
+    /* Fase 29 - popup dark mode: native popup TIDAK menghormati color-scheme di
+       Windows Chrome/Edge (issue 423336930) dan background-color <option> diabaikan
+       -> teks inherited --foreground (putih saat gelap) menimpa popup terang = tak
+       terbaca. Opt-in base-select (Chromium/Edge 135+) membuka picker untuk CSS
+       penuh: popup & opsi dibuat dari token tema situs. Mesin tanpa dukungan /
+       versi lama: @supports gagal -> fallback color-scheme (:root light / .dark
+       dark) yang sudah benar di Firefox/Safari. WCAG 1.4.3 */
+    @supports (appearance: base-select) {
+        select {
+            appearance: base-select;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.625rem center;
+        }
+
+        /* Sembunyikan disclosure triangle bawaan browser (::picker-icon) — chevron
+           SVG di atas sudah mewakili, kalau keduanya tampil mereka tumpang tindih. */
+        select::picker-icon {
+            content: none;
+        }
+
+        select::picker(select) {
+            appearance: base-select;
+            background-color: hsl(var(--popover));
+            color: hsl(var(--popover-foreground));
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        select option {
+            background-color: transparent;
+            color: inherit;
+            border-radius: 0.375rem;
+            padding: 0.35rem 0.5rem;
+        }
+
+        select option:checked,
+        select option:hover {
+            background-color: hsl(var(--accent));
+            color: hsl(var(--accent-foreground));
+        }
     }
 
     /* Cincin fokus keyboard konsisten (WCAG 2.4.7); utility focus-visible:ring pada komponen tetap menang */

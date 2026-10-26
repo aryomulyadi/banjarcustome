@@ -34,7 +34,7 @@
             <aside
                 id="sidebar-admin"
                 x-cloak
-                class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card transition-transform duration-200 lg:static lg:translate-x-0"
+                class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0"
                 :class="sidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full'"
             >
                 <div class="flex h-16 items-center gap-2.5 border-b border-border px-5">

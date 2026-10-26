@@ -103,4 +103,31 @@ class UiConsistencyTest extends TestCase
             );
         }
     }
+
+    public function test_views_use_x_select_instead_of_raw_select(): void
+    {
+        $files = [
+            'admin/orders/show.blade.php',
+            'admin/calculator.blade.php',
+            'admin/products/_form.blade.php',
+            'admin/testimonials/_form.blade.php',
+            'pages/katalog-jersey.blade.php',
+        ];
+
+        foreach ($files as $file) {
+            $view = $this->viewSource($file);
+
+            $this->assertStringNotContainsString(
+                '<select',
+                $view,
+                "{$file} harus memakai x-select, bukan <select ad-hoc (Fase 28)."
+            );
+            $this->assertStringNotContainsString(
+                '</select>',
+                $view,
+                "{$file} tidak boleh menutup select mentah (Fase 28)."
+            );
+            $this->assertStringContainsString('<x-select', $view, "{$file} harus memakai x-select (Fase 28).");
+        }
+    }
 }

@@ -223,31 +223,29 @@
                 </div>
                 <div class="space-y-1.5">
                     <label for="est-collar" class="text-xs font-medium text-muted-foreground">Kerah (upgrade)</label>
-                    <select
+                    <x-select
                         id="est-collar"
                         x-model="collar"
-                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                         @foreach ($jerseyCollars as $option)
                             <option value="{{ $option['name'] }}" @selected($loop->first)>
                                 {{ $option['name'] }} {{ (int) $option['fee'] > 0 ? '(+'.number_format((int) $option['fee'], 0, ',', '.').')' : '(standar)' }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-select>
                 </div>
                 <div class="space-y-1.5">
                     <label for="est-fabric" class="text-xs font-medium text-muted-foreground">Bahan (upgrade)</label>
-                    <select
+                    <x-select
                         id="est-fabric"
                         x-model="fabric"
-                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                         @foreach ($jerseyFabrics as $option)
                             <option value="{{ $option['name'] }}" @selected($loop->first)>
                                 {{ $option['name'] }} {{ (int) $option['fee'] > 0 ? '(+'.number_format((int) $option['fee'], 0, ',', '.').')' : '(standar)' }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-select>
                 </div>
                 <div class="flex flex-col justify-center gap-2">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">

@@ -21,11 +21,11 @@
 
         <div class="space-y-2">
             <x-label for="rating">Rating (1-5) *</x-label>
-            <select id="rating" name="rating" class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <x-select id="rating" name="rating">
                 @for ($i = 5; $i >= 1; $i--)
                     <option value="{{ $i }}" @selected((int) old('rating', $testimonial?->rating ?? 5) === $i)>{{ $i }} / 5</option>
                 @endfor
-            </select>
+            </x-select>
         </div>
     </div>
 

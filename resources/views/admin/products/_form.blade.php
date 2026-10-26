@@ -33,11 +33,10 @@
 
                 <div class="space-y-2">
                     <x-label for="category_id">Kategori *</x-label>
-                    <select
+                    <x-select
                         id="category_id"
                         name="category_id"
                         required
-                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                         <option value="">Pilih kategori…</option>
                         @foreach ($categories as $category)
@@ -45,7 +44,7 @@
                                 {{ $category->name }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-select>
                 </div>
 
                 <div class="space-y-2">

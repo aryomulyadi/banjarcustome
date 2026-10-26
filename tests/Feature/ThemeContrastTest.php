@@ -65,12 +65,18 @@ class ThemeContrastTest extends TestCase
         }
     }
 
-    public function test_root_declares_color_scheme_light_dark(): void
+    public function test_root_declares_color_scheme_light(): void
     {
+        // Bukan "light dark": popup native harus ikut TEMA SITUS, bukan preferensi OS —
+        // saat situs gelap + OS terang, popup tetap terang sementara teks option ikut
+        // token gelap = putih-di-putih tak terlihat (bug Fase 28).
+        $css = $this->css();
+
         $this->assertMatchesRegularExpression(
-            '/:root\s*\{[^}]*color-scheme:\s*light dark/s',
-            $this->css()
+            '/:root\s*\{[^}]*color-scheme:\s*light;/s',
+            $css
         );
+        $this->assertStringNotContainsString('color-scheme: light dark', $css);
     }
 
     public function test_dark_theme_declares_color_scheme_dark(): void
@@ -81,11 +87,45 @@ class ThemeContrastTest extends TestCase
         );
     }
 
-    public function test_native_select_options_use_theme_tokens(): void
+    public function test_native_select_uses_theme_tokens_without_option_override(): void
     {
+        $css = $this->css();
+
+        // Select tertutup tetap pakai token...
         $this->assertMatchesRegularExpression(
-            '/select\s*,\s*option\s*\{[^}]*var\(--foreground\)[^}]*var\(--background\)/s',
-            $this->css()
+            '/\bselect\s*\{[^}]*var\(--foreground\)[^}]*var\(--background\)/s',
+            $css
+        );
+
+        // ...tapi <option> TIDAK digayakan langsung: Chrome mengabaikan background
+        // option di popup sehingga teks --foreground menimpa popup putih (Fase 28).
+        $this->assertDoesNotMatchRegularExpression(
+            '/\boption\s*\{[^}]*var\(--foreground\)/s',
+            $css
+        );
+    }
+
+    public function test_native_select_popup_uses_base_select_picker(): void
+    {
+        $css = $this->css();
+
+        // Chrome/Edge Windows mengabaikan color-scheme pada popup select
+        // (Chromium #423336930) sehingga tema gelap tidak pernah turun ke popup —
+        // solusinya appearance: base-select (Fase 29).
+        $this->assertMatchesRegularExpression(
+            '/@supports\s*\(appearance:\s*base-select\)/',
+            $css
+        );
+        $this->assertMatchesRegularExpression(
+            '/appearance:\s*base-select/',
+            $css
+        );
+
+        // Picker digayakan memakai token popover (dibungkus hsl() — token adalah
+        // komponen HSL polos), bukan warna hardcoded.
+        $this->assertMatchesRegularExpression(
+            '/select::picker\(select\)[^}]*background-color:[^;]*var\(--popover\)/s',
+            $css
         );
     }
 

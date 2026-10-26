@@ -190,30 +190,28 @@
 
                 <div class="space-y-1.5">
                     <x-label for="calc-product">Produk</x-label>
-                    <select
+                    <x-select
                         id="calc-product"
                         x-model="productId"
-                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                         <template x-for="p in products" :key="p.id">
                             <option :value="p.id" x-text="p.title" :selected="p.id === Number(productId)"></option>
                         </template>
-                    </select>
+                    </x-select>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="space-y-1.5">
                         <x-label for="calc-jenis">Jenis</x-label>
-                        <select
+                        <x-select
                             id="calc-jenis"
                             x-model="jenis"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             <option value="">— pilih —</option>
                             @foreach ($serviceTypes as $title)
                                 <option value="{{ $title }}">{{ $title }}</option>
                             @endforeach
-                        </select>
+                        </x-select>
                     </div>
 
                     <div class="space-y-1.5">
@@ -266,29 +264,27 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="space-y-1.5">
                             <x-label for="calc-collar">Kerah (upgrade)</x-label>
-                            <select
+                            <x-select
                                 id="calc-collar"
                                 x-model="jerseyCollar"
-                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                                 <option value="">— standar O-Neck —</option>
                                 <template x-for="c in (jersey.collars || [])" :key="c.name">
                                     <option :value="c.name" x-text="c.name + (c.fee > 0 ? ' (+' + rp(c.fee) + ')' : '')"></option>
                                 </template>
-                            </select>
+                            </x-select>
                         </div>
 
                         <div class="space-y-1.5">
                             <x-label for="calc-fabric">Bahan (upgrade)</x-label>
-                            <select
+                            <x-select
                                 id="calc-fabric"
                                 x-model="jerseyFabric"
-                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
                                 <template x-for="f in (jersey.fabrics || [])" :key="f.name">
                                     <option :value="f.name" x-text="f.name + (f.fee > 0 ? ' (+' + rp(f.fee) + ')' : '')"></option>
                                 </template>
-                            </select>
+                            </x-select>
                         </div>
                     </div>
 

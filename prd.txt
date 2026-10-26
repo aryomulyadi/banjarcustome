@@ -1,4 +1,4 @@
-PRD — BANJAR CUSTOME (Banjarmasin)
+﻿PRD â€” BANJAR CUSTOME (Banjarmasin)
 Situs profil perusahaan + katalog + form pemesanan jasa konveksi & sablon.
 (PRD asli ditempel pada sesi percakapan; file ini mencatat keputusan implementasi.)
 
@@ -6,7 +6,7 @@ Situs profil perusahaan + katalog + form pemesanan jasa konveksi & sablon.
 KEPUTUSAN IMPLEMENTASI (final)
 ================================================================
 
-Fase 1 — Situs publik (SELESAI)
+Fase 1 â€” Situs publik (SELESAI)
 - Stack: Laravel 12, SQLite, Vite 7, Tailwind CSS v4, Alpine.js.
 - UI: token shadcn-style (amber) di resources/css/app.css; komponen Blade
   (button, card, input, label, textarea, placeholder-image, product-card).
@@ -15,18 +15,18 @@ Fase 1 — Situs publik (SELESAI)
 - Kolom palet warna: tabel product_colors mandiri per produk.
 - Semua gambar placeholder abu-abu saat dev (tidak ada aset eksternal).
 - Kontak disentral di config/banjarcustom.php:
-  alamat Jl Veteran Kuripan (KONSISTEN — bukan Jl. Jahri Saleh),
+  alamat Jl Veteran Kuripan (KONSISTEN â€” bukan Jl. Jahri Saleh),
   WA 0813-4813-8440 (wa.me/6281348138440), IG @banjarcustom_konveksi.id.
 - Tanpa cart/pembayaran: pesanan via form + bridging WhatsApp.
 - Tabel: users (+role admin/user), categories, products, product_colors,
   galleries, custom_orders (user_id nullable, product_id, quantity,
   status enum pending/production/completed).
 
-Fase 2 — Auth admin + lacak pesanan (SELESAI)
+Fase 2 â€” Auth admin + lacak pesanan (SELESAI)
 - LOGIN KHUSUS ADMIN. Tidak ada register, tidak ada akun customer,
   tidak ada lupa password. Admin dibuat via seeder/tinker
   (akun demo local - email & password lihat DatabaseSeeder).
-- Auth MANUAL, tanpa Laravel Breeze — breeze:install bersifat destruktif
+- Auth MANUAL, tanpa Laravel Breeze â€” breeze:install bersifat destruktif
   (menimpa routes/web.php, app.css, app.js, vite.config.js dan menurunkan
   Tailwind v4 ke v3); project ini bukan git repo sehingga tak bisa rollback.
 - POST /login diberi throttle:6,1; pesan gagal selalu generik
@@ -41,7 +41,7 @@ Fase 2 — Auth admin + lacak pesanan (SELESAI)
 - custom_orders.user_id dibiarkan nullable & TIDAK dipakai (riwayat
   berbasis akun dibatalkan). users.phone TIDAK ditambahkan.
 
-Fase 3 — Dashboard admin (SELESAI)
+Fase 3 â€” Dashboard admin (SELESAI)
 - Prefix /admin + middleware [auth, admin], routes di routes/admin.php.
 - Layout: resources/views/components/layouts/admin.blade.php
   (sidebar + topbar, token amber sama, sidebar mobile via Alpine).
@@ -91,12 +91,12 @@ VERIFIKASI
 - Smoke fase auth/admin: login admin -> /admin + 8 halaman admin
   + beranda 200; guest /admin -> redirect /login.
 
-Fase 4 — Penyempurnaan (SELESAI)
+Fase 4 â€” Penyempurnaan (SELESAI)
 - P0 Keamanan & bug fix:
   * Honeypot "website" di POST /pesan (bot dibuang ke beranda + log),
     throttle:12,1 pada /pesan dan 10,1 pada /cek-pesanan.
   * successUrl kini token acak 40 char (route /pesan/sukses/{token},
-    where token [A-Za-z0-9]{40}) — ID order tak bisa ditebak;
+    where token [A-Za-z0-9]{40}) â€” ID order tak bisa ditebak;
     page sukses pakai firstOrFail -> 404 untuk token salah.
   * SecurityHeaders global (X-Content-Type-Options, X-Frame-Options
     SAMEORIGIN, Referrer-Policy, Permissions-Policy; HSTS hanya di
@@ -107,7 +107,7 @@ Fase 4 — Penyempurnaan (SELESAI)
   * custom_orders di-rebuild: tracking_token unique + index status/
     created_at/whatsapp_number/name, deadline, service_type,
     delivery_method, address, size_quantities json, notes, status
-    string(20) (menambah status cancelled) — riwayat order_status_history.
+    string(20) (menambah status cancelled) â€” riwayat order_status_history.
   * Fix: status di-default 'pending' di model (DB default tak terbaca
     saat creating), update status pakai forceFill (status bukan fillable),
     OrderStatusHistory pakai $table 'order_status_history',
@@ -161,7 +161,7 @@ Fase 4 — Penyempurnaan (SELESAI)
 - Verifikasi akhir (3x run beruntun): vendor/bin/pint passed,
   php artisan test 97 tests / 424 assertions lulus, npm run build
   sukses (CSS 80,87 kB / JS 107,48 kB); route:cache & config:cache
-  jalan (config cache harus di-clear dulu sebelum test — sudah
+  jalan (config cache harus di-clear dulu sebelum test â€” sudah
   ditangani script `composer test`).
 - Catatan konten yang masih placeholder (butuh input user): teks FAQ
   & testimoni awal, jam buka sebenarnya, link Google Maps, nama jenis
@@ -202,7 +202,7 @@ KONTEN NYATA & LAYANAN EDITABLE (SELESAI)
 - Verifikasi: vendor/bin/pint passed, php artisan test 103/491 (2x
   beruntun), npm run build sukses (CSS 80,83 kB / JS 107,48 kB).
 
-FASE 6A — GOOGLE MAPS ASLI (SELESAI)
+FASE 6A â€” GOOGLE MAPS ASLI (SELESAI)
 - Link listing Google Maps (nama Google "CUSTOM JERSEY DAN KAOS") disimpan di
   config: maps_place_url (URL lengkap) + maps_latitude (-3.3199293) +
   maps_longitude (114.6154141). Key lama maps_query dihapus (sudah tidak
@@ -212,21 +212,21 @@ FASE 6A — GOOGLE MAPS ASLI (SELESAI)
   LocalBusiness ditambah geo (GeoCoordinates) + hasMap (URL listing).
 - Footer: alamat kini link ke listing Google Maps.
 
-FASE 6B — NOTIFIKASI PESANAN BARU (SELESAI)
+FASE 6B â€” NOTIFIKASI PESANAN BARU (SELESAI)
 - config 'admin_email' => env('BC_ADMIN_EMAIL') + placeholder di .env.example
   (BISA diubah kapan saja tanpa ubah kode; dikombinasikan dengan email akun
   role=admin di DB yang bisa diganti lewat /admin/profil).
 - App\Notifications\NewOrderNotification (mail, sync tanpa queue): subjek
-  "Pesanan Baru #ord-{id} — {nama}", isi lengkap (WA, produk, jenis, jumlah,
+  "Pesanan Baru #ord-{id} â€” {nama}", isi lengkap (WA, produk, jenis, jumlah,
   deadline, estimasi express/reguler, pengiriman, detail) + tombol link ke
   admin.orders.show. Dikirim via Notification::route('mail', ...) dari
   OrderController::notifyAdmins(), dibungkus try/catch + Log::warning
   supaya kegagalan email tidak menggagalkan pesanan.
 - Badge sidebar admin di menu "Pesanan": hitung status=pending via
-  View::composer('components.layouts.admin') — aria-label
+  View::composer('components.layouts.admin') â€” aria-label
   "{n} pesanan menunggu konfirmasi".
 
-FASE 6C — ESTIMASI, EXPRESS, DP 50% (SELESAI)
+FASE 6C â€” ESTIMASI, EXPRESS, DP 50% (SELESAI)
 - Migrasi 2026_10_04_000007: custom_orders.is_express boolean default false
   (+ index); fillable + cast boolean; baris "Estimasi" di ringkasan WA.
 - Form pesanan: hint di bawah Deadline ("kaos 3-7 hari kerja, jersey 10-12
@@ -468,7 +468,7 @@ FASE 9 - AUDIT BUG, NOTA TABEL KALKULATOR, PLANNING ALUR PRODUKSI
 9A Audit & perbaikan 20 temuan (semua severity): (1) TINGGI mojibake+BOM di 3
 view (home, admin/profile, admin/settings) - akibat Get-Content default cp1252;
 dipulihkan ke UTF-8 tanpa BOM + test EncodingIntegrityTest (no-BOM, no-mojibake,
-judul beranda pakai — dan ->). (2) kartu Harga: total auto dihitung ulang saat
+judul beranda pakai â€” dan ->). (2) kartu Harga: total auto dihitung ulang saat
 satuan diubah (Alpine watch, override manual lepas auto) + peringatan flash bila
 total != satuan x jumlah. (3) grandTotalPrice() = subtotal + fee express; nota/
 show/CSV menampilkan Subtotal / Biaya express / Total pembayaran (konsisten
@@ -1372,7 +1372,7 @@ FASE 21 - PERFORMA + SEO (SELESAI)
   8 @font-face dipindah utuh ke public/fonts/fonts.css (statis, komentar
   ASCII utk hindari mojibake) + <link rel=stylesheet> di app layout, admin
   layout, errors/403-404-500; preload ditambah instrument-sans-700-latin
-  (heading above-fold, 17kB) — 400+500 sudah ada dari Fase lama. Hasil:
+  (heading above-fold, 17kB) â€” 400+500 sudah ada dari Fase lama. Hasil:
   warning build = 0; CSS app turun 75,31 -> 73,04 kB (varian responsif
   menaikkannya lagi ke 73,19 kB - srcset utils; wajar).
 21B Audit gambar runtime (CDP, 6 halaman): SEMUA <img> sudah punya
@@ -1592,7 +1592,7 @@ FASE 26 - SWATCH GRID KOMPAK + FIX RESET (SELESAI)
   Keputusan user: swatch grid kompak (tanpa sort/tanpa chip-x).
 26B Sidebar: 38 radio panjang -> grid flex-wrap dot h-7 w-7 (~7
   per baris, ~200px total) + pill "Semua" di awal; nama & jumlah
-  pindah ke tooltip title="Navy — 12 produk" + aria-label pada
+  pindah ke tooltip title="Navy â€” 12 produk" + aria-label pada
   input radio (sr-only tetap dipertahankan: keyboard + submit form
   jalan); selected = ring, focus-visible = ring (a11y). Pencarian
   -> Warna (kompak) -> Kategori kini muat satu layar (terang +
@@ -1601,7 +1601,7 @@ FASE 26 - SWATCH GRID KOMPAK + FIX RESET (SELESAI)
   route('produk.index') sehingga dari /kategori/topi tombol Reset
   melempar ke /produk (konteks kategori hilang). Kini Reset =
   path saat ini tanpa query string.
-26D Test: CatalogTest update (count di tooltip title=Hitam — 2
+26D Test: CatalogTest update (count di tooltip title=Hitam â€” 2
   produk + aria-label accessible name; hapus regex ml-auto lama)
   + test_reset_button_keeps_current_path (regex anchor Reset ->
   url('/kategori/...') tanpa query).
@@ -1693,3 +1693,112 @@ VERIFIKASI AKHIR FASE 27: simulasi CI (manifest disembunyikan)
   343/2081 hijau; npm run build OK (CSS 57,93 kB deterministik /
   JS 56,12 kB). Menunggu push user -> pantau CI via API; bila ada
   sisa gagal (log tadi terpotong), iterasi batch berikutnya.
+
+FASE 28 - UI/UX COMPACT: DETAIL PESANAN, DARK MODE SELECT, UNIFIKASI X-SELECT (SELESAI)
+  Permintaan user: (1) detail pesanan terlalu panjang - update status
+  harus scroll jauh; (2) di dark mode dropdown select native putih tak
+  terbaca; (3) konsistensi UI + sweep bug sebelum deploy. Keputusan
+  user (tanya): reorder + grid padat (tanpa sticky bar/tabs); bug pada
+  dropdown select native.
+28A DARK MODE FIX (app.css): root cause - :root { color-scheme: light dark }
+  membuat Chrome memakai preferensi OS utk popup native; aturan
+  select, option { color: var(--foreground); background-color: ... }
+  - Chrome menghormati color option tapi MENGABAIKAN background di
+  popup -> teks putih (token gelap) menimpa popup putih = tak
+  terlihat s/d hover. FIX: :root color-scheme: light, .dark
+  color-scheme: dark (ikut TEMA SITUS), aturan option DIHAPUS
+  (select tertutup saja). Probe: computed color-scheme select = light
+  / dark sesuai tema (pesanan, show, kalkulator).
+28B REORDER + GRID PADAT (admin/orders/show.blade.php): urutan kolom
+  kanan kini Perbarui Status -> Progres Produksi -> Spesifikasi Nota
+  -> Harga -> Desain -> DP 50% -> Serah Terima -> Pesan WhatsApp;
+  kartu Progres tetap DI LUAR @if($isAdmin) (guard produksi: Progres
+  + Serah saja). Info dl 16 baris -> grid 2 kolom (label text-xs di
+  atas nilai), col-span-2 utk Estimasi/Total pembayaran/Alamat/Per
+  ukuran/Alasan batal/Perhatian, Total ditekankan border-b-2, baris
+  "Status saat ini" dihapus (duplikatif). Probe: statusTop=161 <
+  progressTop=463 < specTop=791 -> update status+progres terlihat
+  tanpa scroll (viewport 900). Sempat ada edit salah (header Progres
+  duplikat + @if nyasar) -> diperbaiki; keseimbangan blade 29/29.
+28C UNIFIKASI X-SELECT: 10 <select> mentah -> <x-select> pada 8 view:
+  admin/orders/show (status, wa_template), admin/calculator (4),
+  admin/products/_form, admin/testimonials/_form,
+  pages/katalog-jersey (2). Guard baru UiConsistencyTest: 5 view
+  wajib memuat <x-select, dilarang <select mentah.
+28D TEST: +1 AdminOrderFlowTest (urutan Status < Progres < Spec di
+  HTML render), +1 UiConsistencyTest (x-select enforcement).
+  ThemeContrastTest disesuaikan ke kontrak BARU (2 test lama
+  meng-encode bug): :root wajib color-scheme light & bukan "light
+  dark"; select wajib pakai token TANPA aturan option (negatif:
+  option{...--foreground} dilarang).
+28E PROBE VISUAL (Edge headless CDP, 18 halaman x 2 tema): home,
+  produk, detail produk, pesan, login, dashboard, pesanan index,
+  pesanan #1, kalkulator - 0 console error, 0 overflow horizontal,
+  color-scheme select benar kedua tema; screenshot show terang+gelap
+  direview (kartu urut, grid padat, kontras OK). 2 URL salah (/admin
+  orders & /admin/calculator) -> 404 tak dirender ulang; jalur benar
+  /admin/pesanan & /admin/kalkulator. Catatan: jalur baca gambar
+  sesi ini mengembalikan media lama utk file baru - verifikasi
+  kalkulator via piksel (sidebar variance std=22,96 = layout admin)
+  + title saat capture "Kalkulator Harga".
+VERIFIKASI AKHIR FASE 28: pint passed; composer test 345 tests /
+  2104 assertions HIJAU (+2 test; 2 test ThemeContrast disesuaikan);
+  npm run build OK & DETERMINISTIK 2x (hash identik; CSS 58,02 kB
+  naik dari 57,93 krn komentar app.css / JS 56,12 kB); probe: semua
+  halaman tanpa console error/overflow, select color-scheme
+  light/dark benar, urutan kartu show terkonfirmasi programatik &
+  visual; 9222 dimatikan, server :8000 user dipertahankan.
+
+FASE 29 - POPUP SELECT BASE-SELECT, DETAIL PESANAN RAPAT (SELESAI)
+  Permintaan user: (1) hasil Fase 28 "tak terlihat" - popup select dark
+  mode masih putih tak terbaca; (2) detail pesanan kebanyakan scroll +
+  strip padding kiri kosong saat scroll; (3) plan disetujui: popup via
+  appearance: base-select (fallback disepakati: bila base-select gagal
+  -> BERHENTI & lapor user, jangan ganti approach sendiri), sticky
+  sidebar, rapatkan grid, lalu lint/build/review.
+29A SIDEBAR STICKY (components/layouts/admin.blade.php): aside ->
+  lg:sticky lg:top-0 lg:h-screen lg:shrink-0. Probe scroll
+  top/mid/bottom: aside pos=sticky top=0 h=732=vh, lastNavBottom 680 <
+  vh 732 -> footer nav selalu terlihat tanpa scroll sidebar.
+29B GRID 2 KOLOM (admin/orders/show.blade.php): mt-3 grid gap-4
+  lg:grid-cols-2; kolom kiri = Info Pesanan, Detail, Riwayat, Harga
+  (admin), Desain; kolom kanan = Perbarui Status, Progres, Spec Nota,
+  DP, Serah, WA. Marker debug 0 sisa, @if/@endif 30/30, view:cache OK.
+29C DENSIFY: p-5->p-4 (replaceAll), mt-4 space-y-4/3 -> mt-3,
+  py-2.5->py-2, rows 9->6, gap/space-y-5 -> 4/3; sweep token sisa 0.
+  colContentH [1964,1964] seimbang, overflowX false, urutan status 153
+  < progress 398 < spec 693 (guard test terjaga).
+29D BASE-SELECT (resources/css/app.css): blok @supports
+  (appearance: base-select): select appearance: base-select + chevron
+  SVG (pr-8 di select.blade px-3->pl-3 pr-8); select::picker(select)
+  WAJIB ikut appearance: base-select - dokumen Chrome (RFC
+  customizable select): opt-in harus di select DAN picker; tanpa ini
+  popup tetap paint default putih walau computed style gelap
+  (eksperimen injeksi merah unlayered gagal terpaint = bukti).
+  Picker bg/border/shadow + option transparan/checked-hover dari token
+  popover/accent; token = komponen HSL polos jadi wajib hsl(var(--x))
+  (var() polos invalid di computed value -> declaration dibuang; fix
+  awal sesi ini). + select::picker-icon content:none: disclosure
+  triangle bawaan browser tumpang tindih dgn chevron SVG -> tombol
+  tampil 2 ikon (crop pixel: segitiga putih UA + chevron abu SVG);
+  setelah fix sisa 1 chevron bersih.
+29E TEST: +ThemeContrastTest::
+  test_native_select_popup_uses_base_select_picker (assert @supports,
+  appearance: base-select, picker background var(--popover); regex
+  di-loosen utk hsl(var(--x))).
+29F PROBE VISUAL POPUP (Edge CDP 9222, DPR 1.25): DARK - screenshot
+  popup terbaca (3 opsi teks terang di bg gelap, baris terpilih accent
+  oranye, cincin fokus OK); LIGHT - computed picker bg rgb(255,255,255)
+  / color rgb(12,10,9), option terpilih accent rgb(254,243,200); teks
+  gelap di popup putih terbaca. lumChanged region popup: dark 84,1 /
+  light 240,8 (sebelum fix 230/205 = putih+putih gagal); buka tutup
+  via klik+Escape terverifikasi state :open. Catatan sesi: Edge pernah
+  mati misterius antar run -> relaunch profil sama + --enable-logging;
+  jalur baca gambar kadang stale -> verifikasi via crop System.Drawing
+  + angka piksel analyze.ps1.
+VERIFIKASI AKHIR FASE 29: pint passed; composer test 346 tests /
+  2107 assertions HIJAU (+1 test popup base-select); npm run build OK
+  & DETERMINISTIK 2x (app-BBC7FcJr.css 59,03 kB + JS 56,12 kB);
+  bukti visual popup dark+light terbaca + ikon tombol sisa 1 chevron;
+  probe layout sticky/grid/urutan kartu lolos kedua tema; 9222
+  dimatikan, server :8000 user dipertahankan.
