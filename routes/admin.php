@@ -5,12 +5,13 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Admin\JerseyDataController;
 use App\Http\Controllers\Admin\MasterDataController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductionQueueController;
 use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\TargetDataController;
 use App\Http\Controllers\Admin\TestimonialController;
 use Illuminate\Support\Facades\Route;
 
@@ -80,8 +81,20 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::patch('/master-data/{option}', [MasterDataController::class, 'update'])->name('master.update');
         Route::delete('/master-data/{option}', [MasterDataController::class, 'destroy'])->name('master.destroy');
 
-        Route::get('/pengaturan', [SettingController::class, 'edit'])->name('settings.edit');
-        Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');
+        // Dua modul operasional terpisah (struktur kolom berbeda, jangan digabung).
+        Route::get('/data-jersey', [JerseyDataController::class, 'index'])->name('jersey.index');
+        Route::get('/data-jersey/create', [JerseyDataController::class, 'create'])->name('jersey.create');
+        Route::post('/data-jersey', [JerseyDataController::class, 'store'])->name('jersey.store');
+        Route::get('/data-jersey/{jersey}/edit', [JerseyDataController::class, 'edit'])->name('jersey.edit');
+        Route::put('/data-jersey/{jersey}', [JerseyDataController::class, 'update'])->name('jersey.update');
+        Route::delete('/data-jersey/{jersey}', [JerseyDataController::class, 'destroy'])->name('jersey.destroy');
+
+        Route::get('/data-target', [TargetDataController::class, 'index'])->name('target.index');
+        Route::get('/data-target/create', [TargetDataController::class, 'create'])->name('target.create');
+        Route::post('/data-target', [TargetDataController::class, 'store'])->name('target.store');
+        Route::get('/data-target/{target}/edit', [TargetDataController::class, 'edit'])->name('target.edit');
+        Route::put('/data-target/{target}', [TargetDataController::class, 'update'])->name('target.update');
+        Route::delete('/data-target/{target}', [TargetDataController::class, 'destroy'])->name('target.destroy');
     });
 
     // Admin + Produksi: antrian produksi & ruang kerja lapangan.

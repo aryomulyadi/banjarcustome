@@ -228,7 +228,10 @@ class ProductionQueueTest extends TestCase
             route('admin.galleries.index'),
             route('admin.faqs.index'),
             route('admin.testimonials.index'),
-            route('admin.settings.edit'),
+            route('admin.jersey.index'),
+            route('admin.jersey.create'),
+            route('admin.target.index'),
+            route('admin.target.create'),
         ] as $url) {
             $this->actingAs($user)->get($url)->assertForbidden();
         }
@@ -256,8 +259,7 @@ class ProductionQueueTest extends TestCase
         $this->actingAs($this->admin())->get('/admin')
             ->assertOk()
             ->assertSee('Antrian Produksi')
-            ->assertSee('Data Master')
-            ->assertSee('Pengaturan');
+            ->assertSee('Data Master');
     }
 
     public function test_public_header_shows_queue_link_for_produksi(): void

@@ -1,45 +1,45 @@
 <x-layouts.admin :title="'Dashboard'">
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <div class="rounded-xl border border-border bg-card p-5">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Menunggu Konfirmasi</p>
-            <p class="mt-2 text-3xl font-bold text-primary">{{ $stats['pending'] }}</p>
-            <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat leads →</a>
+            <p class="mt-2 text-2xl font-bold text-primary sm:text-3xl">{{ $stats['pending'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat leads →</a>
         </div>
-        <div class="rounded-xl border border-border bg-card p-5">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Sedang Diproses</p>
-            <p class="mt-2 text-3xl font-bold">{{ $stats['production'] }}</p>
-            <a href="{{ route('admin.orders.index', ['status' => 'production']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
+            <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['production'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'production']) }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
         </div>
-        <div class="rounded-xl border border-border bg-card p-5">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Selesai</p>
-            <p class="mt-2 text-3xl font-bold">{{ $stats['completed'] }}</p>
-            <a href="{{ route('admin.orders.index', ['status' => 'completed']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat arsip →</a>
+            <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['completed'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'completed']) }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat arsip →</a>
         </div>
-        <div class="rounded-xl border border-border bg-card p-5">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Pesanan Bulan Ini</p>
-            <p class="mt-2 text-3xl font-bold">{{ $stats['month'] }}</p>
+            <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['month'] }}</p>
             <p class="mt-2 text-xs text-muted-foreground">Total semua: {{ $stats['orders'] }}</p>
         </div>
-        <div class="rounded-xl border border-border bg-card p-5">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Produk</p>
-            <p class="mt-2 text-3xl font-bold">{{ $stats['products'] }}</p>
-            <a href="{{ route('admin.products.index') }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Kelola produk →</a>
+            <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['products'] }}</p>
+            <a href="{{ route('admin.products.index') }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Kelola produk →</a>
         </div>
-        <div class="rounded-xl border border-border bg-card p-5">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Kategori</p>
-            <p class="mt-2 text-3xl font-bold">{{ $stats['categories'] }}</p>
-            <a href="{{ route('admin.categories.index') }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Kelola kategori →</a>
+            <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['categories'] }}</p>
+            <a href="{{ route('admin.categories.index') }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Kelola kategori →</a>
         </div>
-        <div class="rounded-xl border border-border bg-card p-5">
+        <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Dibatalkan</p>
-            <p class="mt-2 text-3xl font-bold">{{ $stats['cancelled'] }}</p>
-            <a href="{{ route('admin.orders.index', ['status' => 'cancelled']) }}" class="mt-2 inline-block text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
+            <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['cancelled'] }}</p>
+            <a href="{{ route('admin.orders.index', ['status' => 'cancelled']) }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
         </div>
     </div>
 
     <div class="mt-6 rounded-xl border border-border bg-card p-5">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
             <div>
                 <h2 class="text-base font-semibold">Pesanan 30 Hari Terakhir</h2>
                 <p class="mt-0.5 text-xs text-muted-foreground">Jumlah pesanan masuk per hari.</p>
@@ -72,7 +72,24 @@
         @if ($recentOrders->isEmpty())
             <p class="px-5 py-8 text-center text-sm text-muted-foreground">Belum ada pesanan masuk.</p>
         @else
-            <div class="overflow-x-auto">
+            <ul class="divide-y divide-border lg:hidden">
+                @foreach ($recentOrders as $order)
+                    <li>
+                        <a href="{{ route('admin.orders.show', $order) }}" class="flex items-start justify-between gap-3 px-5 py-3 hover:bg-secondary/50">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-semibold text-primary">#{{ $order->id }}</span>
+                                    <span class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">{{ $order->statusLabel() }}</span>
+                                </div>
+                                <p class="mt-1 truncate text-sm font-medium">{{ $order->name }}</p>
+                                <p class="truncate text-xs text-muted-foreground">{{ $order->product?->title ?? 'Custom' }} · {{ $order->created_at->translatedFormat('d M Y') }}</p>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mt-1 h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+            <div class="hidden overflow-x-auto lg:block">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">

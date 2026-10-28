@@ -181,17 +181,32 @@ class JerseyOptionCrudTest extends TestCase
         Storage::disk('public')->assertMissing('jersey-options/hapus.webp');
     }
 
-    public function test_edit_and_update_reject_non_jersey_kinds(): void
+    public function test_non_jersey_option_can_be_renamed_via_edit_form(): void
     {
         $option = MasterOption::create(['kind' => MasterOption::KIND_TYPE, 'name' => 'Kaos']);
 
         $this->actingAs($this->admin())
             ->get(route('admin.master.edit', $option))
-            ->assertNotFound();
+            ->assertOk()
+            ->assertSee('Kaos');
 
         $this->actingAs($this->admin())
-            ->patch(route('admin.master.update', $option), ['name' => 'Kaos Baru', 'fee' => 1000])
-            ->assertNotFound();
+            ->patch(route('admin.master.update', $option), ['name' => 'Kaos Baru'])
+            ->assertRedirect(route('admin.master.index'));
+
+        $this->assertSame('Kaos Baru', $option->fresh()->name);
+    }
+
+    public function test_non_jersey_update_still_requires_unique_name_per_kind(): void
+    {
+        MasterOption::create(['kind' => MasterOption::KIND_TYPE, 'name' => 'Kaos Polos']);
+        $option = MasterOption::create(['kind' => MasterOption::KIND_TYPE, 'name' => 'Hoodie']);
+
+        $this->actingAs($this->admin())
+            ->from(route('admin.master.index'))
+            ->patch(route('admin.master.update', $option), ['name' => 'Kaos Polos'])
+            ->assertRedirect(route('admin.master.index'))
+            ->assertSessionHasErrors('name');
     }
 
     public function test_edit_page_rejects_guests_and_non_admins(): void

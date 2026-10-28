@@ -6,14 +6,14 @@
     class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
     x-data="{ mobileOpen: false }"
 >
-    <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2.5">
+    <div class="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
+        <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-2.5">
             <x-logo />
-            <span class="leading-tight">
-                <span class="block text-base font-bold">
+            <span class="min-w-0 leading-tight">
+                <span class="block truncate text-base font-bold">
                     Banjar <span class="text-primary">Custome</span>
                 </span>
-                <span class="block text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span class="block truncate text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                     Konveksi &amp; Sablon
                 </span>
             </span>
@@ -137,12 +137,12 @@
         </nav>
         <div class="hidden flex-1 lg:block"></div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2">
             <button
                 type="button"
                 x-data="theme"
                 @click="toggle()"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 :aria-label="dark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'"
             >
                 <svg x-show="!dark" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
@@ -200,7 +200,7 @@
                 href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya ingin konsultasi desain/') }}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
                 aria-label="Chat WhatsApp"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
@@ -208,7 +208,7 @@
 
             <button
                 type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border lg:hidden"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border lg:hidden"
                 @click="mobileOpen = !mobileOpen"
                 aria-label="Buka menu"
                 aria-expanded="false"
@@ -220,11 +220,11 @@
         </div>
     </div>
 
-    <div id="menu-mobile" class="border-t border-border lg:hidden" x-show="mobileOpen" x-cloak @keydown.escape.window="mobileOpen = false">
+    <div id="menu-mobile" class="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-border lg:hidden" x-show="mobileOpen" x-cloak @click.outside="mobileOpen = false" @keydown.escape.window="mobileOpen = false">
         <nav class="mx-auto grid max-w-7xl gap-1 px-4 py-3 sm:px-6">
             <a
                 href="{{ route('home') }}"
-                class="rounded-md px-3 py-2 text-sm font-medium {{ request()->routeIs('home') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                class="rounded-md px-3 py-2.5 text-sm font-medium {{ request()->routeIs('home') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
             >
                 Beranda
             </a>
@@ -235,14 +235,14 @@
             @foreach ($navCategories as $category)
                 <a
                     href="{{ route('kategori', $category->slug) }}"
-                    class="rounded-md px-3 py-2 text-sm font-medium {{ $activeCategory === $category->slug ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                    class="rounded-md px-3 py-2.5 text-sm font-medium {{ $activeCategory === $category->slug ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
                 >
                     {{ $category->name }}
                 </a>
             @endforeach
             <a
                 href="{{ route('produk.index') }}"
-                class="rounded-md px-3 py-2 text-sm font-medium {{ request()->routeIs('produk.index') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                class="rounded-md px-3 py-2.5 text-sm font-medium {{ request()->routeIs('produk.index') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
             >
                 Semua Produk
             </a>
@@ -271,22 +271,22 @@
             </p>
             @auth
                 @if (auth()->user()->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary">
+                    <a href="{{ route('admin.dashboard') }}" class="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary">
                         Dashboard Admin
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-secondary">
+                        <button type="submit" class="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-muted-foreground hover:bg-secondary">
                             Keluar
                         </button>
                     </form>
                 @elseif (auth()->user()->isProduksi())
-                    <a href="{{ route('admin.produksi') }}" class="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary">
+                    <a href="{{ route('admin.produksi') }}" class="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary">
                         Antrian Produksi
                     </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground hover:bg-secondary">
+                        <button type="submit" class="w-full rounded-md px-3 py-2.5 text-left text-sm font-medium text-muted-foreground hover:bg-secondary">
                             Keluar
                         </button>
                     </form>
@@ -296,7 +296,7 @@
                 href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya ingin bertanya soal pesanan custom.') }}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
+                class="rounded-md bg-primary px-3 py-2.5 text-center text-sm font-medium text-primary-foreground"
             >
                 Hubungi CS
             </a>

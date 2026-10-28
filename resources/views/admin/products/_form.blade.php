@@ -94,7 +94,7 @@
                                 :name="`price_tiers[${index}][min_qty]`"
                                 x-model="tier.min_qty"
                                 placeholder="cth. 50"
-                                class="flex h-10 w-28 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                class="flex h-10 w-28 rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                             >
                             <label class="shrink-0 text-xs text-muted-foreground" :for="`tier-price-${index}`">Harga / pcs</label>
                             <input
@@ -104,7 +104,7 @@
                                 :name="`price_tiers[${index}][unit_price]`"
                                 x-model="tier.unit_price"
                                 placeholder="cth. 40000"
-                                class="flex h-10 w-36 rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                class="flex h-10 w-36 rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                             >
                             <button
                                 type="button"
@@ -160,7 +160,7 @@
                             :name="`colors[${index}][name]`"
                             x-model="color.name"
                             placeholder="Nama warna (cth. Navy)"
-                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                         >
                         <button
                             type="button"

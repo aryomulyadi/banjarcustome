@@ -5,7 +5,7 @@
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-            <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
+            <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span>/</span>
             <span class="text-foreground">Galeri</span>
         </nav>
@@ -24,14 +24,14 @@
         <div class="mb-6 flex flex-wrap gap-2">
             <a
                 href="{{ route('galeri') }}"
-                class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors {{ $activeCategory === null ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
+                class="rounded-full px-4 py-2 text-sm font-medium transition-colors {{ $activeCategory === null ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
             >
                 Semua
             </a>
             @foreach ($categories as $category)
                 <a
                     href="{{ route('galeri', ['kategori' => $category]) }}"
-                    class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors {{ $activeCategory === $category ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
+                    class="rounded-full px-4 py-2 text-sm font-medium transition-colors {{ $activeCategory === $category ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
                 >
                     {{ $category }}
                 </a>
@@ -41,7 +41,7 @@
         @if ($galleries->isEmpty())
             <div class="rounded-xl border border-dashed border-border p-12 text-center">
                 <p class="font-medium">Belum ada foto di kategori ini</p>
-                <a href="{{ route('galeri') }}" class="mt-4 inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
+                <a href="{{ route('galeri') }}" class="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground">
                     Lihat Semua Galeri
                 </a>
             </div>
@@ -93,7 +93,7 @@
                             type="button"
                             @click="close()"
                             aria-label="Tutup galeri"
-                            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-lg text-foreground backdrop-blur transition-colors hover:bg-background"
+                            class="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-background/80 text-lg text-foreground backdrop-blur transition-colors hover:bg-background"
                         >
                             &times;
                         </button>
@@ -109,14 +109,14 @@
                             >
                         </div>
                         <div class="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
-                            <button type="button" @click="prev()" aria-label="Foto sebelumnya" class="flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary">
+                            <button type="button" @click="prev()" aria-label="Foto sebelumnya" class="flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary">
                                 &larr;
                             </button>
                             <p class="min-w-0 flex-1 truncate text-center text-sm">
                                 <span x-text="current?.title"></span>
                                 <span class="text-muted-foreground">(<span x-text="index + 1"></span>/<span x-text="items.length"></span>)</span>
                             </p>
-                            <button type="button" @click="next()" aria-label="Foto selanjutnya" class="flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary">
+                            <button type="button" @click="next()" aria-label="Foto selanjutnya" class="flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary">
                                 &rarr;
                             </button>
                         </div>

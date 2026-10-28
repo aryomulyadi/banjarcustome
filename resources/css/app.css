@@ -5,7 +5,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Shadcn-style design tokens â€” Banjar Custome (Amber / Oranye Kekuningan) */
+/* Shadcn-style design tokens — Banjar Custome (Amber / Oranye Kekuningan) */
 :root {
     color-scheme: light;
     --background: 0 0% 100%;
@@ -95,6 +95,25 @@
         display: none !important;
     }
 
+    /* Fase 30 - fix glitch navigasi: sidebar admin jangan menunggu Alpine.
+       Di desktop seluruh state statis aside sudah benar tanpa :class
+       (lg:sticky, lg:translate-x-0) sehingga cloaking justru membuat konten
+       utama loncat ke kiri lalu kembali kanan setiap pindah halaman. Mobile
+       tetap ter-cloak sampai Alpine siap (mencegah sidebar slide-in flash). */
+    @media (min-width: 1024px) {
+        #sidebar-admin[x-cloak] {
+            display: flex !important;
+        }
+    }
+
+    /* Fase 31 - filter katalog: panel harus langsung terlihat di desktop
+       sebelum Alpine siap (mobile tetap ter-cloak lalu dikontrol x-show). */
+    @media (min-width: 1024px) {
+        #filter-panel[x-cloak] {
+            display: block !important;
+        }
+    }
+
     picture {
         display: contents;
     }
@@ -156,7 +175,7 @@
         outline-offset: 2px;
     }
 
-    /* Hormati prefers-reduced-motion (WCAG 2.3.3) â€” autoplay slider sudah diguard di app.js */
+    /* Hormati prefers-reduced-motion (WCAG 2.3.3) — autoplay slider sudah diguard di app.js */
     @media (prefers-reduced-motion: reduce) {
         *,
         ::before,

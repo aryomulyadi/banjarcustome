@@ -394,7 +394,7 @@
                                 rows="3"
                                 maxlength="1000"
                                 placeholder="cth. Pelanggan membatalkan sebelum produksi."
-                                class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                             >{{ old('cancel_reason') }}</textarea>
                             @error('cancel_reason')
                                 <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
@@ -540,29 +540,6 @@
                 <h2 class="text-base font-semibold">Serah Terima Produksi</h2>
                 <p class="mt-1.5 text-xs text-muted-foreground">Kartu Kerja untuk jalur konveksi; SPK untuk over ke operator sublim (jersey).</p>
 
-                @if ($isAdmin)
-                <form method="POST" action="{{ route('admin.orders.handover', $order) }}" class="mt-3 space-y-3">
-                    @csrf
-                    @method('PATCH')
-
-                    <div class="space-y-1.5">
-                        <x-label for="assigned_operator">Operator sublim / penanggung jawab</x-label>
-                        <x-input
-                            id="assigned_operator"
-                            name="assigned_operator"
-                            value="{{ old('assigned_operator', $order->assigned_operator) }}"
-                            maxlength="120"
-                            placeholder="cth. Pak Rusdi"
-                        />
-                        @error('assigned_operator')
-                            <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <x-button type="submit" class="w-full">Simpan Operator</x-button>
-                </form>
-                @endif
-
                 <div class="mt-3 grid grid-cols-2 gap-2">
                     <a
                         href="{{ route('admin.orders.card', $order) }}"
@@ -631,7 +608,7 @@
                         readonly
                         x-ref="preview"
                         x-text="currentText"
-                        class="w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-sm"
+                        class="w-full rounded-md border border-border bg-muted/40 px-3 py-2 text-base sm:text-sm"
                         aria-label="Isi template pesan"
                     ></textarea>
 

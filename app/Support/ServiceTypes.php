@@ -2,23 +2,16 @@
 
 namespace App\Support;
 
-use App\Models\Setting;
-
 class ServiceTypes
 {
-    private const SETTING_KEY = 'services.items';
-
     /**
      * Daftar layanan lengkap: [['title' => ..., 'desc' => ...], ...].
+     *
+     * Fase 30: hanya dari config (source code) — fitur penyuntingan pada
+     * halaman Pengaturan dihapus dan penyimpanan Setting tak lagi dibaca.
      */
     public static function items(): array
     {
-        $stored = json_decode((string) Setting::get(self::SETTING_KEY), true);
-
-        if (is_array($stored) && self::isValid($stored)) {
-            return $stored;
-        }
-
         return config('banjarcustom.services', []);
     }
 
@@ -39,21 +32,5 @@ class ServiceTypes
     public static function isJerseyTitle(?string $title): bool
     {
         return $title !== null && str_contains(strtolower($title), 'jersey');
-    }
-
-    public static function setItems(array $items): void
-    {
-        Setting::set(self::SETTING_KEY, json_encode(array_values($items)));
-    }
-
-    private static function isValid(array $items): bool
-    {
-        foreach ($items as $item) {
-            if (! is_array($item) || empty($item['title'])) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

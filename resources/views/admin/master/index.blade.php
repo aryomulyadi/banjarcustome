@@ -1,7 +1,7 @@
 <x-layouts.admin :title="'Data Master'">
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-sm text-muted-foreground">Master data type, bahan, warna, kerah & bahan jersey dipakai pada kartu spesifikasi pesanan, katalog jersey, serta memvalidasi kolom saat impor Excel.</p>
+        <p class="text-sm text-muted-foreground">Master data type, bahan, warna, kerah & bahan jersey dipakai pada kartu spesifikasi pesanan, katalog jersey, serta memvalidasi kolom saat impor Excel. Desainer, model, status jersey, jenis & type target dipakai dropdown pada modul Data Jersey dan Data Target.</p>
     </div>
 
     @php
@@ -11,6 +11,11 @@
             'color' => 'Warna',
             'collar' => 'Kerah Jersey',
             'fabric' => 'Bahan Jersey',
+            'designer' => 'Desainer',
+            'jersey_model' => 'Model Jersey',
+            'jersey_status' => 'Status Jersey',
+            'target_line' => 'Jenis Target',
+            'target_type' => 'Type Target',
         ];
         $descriptions = [
             'type' => 'Jenis barang, misalnya Kaos Polos, Hoodie.',
@@ -18,6 +23,11 @@
             'color' => 'Pilihan warna, swatch opsional heksadesimal.',
             'collar' => 'Upgrade kerah jersey: biaya per pcs + foto tampil di Katalog Jersey.',
             'fabric' => 'Upgrade bahan jersey: biaya per pcs + foto tampil di Katalog Jersey.',
+            'designer' => 'Tim desainer, dipakai dropdown Data Jersey.',
+            'jersey_model' => 'Model potongan jersey, dipakai dropdown Data Jersey.',
+            'jersey_status' => 'Alur status operasional Data Jersey.',
+            'target_line' => 'Jenis produk target/produksi, dipakai dropdown Data Target.',
+            'target_type' => 'Type potongan target/produksi, dipakai dropdown Data Target.',
         ];
         $errorKeys = ['name', 'hex', 'fee', 'image'];
     @endphp
@@ -100,11 +110,9 @@
                                             @endunless
                                         </span>
                                         <span class="flex shrink-0 items-center gap-1.5">
-                                            @if ($isJersey)
-                                                <a href="{{ route('admin.master.edit', $option) }}" class="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-                                                    Edit
-                                                </a>
-                                            @endif
+                                            <a href="{{ route('admin.master.edit', $option) }}" class="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                                                Edit
+                                            </a>
                                             <form method="POST" action="{{ route('admin.master.destroy', $option) }}" onsubmit="return confirm('Hapus {{ $option->name }}?')">
                                                 @csrf
                                                 @method('DELETE')

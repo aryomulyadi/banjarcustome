@@ -176,7 +176,7 @@ class ProductGalleryTest extends TestCase
 
         $this->get(route('produk.show', $product->slug))
             ->assertOk()
-            ->assertSee('x-data="{ index: 0 }"', false)
+            ->assertSee('x-data="imageSlider(', false)
             ->assertSee('aria-label="Foto sebelumnya"', false)
             ->assertSee('aria-label="Foto berikutnya"', false)
             ->assertSee('storage/products/galeri-1.jpg', false)
@@ -192,7 +192,7 @@ class ProductGalleryTest extends TestCase
             ->assertOk()
             ->assertSee('Foto Produk')
             ->assertDontSee('Foto berikutnya', false)
-            ->assertDontSee('x-data="{ index: 0 }"', false);
+            ->assertDontSee('x-data="imageSlider(', false);
     }
 
     public function test_product_detail_json_ld_includes_gallery_images(): void

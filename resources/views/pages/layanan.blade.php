@@ -5,7 +5,7 @@
 
     <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
+            <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span aria-hidden="true">/</span>
             <span class="text-foreground" aria-current="page">Layanan</span>
         </nav>
@@ -18,8 +18,9 @@
         </p>
 
         <h2 class="mt-10 text-xl font-bold sm:text-2xl">Jenis Sablon &amp; Teknik</h2>
-        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <x-scroll-row class="mt-5" grid="sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($services as $service)
+                <x-scroll-row-item>
                 <div class="rounded-xl border border-border bg-card p-5">
                     <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
@@ -27,8 +28,9 @@
                     <h3 class="mt-3 font-semibold">{{ $service['title'] }}</h3>
                     <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{{ $service['desc'] ?? '' }}</p>
                 </div>
+                </x-scroll-row-item>
             @endforeach
-        </div>
+        </x-scroll-row>
 
         <h2 class="mt-12 text-xl font-bold sm:text-2xl">Produk yang Kami Tangani</h2>
         <div class="mt-5 flex flex-wrap gap-2.5">
@@ -38,13 +40,14 @@
         </div>
 
         <h2 class="mt-12 text-xl font-bold sm:text-2xl">Estimasi Produksi &amp; Pembayaran</h2>
-        <div class="mt-5 grid gap-4 sm:grid-cols-2">
+        <x-scroll-row class="mt-5" grid="sm:grid-cols-2">
             @foreach ([
                 ['title' => 'Kaos — 3–7 hari kerja', 'desc' => 'Estimasi produksi kaos sablon reguler, dihitung setelah desain disetujui.'],
                 ['title' => 'Jersey — 14–25 hari kerja', 'desc' => 'Jersey printing sublim butuh waktu lebih lama karena proses jahit dan cetak full body. VIP ORDER +Rp10.000 per jersey untuk pengerjaan lebih cepat - lihat Panduan Jersey.'],
                 ['title' => 'Express — same-day / di bawah 10 hari', 'desc' => 'Butuh lebih cepat? Kaos bisa dikerjakan hari itu juga dan pesanan lain di bawah 10 hari, dengan biaya tambahan'.(config('banjarcustom.express_fee') ? ' ('.config('banjarcustom.express_fee').')' : '').'. Konfirmasi ke CS.'],
                 ['title' => 'DP 50%', 'desc' => 'Bayar DP 50% untuk mulai produksi, 50% sisanya sebelum pesanan diambil atau dikirim.'],
             ] as $item)
+                <x-scroll-row-item>
                 <div class="rounded-xl border border-border bg-card p-5">
                     <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -52,8 +55,9 @@
                     <h3 class="mt-3 font-semibold">{{ $item['title'] }}</h3>
                     <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{{ $item['desc'] }}</p>
                 </div>
+                </x-scroll-row-item>
             @endforeach
-        </div>
+        </x-scroll-row>
 
         <h2 class="mt-12 text-xl font-bold sm:text-2xl">Alur Pengerjaan</h2>
         <ol class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

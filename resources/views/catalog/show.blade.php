@@ -13,12 +13,12 @@
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
+            <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span>/</span>
-            <a href="{{ route('produk.index') }}" class="hover:text-primary">Katalog</a>
+            <a href="{{ route('produk.index') }}" class="inline-block py-1.5 hover:text-primary">Katalog</a>
             <span>/</span>
             @if ($product->category)
-                <a href="{{ route('kategori', $product->category->slug) }}" class="hover:text-primary">{{ $product->category->name }}</a>
+                <a href="{{ route('kategori', $product->category->slug) }}" class="inline-block py-1.5 hover:text-primary">{{ $product->category->name }}</a>
                 <span>/</span>
             @endif
             <span class="text-foreground">{{ $product->title }}</span>
@@ -33,7 +33,10 @@
 
         <div class="grid gap-8 lg:grid-cols-2">
             {{-- Gambar --}}
-            <div class="overflow-hidden rounded-2xl border border-border bg-card" @if ($gallery->count() > 1) x-data="{ index: 0 }" @endif>
+            <div
+                class="overflow-hidden rounded-2xl border border-border bg-card"
+                @if ($gallery->count() > 1) x-data="imageSlider({{ $gallery->count() }})" @touchstart.passive="swipeStart($event)" @touchend="swipeEnd($event)" @endif
+            >
                 @if ($gallery->isEmpty())
                     @if ($product->image)
                         <x-img :src="$product->image" :alt="$product->title" width="800" height="600" fetchpriority="high" decoding="async" sizes="(min-width: 1024px) 600px, calc(100vw - 32px)" class="aspect-[4/3] w-full object-cover" />
@@ -61,7 +64,7 @@
                             <button
                                 type="button"
                                 x-on:click="index = (index - 1 + {{ $gallery->count() }}) % {{ $gallery->count() }}"
-                                class="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow transition-colors hover:bg-background"
+                                class="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow transition-colors hover:bg-background"
                                 aria-label="Foto sebelumnya"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
@@ -69,17 +72,17 @@
                             <button
                                 type="button"
                                 x-on:click="index = (index + 1) % {{ $gallery->count() }}"
-                                class="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow transition-colors hover:bg-background"
+                                class="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow transition-colors hover:bg-background"
                                 aria-label="Foto berikutnya"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                             </button>
-                            <div class="absolute inset-x-0 bottom-2 flex justify-center gap-1">
+                            <div class="absolute inset-x-0 bottom-2 flex justify-center gap-2">
                                 @foreach ($gallery as $i => $galleryImage)
                                     <button
                                         type="button"
                                         x-on:click="index = {{ $i }}"
-                                        class="flex h-6 w-6 items-center justify-center"
+                                        class="relative flex h-6 w-6 items-center justify-center after:absolute after:-inset-2 after:content-['']"
                                         aria-label="Foto ke-{{ $i + 1 }}"
                                     >
                                         <span
@@ -174,11 +177,13 @@
         @if ($related->isNotEmpty())
             <section class="mt-14">
                 <h2 class="text-xl font-bold sm:text-2xl">Produk Lain di {{ $product->category?->name ?? 'Kategori Ini' }}</h2>
-                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <x-scroll-row class="mt-6" grid="sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($related as $item)
+                        <x-scroll-row-item>
                         <x-product-card :product="$item" />
+                        </x-scroll-row-item>
                     @endforeach
-                </div>
+                </x-scroll-row>
             </section>
         @endif
     </div>

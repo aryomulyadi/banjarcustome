@@ -6,7 +6,7 @@
 
     <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
+            <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span aria-hidden="true">/</span>
             <span class="text-foreground" aria-current="page">Form Pemesanan</span>
         </nav>

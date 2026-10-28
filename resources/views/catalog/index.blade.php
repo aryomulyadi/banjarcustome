@@ -5,10 +5,10 @@
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-            <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
+            <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span>/</span>
             @if ($activeCategory)
-                <a href="{{ route('produk.index') }}" class="hover:text-primary">Katalog</a>
+                <a href="{{ route('produk.index') }}" class="inline-block py-1.5 hover:text-primary">Katalog</a>
                 <span>/</span>
                 <span class="text-foreground">{{ $activeCategory->name }}</span>
             @else
@@ -31,7 +31,39 @@
 
         <div class="grid gap-8 lg:grid-cols-[260px_1fr]">
             {{-- Sidebar Filter --}}
-            <aside class="h-fit rounded-xl border border-border bg-card p-5 lg:sticky lg:top-24">
+            <noscript>
+                <style>
+                    #filter-panel[x-cloak] { display: block !important; }
+                </style>
+            </noscript>
+            <aside
+                class="h-fit rounded-xl border border-border bg-card p-5 lg:sticky lg:top-24"
+                x-data="{ open: window.matchMedia('(min-width: 1024px)').matches }"
+                x-init="window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => { open = e.matches })"
+            >
+                <button
+                    type="button"
+                    class="flex w-full items-center justify-between gap-2 rounded-lg px-1 py-2.5 text-sm font-semibold uppercase tracking-wider text-foreground lg:hidden"
+                    @click="open = !open"
+                    :aria-expanded="open.toString()"
+                    aria-controls="filter-panel"
+                >
+                    Filter &amp; Pencarian
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 transition-transform"
+                        :class="open && 'rotate-180'"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    ><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+
+                <div id="filter-panel" x-show="open" x-cloak class="mt-1 lg:mt-0">
                 <form method="GET" action="{{ request()->url() }}">
                     @if ($activeCategory)
                         <input type="hidden" name="kategori" value="{{ $activeCategory->slug }}">
@@ -46,7 +78,7 @@
                                 value="{{ request('q') }}"
                                 placeholder="Cari produk..."
                                 aria-label="Cari produk"
-                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                             >
                         </div>
                     </div>
@@ -57,7 +89,7 @@
                         <div class="mt-3 flex flex-wrap items-center gap-2">
                             <label class="cursor-pointer">
                                 <input type="radio" name="warna" value="" class="peer sr-only" @checked(request('warna') === null || request('warna') === '')>
-                                <span class="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors peer-checked:border-primary peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background">
+                                <span class="inline-flex items-center rounded-full border border-border px-3 py-2 text-xs text-muted-foreground transition-colors peer-checked:border-primary peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background">
                                     Semua
                                 </span>
                             </label>
@@ -73,7 +105,7 @@
                                         @checked(request('warna') === $color->name)
                                     >
                                     <span
-                                        class="block h-7 w-7 rounded-full border border-border transition-shadow peer-checked:ring-2 peer-checked:ring-ring peer-checked:ring-offset-2 peer-checked:ring-offset-background peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
+                                        class="relative block h-7 w-7 rounded-full border border-border transition-shadow after:absolute after:-inset-1 after:content-[''] peer-checked:ring-2 peer-checked:ring-ring peer-checked:ring-offset-2 peer-checked:ring-offset-background peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
                                         style="background-color: {{ $color->hex }}"
                                         title="{{ $color->name }} — {{ $color->products_count }} produk"
                                     ></span>
@@ -98,13 +130,14 @@
                         @foreach ($categories as $category)
                             <a
                                 href="{{ route('kategori', $category->slug) }}"
-                                class="flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm transition-colors {{ $activeCategory?->id === $category->id ? 'bg-secondary font-medium text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
+                                class="flex items-center justify-between gap-2 rounded-md px-3 py-2.5 text-sm transition-colors {{ $activeCategory?->id === $category->id ? 'bg-secondary font-medium text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"
                             >
                                 <span>{{ $category->name }}</span>
                                 <span class="text-xs text-muted-foreground/70">{{ $category->products_count }}</span>
                             </a>
                         @endforeach
                     </div>
+                </div>
                 </div>
             </aside>
 

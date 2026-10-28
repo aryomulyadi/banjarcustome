@@ -91,11 +91,6 @@ class AdminContentTest extends TestCase
         $faq = Faq::create(['question' => 'Pertanyaan?', 'answer' => 'Jawaban.', 'position' => 1, 'is_active' => true]);
         $testimonial = Testimonial::create(['name' => 'Warga', 'rating' => 5, 'content' => 'Mantap.', 'is_active' => true]);
 
-        $this->actingAs($admin)->get(route('admin.settings.edit'))->assertOk()
-            ->assertSee('Jenis Sablon & Teknik')
-            ->assertSee('Sablon Plastisol')
-            ->assertSee('services: JSON.parse(\'[{\u0022title\u0022', false)
-            ->assertSee('Sablon Plastisol', false);
         $this->actingAs($admin)->get(route('admin.faqs.create'))->assertOk()->assertSee('Pertanyaan');
         $this->actingAs($admin)->get(route('admin.faqs.edit', $faq))->assertOk()->assertSee('Pertanyaan?');
         $this->actingAs($admin)->get(route('admin.testimonials.create'))->assertOk()->assertSee('Testimoni');
@@ -180,104 +175,6 @@ class AdminContentTest extends TestCase
             ->assertOk()
             ->assertSee('Sablon awet, warna tidak pudar.')
             ->assertSee('Pelanggan Puas');
-    }
-
-    public function test_home_content_settings_can_be_updated(): void
-    {
-        $admin = $this->admin();
-
-        $payload = [
-            'slides' => [
-                ['title' => 'Promo Baru Satu', 'subtitle' => 'Subtitle satu', 'image' => null],
-                ['title' => 'Promo Baru Dua', 'subtitle' => 'Subtitle dua', 'image' => null],
-                ['title' => 'Promo Baru Tiga', 'subtitle' => 'Subtitle tiga', 'image' => null],
-            ],
-            'stats' => [
-                ['value' => '999+', 'label' => 'Pesanan Uji'],
-                ['value' => '50+', 'label' => 'Klien Uji'],
-                ['value' => '10+', 'label' => 'Tahun Uji'],
-            ],
-            'services' => [
-                ['title' => 'Sablon Uji Satu', 'desc' => 'Deskripsi layanan uji satu.'],
-                ['title' => 'Sablon Uji Dua', 'desc' => ''],
-            ],
-        ];
-
-        $this->actingAs($admin)
-            ->put(route('admin.settings.update'), $payload)
-            ->assertRedirect(route('admin.settings.edit'));
-
-        $this->get('/')
-            ->assertOk()
-            ->assertSee('Promo Baru Satu')
-            ->assertSee('Pesanan Uji');
-
-        $this->get('/layanan')
-            ->assertOk()
-            ->assertSee('Sablon Uji Satu')
-            ->assertDontSee('Sablon Plastisol');
-
-        $this->get('/pesan')
-            ->assertOk()
-            ->assertSee('Sablon Uji Satu')
-            ->assertDontSee('Sablon Plastisol');
-    }
-
-    public function test_home_content_settings_require_exactly_three_slides(): void
-    {
-        $this->actingAs($this->admin())
-            ->from(route('admin.settings.edit'))
-            ->put(route('admin.settings.update'), [
-                'slides' => [
-                    ['title' => 'Satu', 'subtitle' => 'Sub satu', 'image' => null],
-                ],
-                'stats' => [
-                    ['value' => '1', 'label' => 'Satu'],
-                ],
-                'services' => [
-                    ['title' => 'Satu Layanan', 'desc' => ''],
-                ],
-            ])
-            ->assertSessionHasErrors(['slides', 'stats']);
-    }
-
-    public function test_settings_require_at_least_one_service(): void
-    {
-        $this->actingAs($this->admin())
-            ->from(route('admin.settings.edit'))
-            ->put(route('admin.settings.update'), [
-                'slides' => [
-                    ['title' => 'Satu', 'subtitle' => 'Sub satu', 'image' => null],
-                    ['title' => 'Dua', 'subtitle' => 'Sub dua', 'image' => null],
-                    ['title' => 'Tiga', 'subtitle' => 'Sub tiga', 'image' => null],
-                ],
-                'stats' => [
-                    ['value' => '1', 'label' => 'Satu'],
-                    ['value' => '2', 'label' => 'Dua'],
-                    ['value' => '3', 'label' => 'Tiga'],
-                ],
-                'services' => [],
-            ])
-            ->assertSessionHasErrors('services');
-
-        $this->actingAs($this->admin())
-            ->from(route('admin.settings.edit'))
-            ->put(route('admin.settings.update'), [
-                'slides' => [
-                    ['title' => 'Satu', 'subtitle' => 'Sub satu', 'image' => null],
-                    ['title' => 'Dua', 'subtitle' => 'Sub dua', 'image' => null],
-                    ['title' => 'Tiga', 'subtitle' => 'Sub tiga', 'image' => null],
-                ],
-                'stats' => [
-                    ['value' => '1', 'label' => 'Satu'],
-                    ['value' => '2', 'label' => 'Dua'],
-                    ['value' => '3', 'label' => 'Tiga'],
-                ],
-                'services' => [
-                    ['title' => str_repeat('x', 61), 'desc' => ''],
-                ],
-            ])
-            ->assertSessionHasErrors('services.0.title');
     }
 
     public function test_seeded_faqs_are_shown_on_public_faq_page(): void
@@ -487,7 +384,6 @@ class AdminContentTest extends TestCase
         foreach ([
             'admin.faqs.index',
             'admin.testimonials.index',
-            'admin.settings.edit',
             'admin.profile.edit',
             'admin.orders.export',
         ] as $route) {
@@ -499,7 +395,7 @@ class AdminContentTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'user']);
 
-        foreach (['admin.faqs.index', 'admin.testimonials.index', 'admin.settings.edit', 'admin.profile.edit'] as $route) {
+        foreach (['admin.faqs.index', 'admin.testimonials.index', 'admin.profile.edit'] as $route) {
             $this->actingAs($user)->get(route($route))->assertForbidden();
         }
     }

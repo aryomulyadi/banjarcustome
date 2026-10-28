@@ -5,7 +5,12 @@
 
     {{-- Hero Slider --}}
     <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-        <div class="relative h-[440px] overflow-hidden rounded-2xl border border-border bg-muted sm:h-[480px]" x-data="heroSlider({{ count($slides) }})">
+        <div
+            class="relative h-[440px] overflow-hidden rounded-2xl border border-border bg-muted sm:h-[480px]"
+            x-data="heroSlider({{ count($slides) }})"
+            @touchstart.passive="swipeStart($event)"
+            @touchend="swipeEnd($event)"
+        >
             @foreach ($slides as $i => $slide)
                 <div
                     x-cloak
@@ -73,7 +78,7 @@
                 <button
                     type="button"
                     @click="toggle()"
-                    class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background"
+                    class="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background"
                     :aria-label="paused ? 'Putar slide otomatis' : 'Jeda slide otomatis'"
                     :aria-pressed="paused.toString()"
                 >
@@ -81,12 +86,12 @@
                     <svg x-show="!paused" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect width="6" height="14" x="4" y="5" rx="1"/><rect width="6" height="14" x="14" y="5" rx="1"/></svg>
                 </button>
 
-                <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1">
+                <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
                     @foreach ($slides as $i => $slide)
                         <button
                             type="button"
                             @click="index = {{ $i }}"
-                            class="flex h-6 w-6 items-center justify-center"
+                            class="relative flex h-6 w-6 items-center justify-center after:absolute after:-inset-2 after:content-['']"
                             aria-label="Slide {{ $i + 1 }}"
                         >
                             <span
@@ -102,7 +107,8 @@
 
     {{-- USP --}}
     <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="grid gap-4 sm:grid-cols-3">
+        <x-scroll-row grid="sm:grid-cols-3">
+            <x-scroll-row-item>
             <div class="flex items-start gap-4 rounded-xl border border-border bg-card p-5">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
@@ -112,7 +118,9 @@
                     <p class="mt-1 text-sm text-muted-foreground">Punya desain sendiri? Kirim aja. Belum punya? Tim kami bantu buatkan.</p>
                 </div>
             </div>
+            </x-scroll-row-item>
 
+            <x-scroll-row-item>
             <div class="flex items-start gap-4 rounded-xl border border-border bg-card p-5">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
@@ -122,7 +130,9 @@
                     <p class="mt-1 text-sm text-muted-foreground">Bahan dan teknik sablon berkualitas, hasil tetap elastis setelah berulang kali dicuci.</p>
                 </div>
             </div>
+            </x-scroll-row-item>
 
+            <x-scroll-row-item>
             <div class="flex items-start gap-4 rounded-xl border border-border bg-card p-5">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
@@ -132,7 +142,8 @@
                     <p class="mt-1 text-sm text-muted-foreground">Satuan untuk keperluan pribadi maupun ratusan pcs untuk komunitas dan perusahaan.</p>
                 </div>
             </div>
-        </div>
+            </x-scroll-row-item>
+        </x-scroll-row>
     </section>
 
     {{-- Katalog Preview --}}
@@ -142,18 +153,20 @@
                 <h2 class="text-2xl font-bold sm:text-3xl">Katalog Produk</h2>
                 <p class="mt-1 text-sm text-muted-foreground">Pilihan produk siap custom sesuai kebutuhan tim, kantor, dan komunitas.</p>
             </div>
-            <a href="{{ route('produk.index') }}" class="shrink-0 text-sm font-semibold text-primary hover:underline">
+            <a href="{{ route('produk.index') }}" class="shrink-0 inline-block py-1.5 text-sm font-semibold text-primary hover:underline">
                 Lihat Semua →
             </a>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-4">
             @forelse ($products as $product)
+                <x-scroll-row-item>
                 <x-product-card :product="$product" />
+                </x-scroll-row-item>
             @empty
-                <p class="col-span-full py-8 text-center text-sm text-muted-foreground">Belum ada produk.</p>
+                <p class="col-span-full w-full shrink-0 py-8 text-center text-sm text-muted-foreground">Belum ada produk.</p>
             @endforelse
-        </div>
+        </x-scroll-row>
     </section>
 
     {{-- CTA Custom Design --}}
@@ -195,13 +208,14 @@
                 <h2 class="text-2xl font-bold sm:text-3xl">Galeri Hasil Produksi</h2>
                 <p class="mt-1 text-sm text-muted-foreground">Sebagian hasil kerja kami untuk komunitas, sekolah, dan perusahaan.</p>
             </div>
-            <a href="{{ route('galeri') }}" class="shrink-0 text-sm font-semibold text-primary hover:underline">
+            <a href="{{ route('galeri') }}" class="shrink-0 inline-block py-1.5 text-sm font-semibold text-primary hover:underline">
                 Lihat Semua →
             </a>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-3">
             @forelse ($galleries as $gallery)
+                <x-scroll-row-item>
                 <figure class="group overflow-hidden rounded-xl border border-border bg-card">
                     @if ($gallery->image)
                         <x-img :src="$gallery->image" :alt="$gallery->title" width="800" height="600" loading="lazy" decoding="async" sizes="(min-width: 1024px) 400px, (min-width: 640px) calc(50vw - 32px), calc(100vw - 32px)" class="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -215,10 +229,11 @@
                         @endif
                     </figcaption>
                 </figure>
+                </x-scroll-row-item>
             @empty
-                <p class="col-span-full py-8 text-center text-sm text-muted-foreground">Belum ada galeri.</p>
+                <p class="col-span-full w-full shrink-0 py-8 text-center text-sm text-muted-foreground">Belum ada galeri.</p>
             @endforelse
-        </div>
+        </x-scroll-row>
     </section>
 
     {{-- Testimoni --}}
@@ -229,7 +244,7 @@
                 <p class="mt-1 text-sm text-muted-foreground">Ulasan asli pelanggan yang pesan langsung di Banjar Custome — tampil di Google Reviews.</p>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($testimonials as $testimonial)
                     @php
                         $initials = collect(explode(' ', trim($testimonial->name)))
@@ -238,6 +253,7 @@
                             ->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))
                             ->implode('');
                     @endphp
+                    <x-scroll-row-item>
                     <figure class="flex flex-col rounded-xl border border-border bg-card p-5">
                         <figcaption class="flex items-center gap-3">
                             @if ($testimonial->photo)
@@ -274,8 +290,9 @@
                             "{{ $testimonial->content }}"
                         </blockquote>
                     </figure>
+                    </x-scroll-row-item>
                 @endforeach
-            </div>
+            </x-scroll-row>
         </section>
     @endif
 
@@ -300,10 +317,10 @@
                 </div>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-3 gap-3 sm:gap-4">
                 @foreach ($stats as $stat)
-                    <div class="rounded-xl border border-border bg-card p-5 text-center">
-                        <p class="text-2xl font-bold text-primary">{{ $stat['value'] }}</p>
+                    <div class="rounded-xl border border-border bg-card p-3 text-center sm:p-5">
+                        <p class="text-lg font-bold text-primary sm:text-2xl">{{ $stat['value'] }}</p>
                         <p class="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">{{ $stat['label'] }}</p>
                     </div>
                 @endforeach

@@ -56,6 +56,7 @@ class DatabaseSeeder extends Seeder
             FaqSeeder::class,
             TestimonialSeeder::class,
             JerseyOptionSeeder::class,
+            OperationalOptionSeeder::class,
         ]);
 
         Artisan::call('catalog:sync');

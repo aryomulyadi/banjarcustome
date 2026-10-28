@@ -1802,3 +1802,186 @@ VERIFIKASI AKHIR FASE 29: pint passed; composer test 346 tests /
   bukti visual popup dark+light terbaca + ikon tombol sisa 1 chevron;
   probe layout sticky/grid/urutan kartu lolos kedua tema; 9222
   dimatikan, server :8000 user dipertahankan.
+FASE 30 - FIX GLITCH NAVIGASI, HAPUS PENGATURAN, HAPUS FORM OPERATOR (SELESAI)
+  Permintaan user: (1) perbaiki lazy loading/glitch di dashboard - diagnosis
+  user: kedip saat pindah halaman (produk->kalkulator->kategori) -> aside
+  x-cloak pop-in; (2) banner/stat/daftar layanan tetap tampil di situs tapi
+  datanya dari source code -> fitur Pengaturan dihapus total; (3) Serah
+  Terima Produksi: hanya hapus form operator - kartu + Kartu Kerja + Cetak
+  SPK tetap. Plan disetujui: implementasikan, lint/build/review.
+30A GLITCH FIX: app.css +@media (min-width:1024px)
+  #sidebar-admin[x-cloak]{display:flex!important} (aside desktop tak pernah
+  hilang walau Alpine telat load); layout admin head +<style>@view-transition
+  { navigation:auto; }</style> (crossfade antar halaman; CSP style-src
+  unsafe-inline); ikon tema -> class dark:hidden / hidden dark:block tanpa
+  x-show/x-cloak (toggle tetap via x-data theme).
+30B PENGATURAN DIHAPUS TOTAL: routes/admin.php -use SettingController
+  -2 route /pengaturan; -menu nav Pengaturan (layout); -SettingController.php;
+  -resources/views/admin/settings/; HomeContent slides()/stats() ->
+  hardcode defaults (Setting::get dihapus); ServiceTypes ->
+  config('banjarcustom.services') saja (setItems/isValid/SETTING_KEY/Setting
+  dihapus). Konsumen tetap jalan: CalculatorController, Admin+public
+  OrderController, PageController, CustomOrder::isJerseyTitle, catalog.
+30C FORM OPERATOR DIHAPUS (admin/orders/show.blade.php): blok @if($isAdmin)
+  label Operator sublim + input + error + Simpan Operator (L543-564)
+  dihapus; kartu Serah Terima Produksi + desc + grid 2 tombol Kartu Kerja/
+  Cetak SPK tetap. Route admin.orders.handover + WorkCardTest tetap (antrian
+  produksi & kartu kerja tercetak masih pakai assigned_operator).
+30D TEST UPDATE: AdminContentTest -3 method settings -render chunk
+  -2 entry akses; ProductionQueueTest -route settings dari forbidden-list
+  -assertSee('Pengaturan'); EncodingIntegrityTest -path settings.
+  grep Setting::/admin.settings/SettingController/Simpan Operator = CLEAN.
+30E PROBE VISUAL (Edge CDP 9222): JS-off detail = sidebar tampil utuh tanpa
+  loncat (bukti fix A1; matahari juga benar tanpa JS); dashboard:
+  sidebarDisplay flex, x-cloak false, viewTransition true, sunClass
+  h-4 w-4 dark:hidden; fetch /admin/pengaturan -> 404; home stats 3/3 +
+  title/hero OK (catatan: cek awal false karena innerText kena CSS
+  text-transform:uppercase - rerun case-insensitive LULUS); detail:
+  serahCard/kartuKerja/cetakSpk true, simpanOperator/formHandover false;
+  nav cepat 260ms sidebar display flex.
+VERIFIKASI AKHIR FASE 30: pint passed; composer test 343 tests / 2075
+  assertions HIJAU (-3 test settings); npm run build OK & DETERMINISTIK 2x
+  (app-BVEhBMc8.css 59,20 kB); grep pengaturan/Setting CLEAN; diff 11 file
+  (2 dihapus, 9 diubah, -405/+29) sesuai rencana; Edge 9222 dimatikan,
+  server :8000 user dipertahankan.
+FASE 31 - UX MOBILE: SCROLL ROW HORIZONTAL, SWIPE, & AUDIT TAP TARGET (SELESAI)
+  Permintaan user: horizontal swipe utk baris panjang (katalog/galeri/
+  testimoni/related + "semua yang terkesan panjang") via CSS scroll-snap
+  Alpine (bukan carousel), iOS zoom fix mobile-only 16px, menu mobile scroll,
+  tap target, filter accordion, Escape admin, swipe hero + galeri produk.
+31A SCROLL ROW (2 file baru): components/scroll-row.blade.php (flex -mx-4
+  snap-x snap-mandatory gap-4 overflow-x-auto px-4; sm:mx-0 sm:grid
+  sm:overflow-x-visible sm:px-0) + scroll-row-item.blade.php (w-[78vw]
+  max-w-[380px] shrink-0 snap-start sm:w-auto sm:max-w-none). Konversi home
+  USP/katalog preview/galeri preview/testimoni (4 row), catalog/show related,
+  layanan jenis sablon + estimasi, katalog-jersey produk/collar/fabric;
+  info tiles katalog-jersey -> grid-cols-2; stats home strip grid-cols-3
+  selalu (text-lg sm:text-2xl, p-3 sm:p-5); browse grid (catalog/index,
+  galeri) tetap grid; sizes gambar & ol steps layanan tak diubah.
+31B IOS ZOOM: text-base sm:text-sm pada components input/select/textarea +
+  direct (catalog/index search, katalog-jersey qty, admin/products _form x3,
+  calculator number, orders/show cancel_reason textarea + preview). File
+  input/checkbox/radio sengaja tak diubah (iOS membuka picker, bukan fokus
+  teks); honeypot orders/create dibiarkan.
+31C MENU MOBILE: #menu-mobile +max-h-[calc(100dvh-4rem)] overflow-y-auto
+  overscroll-contain + @click.outside close (header.blade.php).
+31D TAP TARGET & OVERFLOW: tombol header theme/WA/burger h-9->h-10 + gap
+  gap-2 sm:gap-4; logo <a> shrink-0 -> min-w-0 + truncate (fix overflow 3px
+  di 320px, headerW 324->320); menu links py-2.5; hero dots gap-2 +
+  after:-inset-2 (pseudo -> 40px efektif, tombol nyata 24px) + pause h-10;
+  gallery arrows h-10 + dots sama; breadcrumb 12 file inline-block py-1.5
+  (32px); footer ikon h-10, link inline-block py-1.5 sm:py-0, grid-cols-2
+  base (bug sm: = 640px tdk aktif di 390px) + brand col-span-2 md:col-span-1;
+  galeri pills py-2 (38px) + lightbox h-11 + empty h-10; catalog swatch
+  after:-inset-1 + pill py-2 + chip kategori py-2.5 + Lihat Semua py-1.5.
+31E FILTER ACCORDION (catalog/index): tombol "Filter & Pencarian" h-10 +
+  :aria-expanded/:aria-controls (fix typo: aria-expanded="open.toString()"
+  literal -> :aria-expanded), #filter-panel x-show/x-cloak, open =
+  matchMedia(min-width:1024px) + change-listener, CSS app.css
+  #filter-panel[x-cloak] display:block !important (>=1024) + <noscript>
+  override = panel terbuka utk desktop/no-JS, tertutup utk ponsel.
+31F SWIPE: heroSlider +swipeStart/swipeEnd (threshold 40px, abaikan
+  |dy|>|dx|, autoplay tdk dipause - konsisten panah); Alpine.data
+  imageSlider(count) baru di app.js; bind @touchstart.passive + @touchend di
+  home hero + catalog/show gallery (x-data inline {index:0} -> imageSlider(n)).
+31G TEST: AccessibilityTest dot -> class "relative flex h-6 w-6 ...
+   after:absolute after:-inset-2 after:content-['']" (pseudo tdk
+   dihitung Lighthouse, klik tetap utk keyboard/AT); ProductGalleryTest ->
+   assertSee/assertDontSee imageSlider(.
+31H PROBE Edge CDP 9222 (390x844 DPR3 touch, f31/f31b.mjs): 4 row
+  flex/overflow auto/scrollable, item 305px ~= 78vw, scrollLeft 336 + scroll
+  snap-x mandatory; stats 3 kolom; footer 2 kolom + brand span 2; tap
+  burger/theme/WA 40x40; dot elementFromPoint -6px -> button (pseudo hit);
+  swipe CDP touch index 0->1; menu open maxHeight 780px overflowY auto ->
+  close via outside; filter toggle false->true->false + aria-expanded benar;
+  input/textarea/select 16px @390 & 14px @700; galeri pill 38px breadcrumb
+  32px; 320px scrollW==clientW tanpa overflow (logo truncate "Banjar Cust...");
+  console errors 0; screenshots f31-home-rows/filter-open/menu-open/
+  home-320 diperiksa OK.
+VERIFIKASI AKHIR FASE 31: pint passed; composer test 343 tests / 2077
+  assertions HIJAU (+2 assert vs fase 30); npm run build OK & DETERMINISTIK
+  2x (app-BnnJUrV0.css 60,48 kB / app-BV3v9Z6q.js 56,66 kB); diff total 35
+  file (-521/+300, mencakup Fase 30 yg blm di-push) + 2 file baru
+  scroll-row; Edge 9222 dimatikan, server :8000 user dipertahankan.
+
+FASE 32 - DASHBOARD MOBILE UX (SELESAI)
+- Mojibake resources: 2 komentar app.css (edit tool) + 3 string produksi/index
+  (PowerShell regex codepoints U+00E2/U+20AC/U+201D -> U+2014, UTF-8 no-BOM);
+  scan penuh resources/views + css bersih.
+- tests/Feature/EncodingIntegrityTest.php: scanTargets() = File::allViews +
+  css/app.css; loop $failures[] assertSame([], ...) utk BOM & mojibake;
+  home-title test dipertahankan (+1 test).
+- layouts/admin.blade.php: nav item px-3 py-2 (13x) -> px-3 py-2.5 (tap
+  vertical >=40px); root x-data + @resize.window sidebarOpen=false @>=1024
+  + x-effect body overflow lock; burger & theme toggle h-10 w-10 (40x40).
+- admin/dashboard.blade.php: stats grid-cols-2 base / xl:grid-cols-3 (7 kartu
+  p-4 sm:p-5, value text-2xl sm:text-3xl, link py-1.5 >=32px); chart header
+  flex-wrap gap-x-4 gap-y-1; "Pesanan Terbaru" = kartu <ul divide-y lg:hidden>
+  (per-order link admin.orders.show: #id+chip, nama, "product - tanggal",
+  chevron) + tabel hidden lg:block — ponsel dapat kartu, desktop tabel.
+- Verifikasi: pint passed; composer test 357 tests / 2277 assertions HIJAU
+  (344+13 baru Fase 33); npm run build DETERMINISTIK 2x (app-ChoXOelN.css
+  60,76 kB / app-BV3v9Z6q.js 56,65 kB); Edge CDP 390: stats 2 kolom x7 kartu,
+  ul kartu visible / tabel hidden, burger+theme 40x40, drawer open+body lock,
+  resize 1280 -> @resize handler sidebarOpen=false + overflow '' (spy resize
+  event fires; Alpine 3.17.4 .window directive terbukti via elemen ad-hoc n=1;
+  CDP dispatchKeyEvent Escape tdk sampai ke page (spy keydown=0) — bukan bug
+  app), 320 scrollW==clientW; 1280 tabel visible / kartu hidden; /admin/produksi
+  teks em-dash ada; console CSP errors 0; screenshots f32-dash-390/drawer-390/
+  dash-1280/dash-320 diperiksa OK.
+
+FASE 33 - DUA MODUL OPERASIONAL: DATA JERSEY & DATA TARGET (SELESAI)
+Dua tabel/modul TERPISAH (spec user 2x + "lanjutkan"): Data Jersey (order
+desain: tanggal masuk, desainer, customer, deadline, sisa hari computed
+"TERLAMBAT", kerah, bahan, model, status, catatan) + Data Target/Produksi
+(customer, jenis, waktu pengambilan, type, bahan, warna, pesanan bahan OK/NOK,
+progres produksi OK/NOK, finish OK/NOK, total). Dropdown semua dari Data
+Master; sidebar 2 link baru setelah Data Master.
+- MasterOption: +5 KINDS (designer, jersey_model, jersey_status, target_line,
+  target_type) masuk KINDS (JERSEY_KINDS tak diubah).
+- Migrasi: create_jersey_data_table (index desainer/status/deadline) +
+  create_target_data_table (index jenis/waktu/3 flags); status default
+  "Proses Desain", flags default NOK, total unsigned int.
+- Model JerseyData (STATUSES, casts date, accessor sisa_hari signed int +
+  terlambat, scopes search/filterDesainer/filterStatus/sort whitelist) +
+  TargetData (OK/NOK, FLAGS, okNokRule(), scopes search/filterJenis/
+  filterFlag/sort whitelist).
+- OperationalOptionSeeder (firstOrCreate idempoten: AAN/ARYO/IMUL, 7 model,
+  status=STATUSES, 10 jenis target, 14 type target) + registrasi DatabaseSeeder.
+- JerseyDataController + TargetDataController: index q+filters+sort
+  "field:dir" (parseSort fallback aman) paginate(20)->withQueryString();
+  store/update validasi desainer Rule::in(namesFor designer), status Rule::in
+  (STATUSES), deadline after_or_equal tanggal masuk, 3x flag okNokRule, total
+  int min 0; kerah/bahan/model/jenis/type/bahan/warna nullable free-text (loose
+  by design — sumber tetap master via form select).
+- routes/admin.php: 12 route jersey.*/target.* dalam grup role:admin.
+- Views baru: admin/jersey/{index,form} + admin/target/{index,form}: toolbar
+  GET (search, filter select auto-submit via Alpine @change — CSP-safe tanpa
+  inline handler, sort select "field:dir"), tabel hidden lg:block overflow-x
+  auto + kartu list lg:hidden (chip status/OK-NOK, sisa hari chip TERLAMBAT),
+  pagination links(), form shared create+edit ($entry ?? null) dgn select
+  master + date picker + @error, hapus via Alpine @submit confirm.
+- master edit dibuka utk SEMUA kind (spec "bisa ditambah/edit"): hapus
+  abort_unless isJerseyKind; update name (+hex utk color) utk non-jersey,
+  fee/image/active/sort tetap utk jersey; edit.blade conditional sections;
+  index tampil link Edit semua baris; JerseyOptionCrudTest: test 404 lama
+  diganti test rename + unique-name utk non-jersey.
+- Tests baru: JerseyDataTest (7) + TargetDataTest (6): guest redirect,
+  produksi 403, CRUD, validation errors, search/filter/sort (strpos order),
+  sisa hari/TERLAMBAT, dropdown master; ProductionQueueTest forbidden-list
+  +4 route (jersey/target index+create).
+- Verifikasi: pint passed; composer test 357/2277 HIJAU; build deterministik;
+  migrate+seed lokal OK; probe Edge: index+empty state, create via form DOM,
+  filter auto-submit (desainer=AAN & progres_produksi=NOK masuk URL), sort
+  auto-submit (sort=customer%3Aasc), 3 kartu @390 (13 hari/2 hari/TERLAMBAT)
+  + tabel 12 kolom @1280, delete via UI (confirm+redirect+flash), edit form
+  prefilled PUT, target OK/NOK chips, 320 scrollW==clientW (jersey+target),
+  console CSP errors 0; screenshots f33-jersey-cards-390/data-1280/edit-390/
+  target-cards-390/data-1280 diperiksa OK; DB lokal dibersihkan (truncate).
+
+VERIFIKASI AKHIR FASE 32+33: pint passed; composer test 357 tests / 2277
+  assertions HIJAU (+14 vs fase 31: 1 encoding scan + 2 master rename + 13
+  jersey/target, -1 test 404 lama diganti); npm run build DETERMINISTIK 2x
+  (app-ChoXOelN.css 60,76 kB / app-BV3v9Z6q.js 56,65 kB); probe Edge CDP
+  390/1280/320 dashboard + dua modul OK, console CSP errors 0; Edge 9222 &
+  server :8000 (milik asisten) dimatikan; prd.txt +2 entry.

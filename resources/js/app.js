@@ -15,6 +15,8 @@ Alpine.data('heroSlider', (count, interval = 5000) => ({
     index: 0,
     count,
     paused: false,
+    tx: 0,
+    ty: 0,
     init() {
         if (count < 2) {
             return;
@@ -40,6 +42,44 @@ Alpine.data('heroSlider', (count, interval = 5000) => ({
     },
     prev() {
         this.index = (this.index - 1 + this.count) % this.count;
+    },
+    swipeStart(e) {
+        const t = e.touches[0];
+        this.tx = t.clientX;
+        this.ty = t.clientY;
+    },
+    swipeEnd(e) {
+        const t = e.changedTouches[0];
+        const dx = t.clientX - this.tx;
+        const dy = t.clientY - this.ty;
+
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) {
+                this.next();
+            } else {
+                this.prev();
+            }
+        }
+    },
+}));
+
+Alpine.data('imageSlider', (count) => ({
+    index: 0,
+    tx: 0,
+    ty: 0,
+    swipeStart(e) {
+        const t = e.touches[0];
+        this.tx = t.clientX;
+        this.ty = t.clientY;
+    },
+    swipeEnd(e) {
+        const t = e.changedTouches[0];
+        const dx = t.clientX - this.tx;
+        const dy = t.clientY - this.ty;
+
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+            this.index = dx < 0 ? (this.index + 1) % count : (this.index - 1 + count) % count;
+        }
     },
 }));
 

@@ -63,15 +63,15 @@
                     </div>
                     <div class="flex justify-between gap-2">
                         <dt class="text-muted-foreground">Qty</dt>
-                        <dd class="text-right font-medium">{{ $order->quantity ? $order->quantity.' pcs' : 'â€”' }}</dd>
+                        <dd class="text-right font-medium">{{ $order->quantity ? $order->quantity.' pcs' : '—' }}</dd>
                     </div>
                     <div class="flex justify-between gap-2">
                         <dt class="text-muted-foreground">Jenis</dt>
-                        <dd class="text-right font-medium">{{ $order->service_type ?? 'â€”' }}</dd>
+                        <dd class="text-right font-medium">{{ $order->service_type ?? '—' }}</dd>
                     </div>
                     <div class="flex justify-between gap-2">
                         <dt class="text-muted-foreground">Deadline</dt>
-                        <dd class="text-right font-medium">{{ $order->deadline?->translatedFormat('d M Y') ?? 'â€”' }}</dd>
+                        <dd class="text-right font-medium">{{ $order->deadline?->translatedFormat('d M Y') ?? '—' }}</dd>
                     </div>
                     <div class="col-span-2 flex justify-between gap-2">
                         <dt class="text-muted-foreground">Operator</dt>

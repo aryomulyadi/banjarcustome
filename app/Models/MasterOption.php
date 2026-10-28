@@ -20,12 +20,27 @@ class MasterOption extends Model
 
     public const KIND_FABRIC = 'fabric';
 
+    public const KIND_DESIGNER = 'designer';
+
+    public const KIND_JERSEY_MODEL = 'jersey_model';
+
+    public const KIND_JERSEY_STATUS = 'jersey_status';
+
+    public const KIND_TARGET_LINE = 'target_line';
+
+    public const KIND_TARGET_TYPE = 'target_type';
+
     public const KINDS = [
         self::KIND_TYPE,
         self::KIND_MATERIAL,
         self::KIND_COLOR,
         self::KIND_COLLAR,
         self::KIND_FABRIC,
+        self::KIND_DESIGNER,
+        self::KIND_JERSEY_MODEL,
+        self::KIND_JERSEY_STATUS,
+        self::KIND_TARGET_LINE,
+        self::KIND_TARGET_TYPE,
     ];
 
     /** Jenis opsi jersey yang punya biaya upgrade & foto. */

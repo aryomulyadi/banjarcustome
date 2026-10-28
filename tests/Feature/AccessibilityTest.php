@@ -141,16 +141,16 @@ class AccessibilityTest extends TestCase
     {
         $home = file_get_contents(base_path('resources/views/home.blade.php'));
         $this->assertStringContainsString(
-            'class="flex h-6 w-6 items-center justify-center"',
+            'class="relative flex h-6 w-6 items-center justify-center after:absolute after:-inset-2 after:content-[\'\']"',
             $home,
-            'Titik slider hero harus tombol 24x24 nyata (Lighthouse target-size tidak menghitung pseudo-element).'
+            'Titik slider hero harus tombol 24x24 nyata + area sentuh pseudo 40x40 (Lighthouse target-size tidak menghitung pseudo-element).'
         );
 
         $catalog = file_get_contents(base_path('resources/views/catalog/show.blade.php'));
         $this->assertStringContainsString(
-            'class="flex h-6 w-6 items-center justify-center"',
+            'class="relative flex h-6 w-6 items-center justify-center after:absolute after:-inset-2 after:content-[\'\']"',
             $catalog,
-            'Titik galeri produk harus tombol 24x24 nyata (Lighthouse target-size).'
+            'Titik galeri produk harus tombol 24x24 nyata + area sentuh pseudo 40x40 (Lighthouse target-size).'
         );
     }
 

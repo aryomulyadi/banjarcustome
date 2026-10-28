@@ -83,8 +83,6 @@ class MasterDataController extends Controller
 
     public function edit(MasterOption $option): View
     {
-        abort_unless(MasterOption::isJerseyKind($option->kind), 404);
-
         return view('admin.master.edit', [
             'option' => $option,
         ]);
@@ -92,9 +90,9 @@ class MasterDataController extends Controller
 
     public function update(Request $request, MasterOption $option): RedirectResponse
     {
-        abort_unless(MasterOption::isJerseyKind($option->kind), 404);
+        $isJersey = MasterOption::isJerseyKind($option->kind);
 
-        $validated = $request->validate([
+        $rules = [
             'name' => [
                 'required',
                 'string',
@@ -103,40 +101,58 @@ class MasterDataController extends Controller
                     ->where(fn ($query) => $query->where('kind', $option->kind))
                     ->ignore($option->id),
             ],
-            'fee' => ['required', 'integer', 'min:0', 'max:1000000000'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'active' => ['nullable', 'boolean'],
-            'sort' => ['nullable', 'integer', 'min:0', 'max:1000000'],
-        ], [
+        ];
+
+        $messages = [
             'name.required' => 'Nama wajib diisi.',
             'name.max' => 'Nama maksimal 120 karakter.',
             'name.unique' => 'Nama tersebut sudah terdaftar pada data master ini.',
-            'fee.required' => 'Biaya upgrade wajib diisi.',
-            'fee.integer' => 'Biaya upgrade harus berupa angka.',
-            'fee.min' => 'Biaya upgrade tidak boleh negatif.',
-            'image.image' => 'Foto harus berupa gambar.',
-            'image.mimes' => 'Format gambar harus jpg, jpeg, png, atau webp.',
-            'image.max' => 'Ukuran gambar maksimal 2 MB.',
-            'sort.min' => 'Urutan tidak boleh negatif.',
-        ]);
+        ];
+
+        if ($isJersey) {
+            $rules['fee'] = ['required', 'integer', 'min:0', 'max:1000000000'];
+            $rules['image'] = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'];
+            $rules['active'] = ['nullable', 'boolean'];
+            $rules['sort'] = ['nullable', 'integer', 'min:0', 'max:1000000'];
+
+            $messages['fee.required'] = 'Biaya upgrade wajib diisi.';
+            $messages['fee.integer'] = 'Biaya upgrade harus berupa angka.';
+            $messages['fee.min'] = 'Biaya upgrade tidak boleh negatif.';
+            $messages['image.image'] = 'Foto harus berupa gambar.';
+            $messages['image.mimes'] = 'Format gambar harus jpg, jpeg, png, atau webp.';
+            $messages['image.max'] = 'Ukuran gambar maksimal 2 MB.';
+            $messages['sort.min'] = 'Urutan tidak boleh negatif.';
+        }
+
+        if ($option->kind === MasterOption::KIND_COLOR) {
+            $rules['hex'] = ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'];
+            $messages['hex.regex'] = 'Format warna harus berupa heksadesimal, contoh #a3e635.';
+        }
+
+        $validated = $request->validate($rules, $messages);
+
+        $data = ['name' => $validated['name']];
+
+        if ($option->kind === MasterOption::KIND_COLOR) {
+            $data['hex'] = $validated['hex'] ?? null;
+        }
 
         $oldImage = $option->image;
 
-        $data = [
-            'name' => $validated['name'],
-            'fee' => (int) $validated['fee'],
-            'active' => $request->boolean('active'),
-            'sort' => (int) ($validated['sort'] ?? 0),
-            'image' => $oldImage,
-        ];
+        if ($isJersey) {
+            $data['fee'] = (int) $validated['fee'];
+            $data['active'] = $request->boolean('active');
+            $data['sort'] = (int) ($validated['sort'] ?? 0);
+            $data['image'] = $oldImage;
 
-        if ($request->hasFile('image')) {
-            $data['image'] = ImageOptimizer::store($request->file('image'), 'jersey-options');
+            if ($request->hasFile('image')) {
+                $data['image'] = ImageOptimizer::store($request->file('image'), 'jersey-options');
+            }
         }
 
         $option->update($data);
 
-        if ($data['image'] !== $oldImage) {
+        if ($isJersey && $data['image'] !== $oldImage) {
             ImageOptimizer::delete($oldImage);
         }
 

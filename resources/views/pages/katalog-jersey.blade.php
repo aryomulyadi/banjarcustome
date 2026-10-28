@@ -5,7 +5,7 @@
 
     <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground" aria-label="Breadcrumb">
-            <a href="{{ route('home') }}" class="hover:text-primary">Beranda</a>
+            <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span aria-hidden="true">/</span>
             <span class="text-foreground" aria-current="page">Katalog Jersey</span>
         </nav>
@@ -53,15 +53,17 @@
                         <p class="mt-1 text-sm text-muted-foreground">Pilih produk jersey kami, lalu kirim desain tim Anda.</p>
                     </div>
                 </div>
-                <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <x-scroll-row class="mt-4" grid="sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($jerseyProducts as $product)
+                        <x-scroll-row-item>
                         <x-product-card :product="$product" />
+                        </x-scroll-row-item>
                     @endforeach
-                </div>
+                </x-scroll-row>
             </div>
         @endif
 
-        <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-xl border border-border bg-card p-5">
                 <p class="text-xs font-semibold uppercase tracking-widest text-primary">Minimal Order</p>
                 <p class="mt-2 text-2xl font-black">{{ $j['min_order'] ?? 12 }} pcs</p>
@@ -86,8 +88,9 @@
 
         <h2 class="mt-12 text-xl font-bold sm:text-2xl">Upgrade Kerah (Collar)</h2>
         <p class="mt-2 text-sm text-muted-foreground">Kerah O-Neck sudah termasuk harga dasar. Pilihan lain menambah biaya per pcs:</p>
-        <div class="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <x-scroll-row class="mt-4" grid="sm:grid-cols-3 lg:grid-cols-4">
             @foreach ($jerseyCollars as $collar)
+                <x-scroll-row-item>
                 <div class="overflow-hidden rounded-xl border border-border bg-card">
                     @if (! empty($collar['image']))
                         <x-img
@@ -106,13 +109,15 @@
                         </span>
                     </div>
                 </div>
+                </x-scroll-row-item>
             @endforeach
-        </div>
+        </x-scroll-row>
 
         <h2 class="mt-12 text-xl font-bold sm:text-2xl">Upgrade Bahan (Fabric)</h2>
         <p class="mt-2 text-sm text-muted-foreground">Bahan Dryfit Milano sudah termasuk harga dasar. Pilihan lain menambah biaya per pcs:</p>
-        <div class="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <x-scroll-row class="mt-4" grid="sm:grid-cols-3 lg:grid-cols-4">
             @foreach ($jerseyFabrics as $fabric)
+                <x-scroll-row-item>
                 <div class="overflow-hidden rounded-xl border border-border bg-card">
                     @if (! empty($fabric['image']))
                         <x-img
@@ -131,8 +136,9 @@
                         </span>
                     </div>
                 </div>
+                </x-scroll-row-item>
             @endforeach
-        </div>
+        </x-scroll-row>
 
         @php
             $exampleUnit = (int) ($j['base_price'] ?? 0) + $vnFee + $embosFee;
@@ -218,7 +224,7 @@
                         min="{{ $exampleQty }}"
                         step="1"
                         x-model.number="qty"
-                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        class="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                     >
                 </div>
                 <div class="space-y-1.5">

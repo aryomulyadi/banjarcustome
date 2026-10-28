@@ -370,7 +370,7 @@
                                         <input
                                             type="number"
                                             min="0"
-                                            class="w-28 rounded-md border border-input bg-transparent px-2 py-1 text-right text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                            class="w-28 rounded-md border border-input bg-transparent px-2 py-1 text-right text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
                                             :value="row.unit === null ? '' : row.unit"
                                             :placeholder="row.unit === null ? 'otomatis' : ''"
                                             :aria-label="'Harga ukuran ' + row.size"

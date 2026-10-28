@@ -2,26 +2,14 @@
 
 namespace App\Support;
 
-use App\Models\Setting;
-
 class HomeContent
 {
+    /**
+     * Fase 30: konten hero (slide banner) berjalan dari source code saja —
+     * halaman Pengaturan dihapus dan penyimpanan Setting tak lagi dibaca.
+     */
     public static function slides(): array
     {
-        $stored = json_decode((string) Setting::get('home.slides'), true);
-
-        if (is_array($stored) && count($stored) === 3) {
-            return array_map(function (array $slide): array {
-                $image = (string) ($slide['image'] ?? '');
-
-                if ($image !== '' && ! str_starts_with($image, 'images/') && ! str_starts_with($image, 'storage/')) {
-                    $slide['image'] = 'storage/'.$image;
-                }
-
-                return $slide;
-            }, $stored);
-        }
-
         return [
             [
                 'title' => 'Jasa Konveksi & Sablon Custom Banjarmasin',
@@ -43,12 +31,6 @@ class HomeContent
 
     public static function stats(): array
     {
-        $stored = json_decode((string) Setting::get('home.stats'), true);
-
-        if (is_array($stored) && count($stored) === 3) {
-            return $stored;
-        }
-
         return [
             ['value' => '500+', 'label' => 'Pesanan Selesai'],
             ['value' => '100%', 'label' => 'Sablon Anti Pecah'],
