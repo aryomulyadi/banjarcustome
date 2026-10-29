@@ -77,9 +77,14 @@ class JerseyData extends Model
         return $desainer ? $query->where('desainer', $desainer) : $query;
     }
 
-    public function scopeFilterStatus(Builder $query, ?string $status): Builder
+    /** Terima satu status (string, back-compat) atau banyak (array, filter multi). */
+    public function scopeFilterStatus(Builder $query, array|string|null $status): Builder
     {
-        return $status ? $query->where('status', $status) : $query;
+        $statuses = is_array($status)
+            ? array_values(array_filter($status))
+            : ($status !== null && $status !== '' ? [$status] : []);
+
+        return $statuses === [] ? $query : $query->whereIn('status', $statuses);
     }
 
     public function scopeSort(Builder $query, string $sort, string $dir): Builder

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CustomOrder;
 use App\Models\MasterOption;
 use App\Support\ServiceTypes;
+use App\Support\Spreadsheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,7 +17,6 @@ use OpenSpout\Common\Entity\Cell;
 use OpenSpout\Common\Entity\Cell\StringCell;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
-use OpenSpout\Reader\XLSX\Reader as XlsxReader;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -35,6 +35,29 @@ class OrderController extends Controller
 
     /** @var list<string> */
     private const IMPORT_REQUIRED_HEADERS = ['customer'];
+
+    /**
+     * Judul alternatif per kolom kanonik (template tak dipaksa — judul dicocokkan
+     * fleksibel via Spreadsheet::mapHeadings; kedua sisi dinormalisasi dulu).
+     */
+    private const IMPORT_HEADER_ALIASES = [
+        'BULAN' => ['bulan pesanan', 'bulan input'],
+        'customer' => ['nama customer', 'pelanggan', 'nama pelanggan'],
+        'jenis' => ['jenis pesanan', 'jenis order'],
+        'waktu pengambilan' => ['deadline', 'pengambilan', 'waktu ambil', 'tanggal ambil'],
+        'type' => ['tipe'],
+        'bahan' => ['material'],
+        'warna' => ['color'],
+        'pesan bahan' => ['pesanan bahan'],
+        'produksi' => ['progres produksi', 'progres'],
+        'finish' => ['finishing'],
+        'TOTAL' => ['total harga', 'nominal'],
+        'jumlah' => ['qty', 'kuantitas'],
+        'ukuran' => ['size'],
+        'whatsapp' => ['no hp', 'nomor hp', 'no. hp', 'wa', 'no whatsapp', 'nomor whatsapp'],
+        'status' => ['status pesanan'],
+        'catatan' => ['note', 'notes', 'keterangan'],
+    ];
 
     private const IMPORT_MAX_ROWS = 50000;
 
@@ -582,8 +605,8 @@ class OrderController extends Controller
 
         try {
             $rows = $extension === 'csv'
-                ? $this->readCsvRows($file->getRealPath())
-                : $this->readXlsxRows($file->getRealPath());
+                ? Spreadsheet::readCsvRows($file->getRealPath())
+                : Spreadsheet::readXlsxRows($file->getRealPath(), self::IMPORT_MAX_ROWS);
         } catch (\Throwable $e) {
             report($e);
 
@@ -612,16 +635,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $map = [];
-        $canonical = array_map(fn (string $header) => $this->normalizeHeading($header), self::IMPORT_HEADERS);
-
-        foreach (array_shift($rows) as $index => $header) {
-            $key = $this->normalizeHeading((string) $header);
-
-            if (in_array($key, $canonical, true) && ! isset($map[$key])) {
-                $map[$key] = $index;
-            }
-        }
+        $map = Spreadsheet::mapHeadings(array_shift($rows), self::IMPORT_HEADER_ALIASES);
 
         $missing = array_diff(self::IMPORT_REQUIRED_HEADERS, array_keys($map));
 
@@ -693,7 +707,7 @@ class OrderController extends Controller
             $rawDeadline = $get('waktu pengambilan');
 
             if ($rawDeadline !== '') {
-                $deadline = $this->parseDate($rawDeadline);
+                $deadline = Spreadsheet::parseDate($rawDeadline);
 
                 if ($deadline === null) {
                     $rowErrors[] = 'Waktu pengambilan tidak valid (pakai d/m/Y atau Y-m-d).';
@@ -732,7 +746,7 @@ class OrderController extends Controller
 
             foreach (CustomOrder::PROGRESS_FLAGS as $field => $label) {
                 $heading = str_replace('_', ' ', str_replace('_ok', '', $field));
-                [$flag, $flagError] = $this->parseFlag($get($heading));
+                [$flag, $flagError] = Spreadsheet::parseFlagOkNok($get($heading));
 
                 if ($flagError !== null) {
                     $rowErrors[] = 'Kolom "'.$heading.'" '.$flagError;
@@ -767,7 +781,7 @@ class OrderController extends Controller
             $rawTotal = $get('total');
 
             if ($rawTotal !== '') {
-                $total = $this->parseAmount($rawTotal);
+                $total = Spreadsheet::parseAmount($rawTotal);
 
                 if ($total === null) {
                     $rowErrors[] = 'TOTAL tidak valid (angka saja, maks Rp100.000.000.000).';
@@ -909,38 +923,6 @@ class OrderController extends Controller
             ->with('report', $report);
     }
 
-    /** Normalisasi judul kolom: huruf kecil, spasi tunggal, underscore jadi spasi. */
-    private function normalizeHeading(string $heading): string
-    {
-        $heading = str_replace(["\xEF\xBB\xBF", "\r", "\n", "\t", '_'], ' ', $heading);
-
-        return preg_replace('/\s+/', ' ', mb_strtolower(trim($heading))) ?? '';
-    }
-
-    /**
-     * Parse sel flag produksi: ok (setuju) / nok (belum) + turunan umum.
-     *
-     * @return array{0: bool, 1: string|null} [nilai, pesan error bila tidak dikenal]
-     */
-    private function parseFlag(string $value): array
-    {
-        $value = mb_strtolower(trim($value));
-
-        if ($value === '') {
-            return [false, null];
-        }
-
-        if (in_array($value, ['ok', '1', 'y', 'yes', 'ya', 'true', 'v'], true)) {
-            return [true, null];
-        }
-
-        if (in_array($value, ['nok', '0', 'n', 'no', 'tidak', 'false', 'x'], true)) {
-            return [false, null];
-        }
-
-        return [false, 'harus bernilai ok atau nok.'];
-    }
-
     /**
      * Parse kolom "BULAN" menjadi tanggal pesanan (tgl 1 bulan tsb).
      * Format diterima: "Oktober 2026", "Okt 2026", "October 2026", "2026-10", "10/2026", "10-2026".
@@ -1038,136 +1020,5 @@ class OrderController extends Controller
         }
 
         return [$result, null];
-    }
-
-    private function parseDate(string $value): ?\DateTimeInterface
-    {
-        if ($value === '') {
-            return null;
-        }
-
-        foreach (['!Y-m-d', '!d/m/Y', '!d-m-Y'] as $format) {
-            try {
-                $date = Carbon::createFromFormat($format, $value);
-            } catch (\Throwable) {
-                continue;
-            }
-
-            // createFromFormat tidak gagal untuk tanggal rollover (31/02/2026
-            // menjadi 3 Maret) — cek warning bawaan DateTime.
-            $errors = \DateTime::getLastErrors();
-
-            if (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) {
-                continue;
-            }
-
-            if ($date->format('Y') < '1970' || $date->format('Y') > (string) (now()->year + 2)) {
-                continue;
-            }
-
-            return $date;
-        }
-
-        return null;
-    }
-
-    /**
-     * Parse nominal uang dari sel spreadsheet. Hanya menerima angka polos atau
-     * pemisah ribuan yang tegas (1.500.000 / 1,500,000) — desimal, rentang,
-     * dan teks bebas ditolak agar tidak diam-diam salah hitung.
-     */
-    private function parseAmount(string $value): ?int
-    {
-        $value = trim($value);
-
-        if (preg_match('/^rp\s*/i', $value)) {
-            $value = trim(substr($value, strlen('rp')));
-        }
-
-        if ($value === '' || ! preg_match('/^[0-9.,\s]{1,20}$/', $value)) {
-            return null;
-        }
-
-        if (preg_match('/^\d{1,3}(?:[.,]\d{3})+$/', $value)) {
-            $value = str_replace(['.', ',', ' '], '', $value);
-        } elseif (preg_match('/^\d+$/', str_replace(' ', '', $value))) {
-            $value = str_replace(' ', '', $value);
-        } else {
-            return null;
-        }
-
-        $amount = (int) $value;
-
-        if ($amount > 100000000000) {
-            return null;
-        }
-
-        return $amount;
-    }
-
-    private function cellToString(mixed $value): string
-    {
-        if ($value === null) {
-            return '';
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('d/m/Y');
-        }
-
-        if (is_bool($value)) {
-            return $value ? '1' : '';
-        }
-
-        if (is_float($value)) {
-            return $value == (int) $value ? (string) (int) $value : (string) $value;
-        }
-
-        return (string) $value;
-    }
-
-    private function readXlsxRows(string $path): array
-    {
-        $reader = new XlsxReader;
-        $reader->open($path);
-
-        $rows = [];
-
-        try {
-            foreach ($reader->getSheetIterator() as $sheet) {
-                foreach ($sheet->getRowIterator() as $row) {
-                    $rows[] = array_map($this->cellToString(...), $row->toArray());
-
-                    if (count($rows) > self::IMPORT_MAX_ROWS + 1) {
-                        throw new \RuntimeException('File melebihi batas '.self::IMPORT_MAX_ROWS.' baris data.');
-                    }
-                }
-
-                break;
-            }
-        } finally {
-            $reader->close();
-        }
-
-        return $rows;
-    }
-
-    private function readCsvRows(string $path): array
-    {
-        $firstLine = strtok((string) file_get_contents($path), "\r\n") ?: '';
-        $delimiter = substr_count($firstLine, ';') > substr_count($firstLine, ',') ? ';' : ',';
-
-        $handle = fopen($path, 'rb');
-        $rows = [];
-
-        while (($cells = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
-            // Baris kosong tetap disimpan agar nomor baris pada pesan error
-            // (offset + 2) sama dengan nomor baris asli di file.
-            $rows[] = array_map($this->cellToString(...), $cells);
-        }
-
-        fclose($handle);
-
-        return $rows;
     }
 }

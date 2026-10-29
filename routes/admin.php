@@ -85,6 +85,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::get('/data-jersey', [JerseyDataController::class, 'index'])->name('jersey.index');
         Route::get('/data-jersey/create', [JerseyDataController::class, 'create'])->name('jersey.create');
         Route::post('/data-jersey', [JerseyDataController::class, 'store'])->name('jersey.store');
+        Route::get('/data-jersey/import', [JerseyDataController::class, 'importForm'])->name('jersey.import');
+        Route::post('/data-jersey/import', [JerseyDataController::class, 'importStore'])->name('jersey.import.store');
+        Route::patch('/data-jersey/bulk-status', [JerseyDataController::class, 'bulkStatus'])->name('jersey.bulk-status');
+        Route::patch('/data-jersey/{jersey}/status', [JerseyDataController::class, 'updateStatus'])->name('jersey.status');
         Route::get('/data-jersey/{jersey}/edit', [JerseyDataController::class, 'edit'])->name('jersey.edit');
         Route::put('/data-jersey/{jersey}', [JerseyDataController::class, 'update'])->name('jersey.update');
         Route::delete('/data-jersey/{jersey}', [JerseyDataController::class, 'destroy'])->name('jersey.destroy');
@@ -92,6 +96,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::get('/data-target', [TargetDataController::class, 'index'])->name('target.index');
         Route::get('/data-target/create', [TargetDataController::class, 'create'])->name('target.create');
         Route::post('/data-target', [TargetDataController::class, 'store'])->name('target.store');
+        Route::get('/data-target/import', [TargetDataController::class, 'importForm'])->name('target.import');
+        Route::post('/data-target/import', [TargetDataController::class, 'importStore'])->name('target.import.store');
         Route::get('/data-target/{target}/edit', [TargetDataController::class, 'edit'])->name('target.edit');
         Route::put('/data-target/{target}', [TargetDataController::class, 'update'])->name('target.update');
         Route::delete('/data-target/{target}', [TargetDataController::class, 'destroy'])->name('target.destroy');

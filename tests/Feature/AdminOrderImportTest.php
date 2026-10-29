@@ -173,6 +173,50 @@ class AdminOrderImportTest extends TestCase
         $this->assertSame(['S' => 3, 'M' => 2], $order->size_quantities);
     }
 
+    public function test_alias_headings_from_real_files_are_matched_without_template(): void
+    {
+        // File nyata: semua judul alternatif, tanpa satu pun judul kanonik resmi.
+        $rows = [
+            [
+                'Bulan Pesanan', 'Nama Customer', 'Jenis Pesanan', 'Deadline', 'Tipe',
+                'Material', 'Color', 'Pesanan Bahan', 'Progres Produksi', 'Finishing',
+                'Total Harga', 'Qty', 'Size', 'No HP', 'Status Pesanan', 'Keterangan',
+            ],
+            [
+                'Oktober 2026', 'Rina Marlina', 'Bordir', '20/10/2026', 'Kaos Lengan Panjang',
+                'Cotton Combed 30s', 'Navy', 'ya', 'ya', 'tidak',
+                '1.500.000', '24', 'S:6, M:18', '081234567890', 'Selesai', 'via excel',
+            ],
+        ];
+
+        $response = $this->actingAs($this->admin())
+            ->followingRedirects()
+            ->post(route('admin.orders.import.store'), [
+                'file' => $this->makeXlsx($rows),
+            ]);
+
+        $response->assertOk()->assertSee('Berhasil mengimpor 1 pesanan');
+
+        $order = CustomOrder::where('name', 'Rina Marlina')->firstOrFail();
+
+        $this->assertSame(CustomOrder::SOURCE_IMPORT, $order->source);
+        $this->assertSame('Bordir', $order->service_type);
+        $this->assertSame('Kaos Lengan Panjang', $order->type);
+        $this->assertSame('Cotton Combed 30s', $order->bahan);
+        $this->assertSame('Navy', $order->warna);
+        $this->assertSame('2026-10-20', $order->deadline->format('Y-m-d'));
+        $this->assertSame('2026-10-01', $order->created_at->format('Y-m-d'));
+        $this->assertTrue($order->pesan_bahan_ok);
+        $this->assertTrue($order->produksi_ok);
+        $this->assertFalse($order->finish_ok);
+        $this->assertSame(1500000, $order->total_price);
+        $this->assertSame(24, $order->quantity);
+        $this->assertSame(['S' => 6, 'M' => 18], $order->size_quantities);
+        $this->assertSame('081234567890', $order->whatsapp_number);
+        $this->assertSame(CustomOrder::STATUS_COMPLETED, $order->status);
+        $this->assertSame('via excel', $order->notes);
+    }
+
     public function test_invalid_row_blocks_entire_import(): void
     {
         $csv = implode("\n", [

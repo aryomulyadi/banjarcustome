@@ -17,7 +17,7 @@
             @foreach ($statusLabels as $key => $label)
                 <a
                     href="{{ route('admin.orders.index', $chipQuery(['status' => $key])) }}"
-                    class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === $key ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
+                    class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === $key ? \App\Support\StatusTheme::classes($key).' border border-transparent' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
                 >
                     {{ $label }} <span>({{ $statusCounts[$key] ?? 0 }})</span>
                 </a>
@@ -95,7 +95,7 @@
                                 </td>
                                 <td class="px-5 py-3">{{ $order->quantity ?? '—' }}</td>
                                 <td class="px-5 py-3">
-                                    <span class="rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-semibold text-primary">{{ $order->statusLabel() }}</span>
+                                    <x-status-chip :status="$order->status" :label="$order->statusLabel()" />
                                     @if ($order->source === \App\Models\CustomOrder::SOURCE_IMPORT)
                                         <span class="mt-1 block w-fit rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Impor</span>
                                     @endif

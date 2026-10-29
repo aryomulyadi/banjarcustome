@@ -1,13 +1,21 @@
 <x-layouts.admin :title="'Data Target / Produksi'">
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-sm text-muted-foreground">Target, bahan, produksi & finishing — terpisah dari Data Jersey.</p>
-        <a
-            href="{{ route('admin.target.create') }}"
-            class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-            Tambah Data
-        </a>
+        <p class="text-sm text-muted-foreground">Target, bahan, produksi &amp; finishing — terpisah dari Data Jersey.</p>
+        <div class="flex flex-wrap gap-2">
+            <a
+                href="{{ route('admin.target.import') }}"
+                class="inline-flex h-10 items-center justify-center rounded-md border border-border bg-background/80 px-4 text-sm font-semibold transition-colors hover:bg-secondary"
+            >
+                Impor Excel
+            </a>
+            <a
+                href="{{ route('admin.target.create') }}"
+                class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+                Tambah Data
+            </a>
+        </div>
     </div>
 
     <form method="GET" action="{{ route('admin.target.index') }}" class="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end" x-data>

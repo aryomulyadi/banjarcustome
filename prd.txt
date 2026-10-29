@@ -1,4 +1,4 @@
-﻿PRD â€” BANJAR CUSTOME (Banjarmasin)
+PRD â€” BANJAR CUSTOME (Banjarmasin)
 Situs profil perusahaan + katalog + form pemesanan jasa konveksi & sablon.
 (PRD asli ditempel pada sesi percakapan; file ini mencatat keputusan implementasi.)
 
@@ -1985,3 +1985,245 @@ VERIFIKASI AKHIR FASE 32+33: pint passed; composer test 357 tests / 2277
   (app-ChoXOelN.css 60,76 kB / app-BV3v9Z6q.js 56,65 kB); probe Edge CDP
   390/1280/320 dashboard + dua modul OK, console CSP errors 0; Edge 9222 &
   server :8000 (milik asisten) dimatikan; prd.txt +2 entry.
+
+FASE 34 - IMPOR EXCEL FLEKSIBEL (SELESAI)
+==========================================
+
+Tujuan: operator bisa mengimpor data nyata (template apa pun) ke Pesanan,
+Data Jersey & Data Target tanpa menyusun ulang kolom — judul alternatif
+dikenali otomatis, seluruh baris divalidasi transaksional.
+
+App\Support\Spreadsheet (BARU)
+- normalizeHeading: huruf kecil, spasi tunggal, underscore -> spasi, BOM
+  dibuang; mapHeadings: kunci kanonik + daftar alias -> index kolom (urutan
+  bebas, kolom asing diabaikan, kanonik pertama menang).
+- parseDate: Y-m-d, d/m/Y, d-m-Y, "24-Oct"/"24 Okt 2026" (bulan
+  Indonesia+Inggris; tanpa tahun -> tahun berjalan); rollover 31/02 ditolak
+  via cek warning DateTime; rentang 1970..+2 tahun.
+- parseFlagOkNok: ok/1/y/yes/ya/true/v vs nok/0/n/no/tidak/false/x; kosong
+  = nok tanpa error; lain = pesan error baris.
+- parseAmount: angka polos / pemisah ribuan tegas (1.500.000 | 1,500,000);
+  desimal & teks ditolak; batas Rp100.000.000.000.
+- readXlsxRows (OpenSpout, maxRows + guard RuntimeException) & readCsvRows
+  (delimiter , / ; auto; baris kosong disimpan agar nomor baris asli akurat).
+
+OrderController (refactor)
+- Pindah ke Spreadsheet: hapus 7 method privat (normalizeHeading, parseFlag,
+  parseDate, parseAmount, cellToString, readXlsxRows, readCsvRows) + import
+  XlsxReader; tambah IMPORT_HEADER_ALIASES (BULAN, customer, jenis, waktu
+  pengambilan, type, bahan, warna, pesan bahan, produksi, finish, TOTAL,
+  jumlah, ukuran, whatsapp, status, catatan + alias umum: Nama Customer,
+  Deadline, No HP, Total Harga, Qty, Size, Keterangan, dst.).
+- Validasi/laporan TIDAK berubah; parseMonth & parseSizeQuantities tetap
+  lokal (kebutuhan khusus pesanan).
+
+JerseyDataController + TargetDataController (impor baru)
+- Const IMPORT_MAX_ROWS=50000, IMPORT_REQUIRED_HEADERS, IMPORT_HEADER_ALIASES,
+  IMPORT_IGNORED_HEADINGS (NO/NOMOR/ID/SISA HARI -> warning "diabaikan").
+- importForm (view + konsumsi session report) & importStore: validasi file
+  xlsx/csv max 2 MB -> baca -> empty / >maxRows fatal -> mapHeadings -> kolom
+  wajib kurang fatal (pesan menyebut kolom + contoh alias) -> per-baris
+  validasi -> errors[] "Baris N: ..." -> SEMUA baris wajib valid (1 error =
+  0 masuk, transaksional DB::transaction utk master baru + entries) ->
+  redirect report (PRG) -> importRedirect lapor fatal/errors/warnings/
+  created/imported.
+- Jersey: tanggal masuk+customer+desainer wajib; desainer/kerah/bahan/model
+  auto-create master (designer/collar/fabric/jersey_model, case-insensitive
+  dedupe); status KETAT ke JerseyData::STATUSES (kosong = Proses Desain);
+  deadline >= tanggal_masuk; catatan max 2000.
+- Target: customer wajib; jenis/type/bahan/warna auto-create master
+  (target_line/target_type/material/color); waktu pengambilan opsional;
+  3 flag OK/NOK (kosong = NOK); total int >=0 (kosong = 0 + warning
+  aggregated "N baris tanpa TOTAL diisi 0").
+
+Views & routes
+- admin/partials/import-report.blade.php (shared: fatal merah, errors baris,
+  sukses hijau + daftar master baru, warnings kuning; $masterLabels map kind
+  -> label Indonesia).
+- admin/jersey/import.blade.php & admin/target/import.blade.php: back-link,
+  form upload Alpine-free (murni server-side), tabel "Kolom yang Dikenali"
+  + alias; TANPA tombol template (user: template resmi tidak perlu diunduh
+  dari sini); halaman impor pesanan lama tetap punya tombol template.
+- routes admin: GET/POST data-jersey/import & data-target/import (grup
+  role:admin; produksi 403).
+- Toolbar index jersey/target +tombol "Impor Excel" (variant outline).
+- admin/orders/import.blade.php: teks diperjelas "template resmi tidak wajib,
+  judul alternatif tetap dikenali".
+
+Tests (+21; total 378)
+- AdminOrderImportTest +1: alias_headings_from_real_files (16 judul alternatif
+  xlsx urutan acak -> 1 pesanan utuh; 'Selesai'->STATUS_COMPLETED).
+- JerseyImportTest (10): guest/produksi, form guide tanpa template, alias
+  xlsx + NO/SISA HARI diabaikan + master auto-create, status ketat, rollback
+  transaksional, deadline < tanggal masuk, kolom wajib kurang, baris kosong
+  + nomor baris akurat, dedupe master case-insensitive, CSV kanonik.
+- TargetImportTest (10): guest/produksi, form guide, alias xlsx + flags +
+  total, total kosong -> 0 + warning, flag/total salah, rollback, kolom
+  wajib kurang, dedupe master, baris kosong, CSV kanonik + flags.
+
+VERIFIKASI AKHIR FASE 34: pint passed; composer test 378 tests / 2428
+  assertions HIJAU (+21 vs fase 33); npm run build DETERMINISTIK 2x
+  (app-ChoXOelN.css 60,76 kB / app-BV3v9Z6q.js 56,65 kB, hash identik);
+  probe Edge CDP: login persist, tombol "Impor Excel" di index jersey+target,
+  upload jersey-alias.xlsx via DOM form nyata -> "Berhasil mengimpor 1 data"
+  + master baru + warning diabaikan; jersey-bad.xlsx (status "Selesai"
+  asing) -> "Impor dibatalkan" + 0 data masuk; target-alias.xlsx -> sukses;
+  entry tampil di index (?q=PROBE); overflow@390 = 0; console/network errors
+  0 (insiden probe: form pertama DOM = logout, diperbaiki selector
+  form[action*="import"]); DB lokal dibersihkan (0 baris PROBE); Edge 9222 &
+  server :8000 dimatikan.
+
+FASE 34b - KALIBRASI IMPOR JERSEI DARI FILE NYATA (SELESAI)
+===========================================================
+
+Pemicu: operator mengunggah file asli "Data_Jersey (2).xlsx" (154 baris,
+sheet "Pembagian Desain") dan 20 baris gagal — 3 pola error berbeda.
+
+Analisis file asli (scan read-only OpenSpout):
+- 9 baris "kosong" di kolom wajib BUKAN junk — order multi-varian yang
+  mengosongkan tanggal/desainer/customer (pola merged-cell; baris 3 =
+  varian O-Neck utk order ARBI PAIJO di baris 2). +1 baris separuh
+  (baris 22: customer baru, tgl+desainer kosong). Total 10 baris order asli.
+- Deadline baris 7 = teks "DESAIN ONLY" (order CANCEL), bukan tanggal.
+- Status bahasa harian: pending (3), masuk printing (6); sisanya case-only.
+
+Perubahan:
+1. JerseyDataController::importStore — WARISAN (inherit):
+   tanggal masuk/customer/desainer yang kosong diambil dari baris data
+   non-kosong terakhir di atasnya; setiap warisan menghasilkan peringatan
+   "Baris N: <kolom> diwariskan dari baris sebelumnya (<nilai>)"; baris
+   pertama tetap wajib (error bila kosong); nilai terisi tapi rusak TIDAK
+   diwarisi (tetap error). $inherited hanya di-update setelah baris valid.
+2. JerseyDataController — alias status (IMPORT_STATUS_ALIASES, dicoba
+   setelah case-insensitive match STATUSES gagal): pending / belum mulai /
+   proses -> Proses Desain; masuk printing -> Printing; selesai -> Done;
+   batal -> Cancel. Status asing tetap error.
+3. JerseyDataController — deadline teks bukan-tanggal: tidak lagi membatalkan
+   baris; diabaikan + peringatan 'deadline "<nilai>" bukan tanggal — diabaikan'.
+   Guard "deadline >= tanggal masuk" tetap utk tanggal valid.
+4. Spreadsheet::parseDate — dukung tanggal/bulan tanpa tahun:
+   "24/10" atau "24-10" -> 24/<bulan>/<tahun berjalan>; berlaku juga untuk
+   impor Pesanan & Target (bonus seragam).
+5. View admin/jersey/import.blade.php — tabel aturan diperbarui: format
+   24/10, daftar alias status, aturan baris lanjutan (inherit + peringatan).
+
+Tests (+4, total 382):
+- status_aliases_from_real_files_map_to_canonical (Pending/Masuk Printing/
+  selesai/BATAL -> status resmi).
+- continuation_rows_inherit_required_columns_with_warnings (3 baris, 2 varian
+  inherit; peringatan warisan tampil; baris 4 sebagian waris).
+- first_row_still_requires_required_columns (baris pertama kosong -> error).
+- deadline_text_and_day_month_without_year ("DESAIN ONLY" -> null + warning;
+  "24/10" -> tahun berjalan).
+- Diubah: test transaktional memakai tanggal rusak 31/02 (bukan kosong,
+  karena kosong kini diwarisi); test strict status memakai "Lunas" (karena
+  "Selesai" kini alias Done).
+
+VERIFIKASI AKHIR FASE 34b: pint passed; composer test 382 tests / 2455
+  assertions HIJAU (+4); npm run build DETERMINISTIK 2x (hash identik,
+  app-ChoXOelN.css 60,76 kB / app-BV3v9Z6q.js 56,65 kB); probe Edge CDP
+  unggah FILE ASLI Data_Jersey (2).xlsx via form DOM: "Berhasil mengimpor
+  153 data" (153 baris non-kosong — baris 155 memang kosong total),
+  0 baris error, peringatan warisan + "DESAIN ONLY" tampil, 22 master baru
+  dibuat; verifikasi DB: status Pending->Proses Desain 20+3=23,
+  Masuk Printing->Printing=6, SDN PEKAUMAN (inherit baris 22)=2,
+  ARBI PAIJO (varian)=2, tanggal/desainer kosong=0, deadline null=19;
+  console/network errors 0; screenshot f34b-real-import-report +
+2132:   f34b-real-index-after; DB lokal dibersihkan (jersey=0, options=65);
+2133:   Edge 9222 & server :8000 dimatikan.
+
+FASE 35 - WARNA STATUS, FILTER MULTI-STATUS & FROZEN HEADER (SELESAI)
+=====================================================================
+
+Tujuan: menyempurnakan pengalaman visual & produktivitas operator Data Jersey
+dan Pesanan dengan sistem warna status terpusat, filter multi-status ala
+spreadsheet, frozen header, aksi bulk ubah status, quick-edit inline tanpa
+reload, serta tint baris untuk status khusus (TERLAMBAT / Cancel).
+
+1. App\Support\StatusTheme (BARU):
+   - Satu sumber kebenaran warna status untuk JerseyData (Proses Desain, Revisi,
+     Layout, Printing, Jahit, Done, Cancel) dan CustomOrder (pending, confirmed,
+     design, ready, production, completed, cancelled).
+   - Method `classes($status)` menghasilkan kelas Tailwind v4 badge (tint bg +
+     text kontras).
+
+2. Komponen Blade `<x-status-chip>`:
+   - Props `:status` dan opsional `:label`. Memakai `StatusTheme::classes` dan
+     merender badge `inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold`.
+
+3. JerseyDataController & Model:
+   - `scopeFilterStatus`: diperbarui menerima `array|string|null` untuk filter
+     multi-status (checklist). Whitespace / nilai di luar whitelist STATUSES
+     diabaikan.
+   - `index`: menambah `$activeStatuses` (array) dan `$statusCounts` (jumlah baris
+     per status dengan filter query/desainer aktif).
+   - Endpoint baru:
+     - `PATCH /admin/data-jersey/{jersey}/status` (`jersey.status`, mengembalikan
+       JSON `{status}` jika `wantsJson()` atau redirect dengan flash message).
+     - `PATCH /admin/data-jersey/bulk-status` (`jersey.bulk-status`, validasi `ids[]`
+       dan `status`, update transaksional, redirect kembali dengan flash ringkasan).
+
+4. View `admin/jersey/index.blade.php`:
+   - Filter Status: dropdown checklist Alpine ala AutoFilter dengan badge hitung
+     per status, tombol Terapkan, dan Reset status.
+   - Frozen Header & Scroll Vertikal: container tabel di-wrap dalam
+     `max-h-[70vh] overflow-auto`, header `<thead class="sticky top-0 z-10 bg-card shadow-[0_1px_0_0_var(--color-border)]">`.
+   - Responsive kolom: Kerah/Bahan/Model disembunyikan pada layar `< xl` (`hidden xl:table-cell`), Catatan pada `< 2xl` (`hidden 2xl:table-cell`).
+   - Aksi Bulk: checkbox per baris, checkbox "Pilih semua", toolbar atas
+     (muncul saat ada yang dicentang) dengan dropdown "Ubah Status" (memicu
+     submit form tersembunyi `#bulk-jersey`).
+   - Quick-Edit Inline: chip status dibungkus tombol dengan popover fixed
+     (mencegah terpotong kotak scroll tabel), berbasis fetch PATCH tanpa reload
+     halaman; chip berganti warna & teks secara reaktif.
+   - Tint Baris: baris dengan `terlambat` diberi latar tipis `bg-destructive/[0.04]`
+     + border kiri tebal merah (`border-l-2 border-l-destructive`); status `Cancel`
+     diberi latar `bg-secondary/40`.
+
+5. Form & Pesanan (Orders):
+   - `admin/jersey/form.blade.php`: preview status reaktif di sebelah select.
+   - Pesanan (`admin/orders/index.blade.php` & `show.blade.php`): memakai komponen
+     `<x-status-chip>` dan `StatusTheme::classes` pada filter chip aktif.
+
+6. Tests (`tests/Feature/JerseyStatusUiTest.php` +5 test baru, total 387):
+   - `test_status_endpoints_auth_protection` (guest redirect, produksi 403).
+   - `test_multi_status_filter_and_sticky_header` (union status, kelas sticky).
+   - `test_bulk_status_update` (banyak data berubah sekaligus + flash).
+   - `test_quick_status_endpoint` (PATCH JSON sukses mengembalikan status baru).
+   - `test_row_tint_classes_rendered` (terlambat border-l-destructive, cancel bg).
+
+Verifikasi Akhir Fase 35: pint passed; composer test 387 tests / 2479 assertions
+HIJAU (+5); npm run build DETERMINISTIK 2x (hash identik, app-rFLSUtUw.css 64.61 kB
+/ app-BV3v9Z6q.js 56.65 kB); probe visual & fungsional OK (checklist filter,
+sticky thead saat discroll, bulk ubah status, quick-edit PATCH tanpa reload,
+tint baris, warna chip pesanan); console errors 0; DB dibersihkan (jersey=0,
+options=65); Edge & server dimatikan.
+
+FASE PRE-DEPLOY & PRODUCTION READINESS (SELESAI)
+==================================================
+
+Tujuan: memastikan aplikasi Banjar Custome siap dideploy ke server hosting
+publik (VPS/PaaS/Shared Hosting) dengan keamanan ketat, optimalisasi penuh,
+serta tidak ada file sensitif/lokal test yang ikut ter-commit.
+
+1. Audit Keamanan & Lingkungan:
+   - `.env.example`: menyertakan dokumentasi variabel produksi (`APP_ENV=production`,
+     `APP_DEBUG=false`, `SESSION_SECURE_COOKIE`, `BC_ADMIN_EMAIL`, dll.).
+   - `.gitignore`: diperkuat dengan mengabaikan seluruh file ekstensi spreadsheet
+     (`*.xlsx`, `*.xls`, `*.csv`) di root repository untuk mencegah kecerobohan
+     `git add` pada file data uji lokal seperti `Data_Jersey (2).xlsx`.
+
+2. Kesiapan Database & Seeder:
+   - `DatabaseSeeder`: proteksi lingkungan produksi aktif (`app()->environment('production')`
+     menolak eksekusi `db:seed` demo dan mewajibkan pembuatan akun admin via Tinker).
+   - Idempotensi `JerseyOptionSeeder` & `OperationalOptionSeeder`: memastikan master
+     opsi (desainer, kerah, bahan, model) terisi otomatis saat migrasi/seed awal.
+
+3. Caching & Optimalisasi:
+   - Cache konfigurasi (`config:cache`), rute (`route:cache`), dan tampilan Blade
+     (`view:cache`) terverifikasi sukses tanpa error serialisasi closure.
+
+4. Verifikasi Akhir Pre-Deploy:
+   - Pint linter: PASSED.
+   - Full Test Suite: 387 TESTS / 2479 ASSERTIONS HIJAU SEPENUHNYA.
+   - Vite Production Build: Deterministik 2x (`app-rFLSUtUw.css` 64.61 kB /
+     `app-BV3v9Z6q.js` 56.65 kB).

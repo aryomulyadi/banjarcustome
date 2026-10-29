@@ -24,9 +24,7 @@
             <div class="rounded-xl border border-border bg-card p-4">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <h2 class="text-base font-semibold">Informasi Pesanan</h2>
-                    <span class="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-                        {{ $order->statusLabel() }}
-                    </span>
+                    <x-status-chip :status="$order->status" :label="$order->statusLabel()" class="px-3 py-1 uppercase tracking-wide" />
                 </div>
 
                 <dl class="mt-3 grid grid-cols-1 gap-x-6 text-sm sm:grid-cols-2">

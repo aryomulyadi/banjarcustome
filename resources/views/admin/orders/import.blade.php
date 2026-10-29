@@ -63,7 +63,7 @@
         <div class="rounded-xl border border-border bg-card p-5 lg:col-span-2">
             <h2 class="text-base font-semibold">Unggah File</h2>
             <p class="mt-1.5 text-sm text-muted-foreground">
-                Format <strong>.xlsx</strong> atau <strong>.csv</strong>, maksimal 2 MB. Baris pertama harus baris judul kolom sesuai template.
+                Format <strong>.xlsx</strong> atau <strong>.csv</strong>, maksimal 2 MB. Baris pertama adalah baris judul kolom — template resmi tidak wajib, judul alternatif (mis. "Nama Customer", "Deadline", "No HP") tetap dikenali.
             </p>
 
             <form method="POST" action="{{ route('admin.orders.import.store') }}" enctype="multipart/form-data" class="mt-4 space-y-4">
@@ -92,7 +92,7 @@
             </form>
 
             <p class="mt-4 rounded-lg bg-secondary/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-                Judul kolom dicocokkan berdasar nama (boleh urutan bebas, kolom ekstra diabaikan, wajib hanya <strong>customer</strong>).
+                Judul kolom dicocokkan berdasar nama (boleh urutan bebas, judul alternatif diterima — mis. "Pelanggan" utk customer, "Total Harga" utk TOTAL, "Qty" utk jumlah, kolom ekstra diabaikan, wajib hanya <strong>customer</strong>).
                 Semua baris divalidasi lebih dulu — bila ada satu baris error, tidak ada data yang diimpor; perbaiki file lalu unggah ulang.
             </p>
         </div>
