@@ -1,0 +1,52 @@
+# Render Blueprint — staging publik gratis (Fase 2).
+# Catatan: APP_KEY & BC_ADMIN_EMAIL BUKAN di file ini (repo publik) —
+# tempel manual di dashboard Render > Environment sebelum deploy pertama.
+services:
+  - type: web
+    name: banjarcustome-staging
+    runtime: php
+    plan: free
+    healthCheckPath: /up
+    buildCommand: >
+      composer install --no-dev --optimize-autoloader &&
+      npm ci &&
+      npm run build
+    preDeployCommand: >
+      touch database/database.sqlite &&
+      php artisan migrate --force &&
+      php artisan config:cache &&
+      php artisan route:cache &&
+      php artisan view:cache
+    # Seed per-kelas (idempoten) — DatabaseSeeder diblokir production by design.
+    # Apache bila toolchain tersedia (aktifkan .htaccess kompresi/cache),
+    # fallback artisan serve bila tidak.
+    startCommand: >
+      php artisan storage:link || true;
+      php artisan db:seed --class=JerseyOptionSeeder --force;
+      php artisan db:seed --class=OperationalOptionSeeder --force;
+      php artisan db:seed --class=GallerySeeder --force;
+      php artisan db:seed --class=FaqSeeder --force;
+      php artisan db:seed --class=TestimonialSeeder --force;
+      vendor/bin/heroku-php-apache2 -S0.0.0.0:$PORT public/ ||
+      php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://banjarcustome-staging.onrender.com
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: MAIL_MAILER
+        value: log
+      - key: LOG_LEVEL
+        value: error
+      - key: BC_ADMIN_EMAIL
+        value: banjarcustome@gmail.com

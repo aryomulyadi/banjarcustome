@@ -2227,3 +2227,39 @@ serta tidak ada file sensitif/lokal test yang ikut ter-commit.
    - Full Test Suite: 387 TESTS / 2479 ASSERTIONS HIJAU SEPENUHNYA.
    - Vite Production Build: Deterministik 2x (`app-rFLSUtUw.css` 64.61 kB /
      `app-BV3v9Z6q.js` 56.65 kB).
+
+FASE 2 - STAGING RENDER GRATIS (SIAP DEPLOY)
+==============================================
+
+Tujuan: mempublikasikan aplikasi ke URL gratis `https://banjarcustome-staging.onrender.com`
+sebagai pembuktian "publik no-error" sebelum membeli domain .com + hosting
+Niagahoster (Tahap 3). TANPA perubahan kode aplikasi — hanya file konfigurasi.
+
+1. `render.yaml` (BARU, root repo — Render Blueprint otomatis terbaca):
+   - Service `banjarcustome-staging`, runtime PHP, plan Free, `healthCheckPath: /up`.
+   - Build: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`
+     (Node tersedia di image PHP Render; `package-lock.json` terpasang).
+   - PreDeploy: `touch database/database.sqlite` (file TIDAK ikut ter-commit —
+     di- ignore `database/.gitignore`) + `migrate --force` + config/route/view:cache.
+   - Start: `storage:link` + seed PER-KELAS idempoten (JerseyOption, OperationalOption,
+     Gallery, Faq, Testimonial — DatabaseSeeder DIBLOKIR production by design) +
+     `heroku-php-apache2` (Apache dgn .htaccess aktif) dengan fallback
+     `php artisan serve` bila toolchain tidak ada.
+   - Env: APP_ENV=production, APP_DEBUG=false, APP_URL=staging, DB_CONNECTION=sqlite,
+     QUEUE_CONNECTION=sync (tanpa worker di free tier), SESSION_DRIVER=database,
+     CACHE_STORE=database, MAIL_MAILER=log, LOG_LEVEL=error, BC_ADMIN_EMAIL.
+   - APP_KEY TIDAK ditulis di file (repo publik) — ditempel manual di dashboard
+     Render > Environment SEBELUM deploy pertama (kunci staging sudah digenerate).
+
+2. Insiden & penanganan: `vendor/` kehilangan dev-dependencies (pint, phpunit —
+   kemungkinan `composer install --no-dev` di luar sesi) → dipulihkan dengan
+   `composer install` penuh (35 paket, termasuk laravel/pint & phpunit 11.5.56).
+
+3. Verifikasi: pint PASSED; composer test 387/2479 HIJAU; npm run build
+   DETERMINISTIK 2x (hash identik app-rFLSUtUw.css 64,61 kB / app-BV3v9Z6q.js
+   56,65 kB).
+
+4. Langkah user selanjutnya (Tahap B): push repo ke GitHub → daftar render.com
+   (login GitHub) → New Web Service pilih repo → paste APP_KEY + simpan →
+   Deploy → beri tahu URL → Tahap C: buat admin via tinker + smoke test
+   publik (CDP) oleh asisten.
