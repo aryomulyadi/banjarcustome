@@ -313,7 +313,7 @@ class CustomOrder extends Model
             [
                 'key' => 'masuk',
                 'label' => 'Balasan awal (mintai spesifikasi)',
-                'text' => "Halo {$this->name}, terima kasih sudah memesan di Banjar Custome!\nMohon lengkapi spesifikasinya: jenis, bahan, warna, jumlah, ukuran, deadline, dan pengiriman (kirim/ambil).",
+                'text' => "Halo {$this->name}, terima kasih sudah memesan di Banjar Custom!\nMohon lengkapi spesifikasinya: jenis, bahan, warna, jumlah, ukuran, deadline, dan pengiriman (kirim/ambil).",
             ],
             [
                 'key' => 'konfirmasi',
@@ -522,7 +522,7 @@ class CustomOrder extends Model
     public function whatsappLink(): string
     {
         $lines = [
-            'Halo Banjar Custome!',
+            'Halo Banjar Custom!',
             'Saya *'.$this->name.'* baru mengirim pesanan via website (Order #'.$this->id.').',
             'Produk: '.($this->product?->title ?? 'Custom'),
         ];

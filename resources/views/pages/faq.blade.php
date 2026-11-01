@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'FAQ — Pertanyaan Umum Banjar Custome'"
-    :description="'Jawaban pertanyaan umum seputar pemesanan di Banjar Custome: harga, DP, estimasi produksi, revisi desain, minimal order, dan pengiriman.'"
+    :title="'FAQ — Pertanyaan Umum Banjar Custom'"
+    :description="'Jawaban pertanyaan umum seputar pemesanan di Banjar Custom: harga, DP, estimasi produksi, revisi desain, minimal order, dan pengiriman.'"
 >
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -36,7 +36,7 @@
             <h2 class="text-lg font-bold">Masih ada pertanyaan?</h2>
             <p class="mt-1 text-sm text-muted-foreground">Kami siap membantu memilih bahan, desain, dan estimasi harga.</p>
             <x-button
-                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya punya pertanyaan tentang pesanan.') }}"
+                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya punya pertanyaan tentang pesanan.') }}"
                 target="_blank"
                 rel="noopener noreferrer"
                 size="lg"

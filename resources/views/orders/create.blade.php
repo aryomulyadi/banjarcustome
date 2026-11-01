@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Form Pemesanan Custom — Banjar Custome'"
-    :description="'Pesan kaos, jersey, kemeja, jaket, dan seragam custom di Banjar Custome. Isi form, unggah desain, lalu konfirmasi via WhatsApp.'"
+    :title="'Form Pemesanan Custom — Banjar Custom'"
+    :description="'Pesan kaos, jersey, kemeja, jaket, dan seragam custom di Banjar Custom. Isi form, unggah desain, lalu konfirmasi via WhatsApp.'"
     :noindex="true"
 >
 
@@ -258,7 +258,7 @@
                         Kirim Pesanan
                     </x-button>
                     <x-button
-                        href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya mau pesan custom. Boleh minta info lebih lanjut?') }}"
+                        href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya mau pesan custom. Boleh minta info lebih lanjut?') }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         size="xl"

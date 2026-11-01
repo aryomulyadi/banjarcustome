@@ -109,7 +109,7 @@ class NotaTableTest extends TestCase
         $this->assertStringNotContainsString('Nota Pesanan #', $content);
         $this->assertStringNotContainsString('Sedang Diproses', $content);
         $this->assertStringNotContainsString('class="badge"', $content);
-        $this->assertStringContainsString('<title>Nota Pesanan — Banjar Custome</title>', $content);
+        $this->assertStringContainsString('<title>Nota Pesanan — Banjar Custom</title>', $content);
     }
 
     public function test_print_shows_surcharge_per_size_row(): void

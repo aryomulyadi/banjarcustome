@@ -1,4 +1,4 @@
-# Banjar Custome — Website Katalog & Order Custom Sablon
+# Banjar Custom — Website Katalog & Order Custom Sablon
 
 Website company profile + pemesanan custom (sablon kaos/dll) berbasis **Laravel 12**, dengan panel admin, katalog produk, form pesanan terstruktur, tracking order via WhatsApp, serta SEO & performa yang sudah dioptimalkan.
 
@@ -33,7 +33,7 @@ Website company profile + pemesanan custom (sablon kaos/dll) berbasis **Laravel 
 - **Alur status terjaga**: Menunggu Konfirmasi → **Terkonfirmasi** → **Proses Desain** → **Siap Produksi** → Sedang Diproses → Selesai (+ Dibatalkan kapan saja **wajib alasan**); lompat tahap ditolak dengan pesan jelas; naik ke **Siap Produksi** otomatis dicek: desain disetujui, Σ ukuran = jumlah, harga ada, spesifikasi nota lengkap, DP diterima; select status hanya menampilkan langkah yang diizinkan; riwayat lengkap per transisi.
 - **Desain & approval**: admin unggah hasil desain (disk privat; ganti file = reset persetujuan) + preview inline + "Tandai Disetujui (via WA)"; pelanggan **setujui / minta revisi** (alasan wajib, hitungan revisi tercatat) dari link lacak `/lacak/{token}`; unduh desain via token.
 - **DP 50%**: kartu DP di detail — nominal + waktu diterima otomatis + sisa tagihan; kosongkan = penanda dihapus.
-- **Kartu Kerja & SPK**: cetak **Kartu Kerja Produksi** (tabel ukuran, thumbnail desain, ttd) dan **SPK banner A4 lanskap** (strip BANJAR CUSTOME + pill SPK PRODUKSI, box jenis & deadline + badge Express, area desain final, panel rincian ukuran + **Total Keseluruhan** angka besar, baris JENIS/MODEL KERAH (jersey)/BAHAN/WARNA + catatan — **tanpa harga, WA, tanda tangan, nomor/tanggal/operator di cetakan**; nomor `SPK-{id}` tetap digenerate di DB saat cetak pertama).
+- **Kartu Kerja & SPK**: cetak **Kartu Kerja Produksi** (tabel ukuran, thumbnail desain, ttd) dan **SPK banner A4 lanskap** (strip BANJAR CUSTOM + pill SPK PRODUKSI, box jenis & deadline + badge Express, area desain final, panel rincian ukuran + **Total Keseluruhan** angka besar, baris JENIS/MODEL KERAH (jersey)/BAHAN/WARNA + catatan — **tanpa harga, WA, tanda tangan, nomor/tanggal/operator di cetakan**; nomor `SPK-{id}` tetap digenerate di DB saat cetak pertama).
 - **Pesan WhatsApp per tahap**: 8 template (masuk, konfirmasi, desain, approval, revisi, nota+DP, DP diterima, selesai) terisi otomatis + link lacak — tombol Salin & Buka WhatsApp.
 - **Timeline pelanggan**: halaman lacak menampilkan riwayat tahap (tanpa nama admin), deadline + badge **Lewat deadline**, unduh desain, kartu persetujuan; badge lewat deadline juga di daftar pesanan.
 - **Biaya desain jersey**: Rp50.000 di awal (hint di kartu Harga + template WA nota; revisi tetap gratis) — ubah di `config/banjarcustom.php` → `design_fee_jersey`.

@@ -12,7 +12,7 @@
             <x-logo />
             <span class="min-w-0 leading-tight">
                 <span class="block truncate text-sm font-bold sm:text-base">
-                    Banjar <span class="text-primary">Custome</span>
+                    Banjar <span class="text-primary">Custom</span>
                 </span>
                 <span class="block truncate text-[9px] font-medium uppercase tracking-wider text-muted-foreground sm:text-[10px] sm:tracking-widest">
                     Konveksi &amp; Sablon
@@ -196,7 +196,7 @@
             @endauth
 
             <a
-                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya ingin bertanya soal pesanan custom.') }}"
+                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya ingin bertanya soal pesanan custom.') }}"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="hidden items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/70 sm:inline-flex"
@@ -205,7 +205,7 @@
             </a>
 
             <a
-                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya ingin konsultasi desain.') }}"
+                href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya ingin konsultasi desain.') }}"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground transition-colors hover:bg-primary/90 sm:h-10 sm:w-10"
@@ -352,7 +352,7 @@
 
             <div class="mt-2 pt-2">
                 <a
-                    href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya ingin bertanya soal pesanan custom.') }}"
+                    href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya ingin bertanya soal pesanan custom.') }}"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="block rounded-md border border-border bg-secondary px-3 py-2.5 text-center text-sm font-medium text-secondary-foreground hover:bg-secondary/80"

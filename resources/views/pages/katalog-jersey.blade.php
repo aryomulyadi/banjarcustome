@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Katalog Jersey — Harga, Spesifikasi & Upgrade - Banjar Custome'"
-    :description="'Katalog jersey custom Banjar Custome: harga dasar Rp85.000 per pcs, minimal 12 pcs, produksi 14-25 hari kerja, VIP ORDER, biaya desain, opsi kerah & bahan bergambar, dan pilihan produk jersey siap pesan.'"
+    :title="'Katalog Jersey — Harga, Spesifikasi & Upgrade - Banjar Custom'"
+    :description="'Katalog jersey custom Banjar Custom: harga dasar Rp85.000 per pcs, minimal 12 pcs, produksi 14-25 hari kerja, VIP ORDER, biaya desain, opsi kerah & bahan bergambar, dan pilihan produk jersey siap pesan.'"
 >
 
     <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -148,7 +148,7 @@
             $firstFabric = $jerseyFabrics[0] ?? ['name' => 'Dryfit Milano', 'fee' => 0];
             $rpFmt = fn (int $n): string => number_format($n, 0, ',', '.');
             $defaultUnit = (int) ($j['base_price'] ?? 0) + (int) $firstCollar['fee'] + (int) $firstFabric['fee'];
-            $defaultWaText = "Halo Banjar Custome, saya mau pesan jersey dari Katalog Jersey:\n"
+            $defaultWaText = "Halo Banjar Custom, saya mau pesan jersey dari Katalog Jersey:\n"
                 .'- Kerah: '.$firstCollar['name'].((int) $firstCollar['fee'] > 0 ? ' (+Rp '.$rpFmt((int) $firstCollar['fee']).')' : ' (standar)')."\n"
                 .'- Bahan: '.$firstFabric['name'].((int) $firstFabric['fee'] > 0 ? ' (+Rp '.$rpFmt((int) $firstFabric['fee']).')' : ' (standar)')."\n"
                 .'- Jumlah: '.$exampleQty.' pcs'."\n"
@@ -195,7 +195,7 @@
                 get waHref() {
                     const q = Math.max(0, Number(this.qty) || 0);
                     const lines = [
-                        "Halo Banjar Custome, saya mau pesan jersey dari Katalog Jersey:",
+                        "Halo Banjar Custom, saya mau pesan jersey dari Katalog Jersey:",
                         "- Kerah: " + this.collar + (this.collarFee ? " (+Rp " + this.fmt(this.collarFee) + ")" : " (standar)"),
                         "- Bahan: " + this.fabric + (this.fabricFee ? " (+Rp " + this.fmt(this.fabricFee) + ")" : " (standar)"),
                         "- Jumlah: " + q + " pcs",
@@ -384,7 +384,7 @@
         <script type="application/ld+json" nonce="{{ request()->attributes->get('csp_nonce') }}">{!! json_encode([
             '@context' => 'https://schema.org',
             '@type' => 'ItemList',
-            'name' => 'Produk Jersey Banjar Custome',
+            'name' => 'Produk Jersey Banjar Custom',
             'itemListElement' => $jerseyProducts->values()->map(fn ($product, int $index) => array_filter([
                 '@type' => 'ListItem',
                 'position' => $index + 1,

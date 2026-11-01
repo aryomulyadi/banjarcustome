@@ -3,8 +3,8 @@
     $ogImagePath = $product->image ?: $gallery->first()?->image;
 @endphp
 <x-layouts.app
-    :title="$product->title . ' — Banjar Custome'"
-    :description="Str::limit(strip_tags($product->description ?: 'Pesan ' . $product->title . ' custom di Banjar Custome, Banjarmasin. Sablon awet, produksi rapi, ecer & grosir.'), 160)"
+    :title="$product->title . ' Custom Banjarmasin — Banjar Custom'"
+    :description="Str::limit(strip_tags($product->description ?: 'Pesan ' . $product->title . ' custom di Banjar Custom, Banjarmasin. Sablon awet, produksi rapi, ecer & grosir.'), 160)"
     :ogImage="$ogImagePath ? asset('storage/' . $ogImagePath) : asset('images/banner-1.jpg')"
     :ogImageWidth="800"
     :ogImageHeight="600"
@@ -157,7 +157,7 @@
                         Pesan Produk Ini
                     </x-button>
                     <x-button
-                        href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya mau tanya produk: '.$product->title) }}"
+                        href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya mau tanya produk: '.$product->title) }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         size="xl"
@@ -169,7 +169,7 @@
 
                 <div class="mt-6 rounded-xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
                     <p class="font-medium text-foreground">Butuh bantuan memilih ukuran?</p>
-                    <p class="mt-1">Lihat <a href="{{ route('size-chart') }}" class="font-medium text-primary hover:underline">Panduan Ukuran</a> untuk memastikan pas.</p>
+                    <p class="mt-1">Lihat <a href="{{ route('size-chart') }}{{ in_array(strtolower($product->category?->name ?? ''), ['kaos', 'jersey', 'jaket'], true) ? '#'.strtolower($product->category->name) : '' }}" class="font-medium text-primary hover:underline">Panduan Ukuran</a> untuk memastikan pas.</p>
                 </div>
             </div>
         </div>
@@ -203,7 +203,7 @@
                     ->all()
                 : asset('images/banner-1.jpg'),
             'url' => route('produk.show', $product->slug),
-            'brand' => ['@type' => 'Brand', 'name' => 'Banjar Custome'],
+            'brand' => ['@type' => 'Brand', 'name' => 'Banjar Custom'],
             'offers' => [
                 '@type' => 'Offer',
                 'url' => route('produk.show', $product->slug),

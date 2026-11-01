@@ -31,7 +31,7 @@
 
     <div class="space-y-2">
         <x-label for="content">Isi Testimoni *</x-label>
-        <x-textarea id="content" name="content" rows="4" required placeholder="Ceritakan pengalaman pelanggan memesan di Banjar Custome…">{{ old('content', $testimonial?->content) }}</x-textarea>
+        <x-textarea id="content" name="content" rows="4" required placeholder="Ceritakan pengalaman pelanggan memesan di Banjar Custom…">{{ old('content', $testimonial?->content) }}</x-textarea>
     </div>
 
     <div class="space-y-2">

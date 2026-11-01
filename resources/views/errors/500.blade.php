@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
-        <title>500 — Terjadi Gangguan | Banjar Custome</title>
+        <title>500 — Terjadi Gangguan | Banjar Custom</title>
         @include('partials.favicon')
         <script nonce="{{ request()->attributes->get('csp_nonce') }}">
             (function () {

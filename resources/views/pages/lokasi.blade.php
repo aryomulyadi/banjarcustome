@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Lokasi Workshop — Banjar Custome Banjarmasin'"
-    :description="'Alamat dan jam buka workshop Banjar Custome di Kuripan, Banjarmasin Timur. Rute, peta, dan kontak WhatsApp dalam satu halaman.'"
+    :title="'Lokasi Workshop — Banjar Custom Banjarmasin'"
+    :description="'Alamat dan jam buka workshop Banjar Custom di Kuripan, Banjarmasin Timur. Rute, peta, dan kontak WhatsApp dalam satu halaman.'"
 >
 
     <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -24,7 +24,7 @@
                     class="h-[380px] w-full border-0"
                     loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"
-                    title="Peta lokasi Banjar Custome"
+                    title="Peta lokasi Banjar Custom"
                 ></iframe>
             </div>
 
@@ -89,8 +89,12 @@
         {!! json_encode([
             '@context' => 'https://schema.org',
             '@type' => 'LocalBusiness',
-            'name' => 'Banjar Custome',
-            'description' => 'Jasa konveksi dan sablon custom di Banjarmasin.',
+            'name' => 'Banjar Custom',
+            'description' => 'Jasa konveksi dan sablon custom di Banjarmasin: kaos, jersey printing, kemeja, jaket, seragam, dan merchandise.',
+            'image' => asset('images/banner-1.jpg'),
+            'priceRange' => 'Rp',
+            'currenciesAccepted' => 'IDR',
+            'paymentAccepted' => 'Cash, Transfer',
             'address' => [
                 '@type' => 'PostalAddress',
                 'streetAddress' => 'Jl Veteran komplek halim ruko No.01 pagar hijau seberang SMP 7, Kuripan',
@@ -108,6 +112,17 @@
                 'longitude' => config('banjarcustom.maps_longitude'),
             ],
             'openingHours' => config('banjarcustom.opening_hours_schema', []),
+            'areaServed' => [
+                ['@type' => 'City', 'name' => 'Banjarmasin'],
+                ['@type' => 'AdministrativeArea', 'name' => 'Kalimantan Selatan'],
+            ],
+            'contactPoint' => [
+                '@type' => 'ContactPoint',
+                'telephone' => '+62-813-4813-8440',
+                'contactType' => 'customer service',
+                'areaServed' => 'ID',
+                'availableLanguage' => ['Indonesian'],
+            ],
             'sameAs' => [config('banjarcustom.instagram')],
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>Nota Pesanan — Banjar Custome</title>
+    <title>Nota Pesanan — Banjar Custom</title>
     @include('partials.favicon')
     <style>
         * { box-sizing: border-box; }
@@ -35,7 +35,7 @@
     <div class="nota">
         <div class="head">
             <div>
-                <h1>Banjar Custome</h1>
+                <h1>Banjar Custom</h1>
                 <p class="muted">{{ config('banjarcustom.address') }}</p>
                 <p class="muted">WhatsApp {{ config('banjarcustom.whatsapp') }}</p>
             </div>
@@ -132,7 +132,7 @@
         </table>
 
         <div class="foot">
-            <span>Dokumen ini dicetak dari sistem Banjar Custome.</span>
+            <span>Dokumen ini dicetak dari sistem Banjar Custom.</span>
             @if ($order->grandTotalPrice() !== null)
                 <span>Skema pembayaran: DP 50% di awal, 50% pelunasan sebelum diambil/dikirim.</span>
             @else

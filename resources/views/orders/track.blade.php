@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Cek Status Pesanan - Banjar Custome'"
-    :description="'Lacak status pesanan konveksi dan sablon Anda di Banjar Custome menggunakan nomor order dan nomor WhatsApp.'"
+    :title="'Cek Status Pesanan - Banjar Custom'"
+    :description="'Lacak status pesanan konveksi dan sablon Anda di Banjar Custom menggunakan nomor order dan nomor WhatsApp.'"
     :noindex="true"
 >
 

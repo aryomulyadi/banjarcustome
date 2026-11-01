@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Syarat & Ketentuan Pemesanan — Banjar Custome'"
-    :description="'Syarat dan ketentuan pemesanan di Banjar Custome: proses pemesanan, harga estimasi, pembayaran, produksi, revisi, dan pengiriman.'"
+    :title="'Syarat & Ketentuan Pemesanan — Banjar Custom'"
+    :description="'Syarat dan ketentuan pemesanan di Banjar Custom: proses pemesanan, harga estimasi, pembayaran, produksi, revisi, dan pengiriman.'"
 >
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">

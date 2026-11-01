@@ -24,7 +24,7 @@ class HomePageTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk()
-            ->assertSee('Banjar Custome')
+            ->assertSee('Banjar Custom')
             ->assertSee('Jasa Konveksi & Sablon Custom Banjarmasin')
             ->assertSee('Bebas Custom Desain')
             ->assertSee('Sablon Awet')

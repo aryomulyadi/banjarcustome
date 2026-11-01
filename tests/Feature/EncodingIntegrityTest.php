@@ -66,7 +66,7 @@ class EncodingIntegrityTest extends TestCase
     {
         $content = file_get_contents(base_path('resources/views/home.blade.php'));
 
-        $this->assertStringContainsString('Banjar Custome — Jasa Konveksi', $content);
+        $this->assertStringContainsString('Banjar Custom — Jasa Konveksi', $content);
         $this->assertStringContainsString('Lihat Semua →', $content);
         $this->assertDoesNotMatchRegularExpression(self::MOJIBAKE_PATTERN, $content);
     }

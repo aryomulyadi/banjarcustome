@@ -1,5 +1,5 @@
 <x-layouts.app
-    :title="'Banjar Custome — Jasa Konveksi & Sablon Custom Banjarmasin'"
+    :title="'Banjar Custom — Jasa Konveksi & Sablon Custom Banjarmasin'"
     :description="'Jasa konveksi dan sablon custom di Banjarmasin: kaos, jersey printing, kemeja, jaket, seragam, dan merchandise. Custom desain, ecer & grosir, kirim ke seluruh Indonesia.'"
 >
 
@@ -204,7 +204,7 @@
                         Mulai Pesan Sekarang
                     </x-button>
                     <x-button
-                        href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custome, saya mau konsultasi custom seragam/kaos.') }}"
+                        href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode('Halo Banjar Custom, saya mau konsultasi custom seragam/kaos.') }}"
                         target="_blank"
                         rel="noopener noreferrer"
                         size="xl"
@@ -258,7 +258,7 @@
         <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
             <div class="mb-6">
                 <h2 class="text-2xl font-bold sm:text-3xl">Kata Mereka</h2>
-                <p class="mt-1 text-sm text-muted-foreground">Ulasan asli pelanggan yang pesan langsung di Banjar Custome — tampil di Google Reviews.</p>
+                <p class="mt-1 text-sm text-muted-foreground">Ulasan asli pelanggan yang pesan langsung di Banjar Custom — tampil di Google Reviews.</p>
             </div>
 
             <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-3">
@@ -318,7 +318,7 @@
         <div class="grid items-center gap-8 rounded-2xl border border-border bg-muted/40 p-6 sm:p-10 lg:grid-cols-2">
             <div>
                 <span class="text-xs font-semibold uppercase tracking-widest text-primary">Tentang Kami</span>
-                <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Banjar Custome — Konveksi &amp; Sablon Banjarmasin</h2>
+                <h2 class="mt-2 text-2xl font-bold sm:text-3xl">Banjar Custom — Konveksi &amp; Sablon Banjarmasin</h2>
                 <p class="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
                     Kami melayani pembuatan pakaian custom seperti kaos, jersey printing, kemeja, seragam, jaket,
                     dan merchandise untuk satuan, grup, maupun komunitas. Dengan sablon berkualitas dan proses

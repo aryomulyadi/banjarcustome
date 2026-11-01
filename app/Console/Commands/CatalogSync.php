@@ -13,7 +13,7 @@ class CatalogSync extends Command
 {
     protected $signature = 'catalog:sync {--dry-run : Tampilkan rencana tanpa mengubah database}';
 
-    protected $description = 'Sinkronkan kategori & produk ke katalog asli Banjar Custome (idempoten)';
+    protected $description = 'Sinkronkan kategori & produk ke katalog asli Banjar Custom (idempoten)';
 
     public function handle(): int
     {

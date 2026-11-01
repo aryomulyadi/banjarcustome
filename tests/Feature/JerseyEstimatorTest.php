@@ -35,7 +35,7 @@ class JerseyEstimatorTest extends TestCase
 
         $this->get(route('katalog-jersey'))
             ->assertOk()
-            ->assertSee(rawurlencode('Halo Banjar Custome, saya mau pesan jersey dari Katalog Jersey:'), false)
+            ->assertSee(rawurlencode('Halo Banjar Custom, saya mau pesan jersey dari Katalog Jersey:'), false)
             ->assertSee(rawurlencode('- Jumlah: '.$minOrder.' pcs'), false)
             ->assertSee(rawurlencode('Estimasi total: Rp '.$defaultTotal), false);
     }

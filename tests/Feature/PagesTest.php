@@ -30,7 +30,7 @@ class PagesTest extends TestCase
     {
         $this->get('/tentang')
             ->assertOk()
-            ->assertSee('Banjar Custome')
+            ->assertSee('Banjar Custom')
             ->assertSee('Alur Pemesanan');
     }
 
@@ -38,8 +38,13 @@ class PagesTest extends TestCase
     {
         $this->get('/panduan-ukuran')
             ->assertOk()
-            ->assertSee('Lingkar Dada')
-            ->assertSee('XXXL');
+            ->assertSee('Kaos Cotton Combed 30s')
+            ->assertSee('Jersey Standar')
+            ->assertSee('Jaket Raglan')
+            ->assertSee('Lebar')
+            ->assertSee('5XL')
+            ->assertSee('id="jersey"', false)
+            ->assertSee('id="kaos"', false);
     }
 
     public function test_layanan_page_shows_estimation_and_payment_terms(): void

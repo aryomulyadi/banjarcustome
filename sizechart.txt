@@ -1,0 +1,58 @@
+
+1. Size Chart Jersey Standar
+Ukuran	Lebar	Panjang
+XS	47 cm	63 cm
+S	49 cm	66 cm
+M	51 cm	69 cm
+L	53 cm	72 cm
+XL	55 cm	75 cm
+XXL	57 cm	78 cm
+3XL	60 cm	79 cm
+4XL	63 cm	81 cm
+5XL	66 cm	82 cm
+
+Toleransi ukuran: 1–2 cm.
+2. Size Chart Jersey Anak
+Ukuran	Lebar	Panjang
+XS	33 cm	41 cm
+S	36 cm	45 cm
+M	39 cm	49 cm
+L	42 cm	53 cm
+XL	44 cm	57 cm
+XXL	46 cm	61 cm
+
+Toleransi ukuran: 1–2 cm.
+3. Size Chart Jaket Raglan
+Ukuran	Lebar	Panjang	Panjang Lengan
+XS	50 cm	61 cm	47 cm
+S	52 cm	63 cm	48 cm
+M	54 cm	65 cm	49 cm
+L	56 cm	67 cm	50 cm
+XL	58 cm	69 cm	51 cm
+XXL	60 cm	71 cm	52 cm
+3XL	62 cm	72 cm	53 cm
+4XL	64 cm	74 cm	54 cm
+5XL	66 cm	75 cm	55 cm
+
+Size Chart Cotton Combed 30s Dewasa
+Size	Lebar	Panjang
+XS	43 cm	62 cm
+S	45 cm	66 cm
+M	48 cm	68 cm
+L	50 cm	71 cm
+XL	53 cm	74 cm
+2XL	55 cm	76 cm
+3XL	58 cm	79 cm
+4XL	61 cm	80 cm
+5XL	64 cm	84 cm
+
+Toleransi ukuran: 1–2 cm.
+4. Size Chart Cotton Combed 30s Anak (Pendek & Panjang)
+Usia (Tahun)	Lebar	Panjang	Lebar Tangan
+2	33 cm	42 cm	30 cm
+4	35 cm	47 cm	36 cm
+6	36 cm	51 cm	41 cm
+8	37 cm	53 cm	45 cm
+10	38 cm	56 cm	48 cm
+12	39 cm	58 cm	50 cm
+14	41 cm	60 cm	52 cm

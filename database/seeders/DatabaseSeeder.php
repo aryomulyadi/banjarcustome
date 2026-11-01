@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'admin@banjarcustom.test'],
             [
-                'name' => 'Admin Banjar Custome',
+                'name' => 'Admin Banjar Custom',
                 'password' => 'password',
                 'role' => 'admin',
             ]

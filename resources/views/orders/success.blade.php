@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Pesanan Berhasil Dikirim — Banjar Custome'" :noindex="true">
+<x-layouts.app :title="'Pesanan Berhasil Dikirim — Banjar Custom'" :noindex="true">
 
     <div class="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
         <div class="rounded-2xl border border-border bg-card p-6 text-center sm:p-10">

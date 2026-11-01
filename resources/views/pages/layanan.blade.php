@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Layanan Konveksi & Sablon — Banjar Custome'"
-    :description="'Layanan Banjar Custome: sablon Plastisol dan DTF untuk kaos, polo, dan goodiebag, bordir untuk kemeja/polo/jaket, printing sublim jersey dan jaket, sublim mug, UV DTF tumbler, hingga merchandise. Alur produksi jelas dari order hingga kirim.'"
+    :title="'Layanan Konveksi & Sablon — Banjar Custom'"
+    :description="'Layanan Banjar Custom: sablon Plastisol dan DTF untuk kaos, polo, dan goodiebag, bordir untuk kemeja/polo/jaket, printing sublim jersey dan jaket, sublim mug, UV DTF tumbler, hingga merchandise. Alur produksi jelas dari order hingga kirim.'"
 >
 
     <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">

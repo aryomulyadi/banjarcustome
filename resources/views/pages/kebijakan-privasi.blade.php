@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Kebijakan Privasi — Banjar Custome'"
-    :description="'Kebijakan privasi Banjar Custome: data apa yang dikumpulkan dari form pemesanan, cara penggunaan, penyimpanan, dan hak Anda atas data.'"
+    :title="'Kebijakan Privasi — Banjar Custom'"
+    :description="'Kebijakan privasi Banjar Custom: data apa yang dikumpulkan dari form pemesanan, cara penggunaan, penyimpanan, dan hak Anda atas data.'"
 >
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -36,7 +36,7 @@
                 <h2 class="text-base font-semibold text-foreground">3. Penyimpanan &amp; Keamanan</h2>
                 <p class="mt-2">
                     File desain dan data pesanan disimpan pada server kami dan hanya diakses oleh tim produksi
-                    Banjar Custome. Kami tidak menjual atau membagikan data Anda kepada pihak ketiga, kecuali
+                    Banjar Custom. Kami tidak menjual atau membagikan data Anda kepada pihak ketiga, kecuali
                     diwajibkan oleh hukum.
                 </p>
             </section>

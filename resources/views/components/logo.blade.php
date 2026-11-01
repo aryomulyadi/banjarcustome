@@ -17,7 +17,7 @@
 @if ($hasLogo)
     <img
         src="{{ asset('images/logo.svg') }}"
-        alt="Banjar Custome"
+        alt="Banjar Custom"
         width="100"
         height="100"
         decoding="async"

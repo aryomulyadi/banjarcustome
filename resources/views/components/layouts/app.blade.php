@@ -2,7 +2,7 @@
     $pageTitle = isset($title) && $title !== '' ? $title : config('app.name');
     $pageDescription = isset($description) && $description !== ''
         ? $description
-        : 'Banjar Custome — jasa konveksi dan sablon custom di Banjarmasin. Kaos, jersey printing, kemeja, jaket, seragam, dan merchandise.';
+        : 'Banjar Custom — jasa konveksi dan sablon custom di Banjarmasin. Kaos, jersey printing, kemeja, jaket, seragam, dan merchandise.';
     $canonical = $canonical ?? url()->current();
     $ogImage = $ogImage ?? asset('images/banner-1.jpg');
 @endphp
@@ -74,7 +74,7 @@
                     ],
                     [
                         '@type' => 'Organization',
-                        'name' => 'Banjar Custome',
+                        'name' => 'Banjar Custom',
                         'url' => url('/'),
                         'logo' => asset('images/logo.svg'),
                         'sameAs' => [config('banjarcustom.instagram')],

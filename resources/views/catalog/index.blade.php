@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="($activeCategory ? $activeCategory->name . ' — ' : 'Katalog Produk — ') . 'Banjar Custome'"
-    :description="$activeCategory?->description ?: 'Katalog produk konveksi & sablon Banjar Custome: kaos, jersey, kemeja, jaket, seragam, dan merchandise. Tersedia ecer & grosir.'"
+    :title="($activeCategory ? $activeCategory->name . ' — ' : 'Katalog Produk — ') . 'Banjar Custom'"
+    :description="$activeCategory?->description ?: 'Katalog produk konveksi & sablon Banjar Custom: kaos, jersey, kemeja, jaket, seragam, dan merchandise. Tersedia ecer & grosir.'"
 >
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -25,7 +25,7 @@
         <div class="mb-8">
             <h1 class="text-2xl font-bold sm:text-3xl">{{ $activeCategory?->name ?? 'Katalog Produk' }}</h1>
             <p class="mt-1 text-sm text-muted-foreground">
-                {{ $activeCategory?->description ?? 'Semua produk konveksi & sablon Banjar Custome. Gunakan filter untuk mempersempit pilihan.' }}
+                {{ $activeCategory?->description ?? 'Semua produk konveksi & sablon Banjar Custom. Gunakan filter untuk mempersempit pilihan.' }}
             </p>
         </div>
 

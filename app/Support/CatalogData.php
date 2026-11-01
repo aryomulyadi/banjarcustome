@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Sumber data tunggal katalog asli Banjar Custome (Fase 24).
+ * Sumber data tunggal katalog asli Banjar Custom (Fase 24).
  * Dipakai oleh artisan `catalog:sync` (dev & deploy produksi).
  */
 class CatalogData

@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Galeri Hasil Produksi — Banjar Custome'"
-    :description="'Lihat hasil produksi sablon dan konveksi Banjar Custome: kaos komunitas, seragam sekolah, jersey, dan merchandise untuk Banjarmasin dan sekitarnya.'"
+    :title="'Galeri Hasil Produksi — Banjar Custom'"
+    :description="'Lihat hasil produksi sablon dan konveksi Banjar Custom: kaos komunitas, seragam sekolah, jersey, dan merchandise untuk Banjarmasin dan sekitarnya.'"
 >
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

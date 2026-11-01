@@ -21,7 +21,7 @@
         @if ($products->isEmpty())
             <div class="px-5 py-12 text-center">
                 <p class="font-medium">Belum ada produk di database.</p>
-                <p class="mt-1 text-xs text-muted-foreground">Klik tombol di bawah untuk mengisi kategori dan katalog produk asli Banjar Custome otomatis.</p>
+                <p class="mt-1 text-xs text-muted-foreground">Klik tombol di bawah untuk mengisi kategori dan katalog produk asli Banjar Custom otomatis.</p>
                 <form method="POST" action="{{ route('admin.products.sync') }}" class="mt-4 inline-block">
                     @csrf
                     <x-button type="submit">Sinkronkan Katalog &amp; Galeri Sekarang</x-button>

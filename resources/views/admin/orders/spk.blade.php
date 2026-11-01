@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>SPK Produksi - Banjar Custome</title>
+    <title>SPK Produksi - Banjar Custom</title>
     @include('partials.favicon')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -35,7 +35,7 @@
         {{-- Strip atas --}}
         <header class="flex items-center justify-between gap-4 border-b-2 border-foreground pb-4">
             <div>
-                <p class="text-2xl font-black tracking-tight sm:text-3xl">BANJAR CUSTOME</p>
+                <p class="text-2xl font-black tracking-tight sm:text-3xl">BANJAR CUSTOM</p>
                 <p class="mt-0.5 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Konveksi &amp; Sablon - Banjarmasin</p>
             </div>
             <span class="rounded-full bg-foreground px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-background">SPK Produksi</span>
@@ -138,7 +138,7 @@
         </section>
 
         <footer class="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-[11px] text-muted-foreground">
-            <span>Dokumen kerja internal produksi - Banjar Custome.</span>
+            <span>Dokumen kerja internal produksi - Banjar Custom.</span>
             <span>{{ $order->quantity ? 'Total pesanan: '.$order->quantity.' pcs' : '' }}</span>
         </footer>
     </main>

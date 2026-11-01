@@ -1,6 +1,6 @@
 <x-layouts.app
-    :title="'Tentang Kami — Banjar Custome'"
-    :description="'Mengenal Banjar Custome, jasa konveksi dan sablon di Banjarmasin: pengalaman, teknik sablon, dan komitmen hasil rapi untuk komunitas, sekolah, dan perusahaan.'"
+    :title="'Tentang Kami — Banjar Custom'"
+    :description="'Mengenal Banjar Custom, jasa konveksi dan sablon di Banjarmasin: pengalaman, teknik sablon, dan komitmen hasil rapi untuk komunitas, sekolah, dan perusahaan.'"
 >
 
     <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -11,11 +11,11 @@
         </nav>
 
         <span class="text-xs font-semibold uppercase tracking-widest text-primary">Tentang Kami</span>
-        <h1 class="mt-2 text-3xl font-bold sm:text-4xl">Banjar Custome — Jasa Konveksi &amp; Sablon Banjarmasin</h1>
+        <h1 class="mt-2 text-3xl font-bold sm:text-4xl">Banjar Custom — Jasa Konveksi &amp; Sablon Banjarmasin</h1>
 
         <div class="mt-6 space-y-4 leading-relaxed text-muted-foreground">
             <p>
-                Banjar Custome adalah penyedia jasa konveksi dan sablon yang berlokasi di Banjarmasin,
+                Banjar Custom adalah penyedia jasa konveksi dan sablon yang berlokasi di Banjarmasin,
                 Kalimantan Selatan. Kami melayani pembuatan pakaian custom seperti kaos, jersey printing,
                 kemeja, seragam, jaket, hingga merchandise untuk satuan, grup, komunitas, sekolah, maupun perusahaan.
             </p>

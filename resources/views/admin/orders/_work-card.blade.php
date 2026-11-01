@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>{{ $docTitle }} — Banjar Custome</title>
+    <title>{{ $docTitle }} — Banjar Custom</title>
     @include('partials.favicon')
     <style>
         * { box-sizing: border-box; }
@@ -39,7 +39,7 @@
     <div class="sheet">
         <div class="head">
             <div>
-                <h1>Banjar Custome</h1>
+                <h1>Banjar Custom</h1>
                 <p class="muted">{{ config('banjarcustom.address') }}</p>
                 <p class="muted">WhatsApp {{ config('banjarcustom.whatsapp') }}</p>
             </div>
@@ -131,7 +131,7 @@
             </div>
             <div class="box">
                 <div>Banjarmasin, {{ $docDate }}</div>
-                <div>Admin Banjar Custome</div>
+                <div>Admin Banjar Custom</div>
                 <div class="line">( ................................. )</div>
             </div>
         </div>

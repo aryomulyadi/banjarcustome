@@ -74,7 +74,7 @@ class WorkCardTest extends TestCase
             ->get(route('admin.orders.spk', $order))
             ->assertOk()
             ->assertSee('SPK Produksi')
-            ->assertSee('BANJAR CUSTOME')
+            ->assertSee('BANJAR CUSTOM')
             ->assertSee('Deadline Produksi')
             ->assertSee('Rincian Ukuran')
             ->assertSee('Total Keseluruhan')

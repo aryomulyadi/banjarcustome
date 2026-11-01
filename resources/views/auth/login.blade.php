@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Login Admin — Banjar Custome'" :noindex="true">
+<x-layouts.app :title="'Login Admin — Banjar Custom'" :noindex="true">
 
     <div class="mx-auto flex max-w-md flex-col justify-center px-4 py-14 sm:px-6 lg:px-8">
         <div class="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
@@ -6,7 +6,7 @@
                 <x-logo size="lg" class="mx-auto" />
                 <h1 class="mt-4 text-2xl font-bold">Login Admin</h1>
                 <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                    Masuk untuk mengelola pesanan dan katalog Banjar Custome.
+                    Masuk untuk mengelola pesanan dan katalog Banjar Custom.
                 </p>
             </div>
 
