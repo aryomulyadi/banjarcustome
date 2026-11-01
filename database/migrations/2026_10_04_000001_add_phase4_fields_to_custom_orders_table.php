@@ -10,11 +10,38 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $tokens = [];
+        if (! Schema::hasTable('custom_orders') && Schema::hasTable('custom_orders_old')) {
+            DB::statement('ALTER TABLE custom_orders_old RENAME TO custom_orders');
+        }
 
-        DB::table('custom_orders')->orderBy('id')->pluck('id')->each(function ($id) use (&$tokens) {
-            $tokens[$id] = Str::random(40);
-        });
+        if (Schema::hasTable('custom_orders') && Schema::hasTable('custom_orders_old')) {
+            DB::statement('DROP TABLE custom_orders_old');
+        }
+
+        if (Schema::hasTable('custom_orders') && Schema::hasColumn('custom_orders', 'tracking_token')) {
+            if (Schema::hasTable('custom_orders_old')) {
+                if (! DB::table('custom_orders')->exists()) {
+                    $this->copyRows(
+                        DB::table('custom_orders_old')->orderBy('id')->pluck('id')->all()
+                    );
+                }
+
+                DB::statement('DROP TABLE custom_orders_old');
+            }
+
+            $this->ensureForeignKeys();
+
+            return;
+        }
+
+        $ids = DB::table('custom_orders')->orderBy('id')->pluck('id')->all();
+
+        if ($this->isMySql()) {
+            Schema::table('custom_orders', function (Blueprint $table) {
+                $table->dropForeign(['user_id']);
+                $table->dropForeign(['product_id']);
+            });
+        }
 
         DB::statement('ALTER TABLE custom_orders RENAME TO custom_orders_old');
 
@@ -44,23 +71,7 @@ return new class extends Migration
             $table->index('name');
         });
 
-        $columns = '
-            id, tracking_token, user_id, product_id, name, whatsapp_number, quantity,
-            deadline, service_type, delivery_method, address, size_quantities, notes,
-            order_details, design_file, status, created_at, updated_at';
-
-        $select = '
-            id, ?, user_id, product_id, name, whatsapp_number, quantity,
-            NULL, NULL, NULL, NULL, NULL, NULL,
-            order_details, design_file, status, created_at, updated_at';
-
-        foreach ($tokens as $id => $token) {
-            DB::statement(
-                "INSERT INTO custom_orders ({$columns})
-                 SELECT {$select} FROM custom_orders_old WHERE id = ?",
-                [$token, $id]
-            );
-        }
+        $this->copyRows($ids);
 
         DB::statement('DROP TABLE custom_orders_old');
     }
@@ -83,5 +94,48 @@ return new class extends Migration
                 'notes',
             ]);
         });
+    }
+
+    private function copyRows(array $ids): void
+    {
+        $columns = '
+            id, tracking_token, user_id, product_id, name, whatsapp_number, quantity,
+            deadline, service_type, delivery_method, address, size_quantities, notes,
+            order_details, design_file, status, created_at, updated_at';
+
+        $select = '
+            id, ?, user_id, product_id, name, whatsapp_number, quantity,
+            NULL, NULL, NULL, NULL, NULL, NULL,
+            order_details, design_file, status, created_at, updated_at';
+
+        foreach ($ids as $id) {
+            DB::statement(
+                "INSERT INTO custom_orders ({$columns})
+                 SELECT {$select} FROM custom_orders_old WHERE id = ?",
+                [Str::random(40), $id]
+            );
+        }
+    }
+
+    private function ensureForeignKeys(): void
+    {
+        if (! $this->isMySql()) {
+            return;
+        }
+
+        foreach (['user_id' => 'users', 'product_id' => 'products'] as $column => $references) {
+            try {
+                DB::statement(
+                    "ALTER TABLE custom_orders ADD CONSTRAINT custom_orders_{$column}_foreign
+                     FOREIGN KEY ({$column}) REFERENCES {$references} (id) ON DELETE SET NULL"
+                );
+            } catch (Throwable) {
+            }
+        }
+    }
+
+    private function isMySql(): bool
+    {
+        return in_array(DB::getDriverName(), ['mysql', 'mariadb'], true);
     }
 };

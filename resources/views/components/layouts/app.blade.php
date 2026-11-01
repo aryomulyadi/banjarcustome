@@ -90,7 +90,7 @@
         @endphp
         <script type="application/ld+json" nonce="{{ request()->attributes->get('csp_nonce') }}">{!! json_encode($sitewideJsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
     </head>
-    <body class="flex min-h-screen flex-col bg-background text-foreground">
+    <body class="flex min-h-screen flex-col overflow-x-hidden bg-background text-foreground">
         <a href="#konten-utama" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground">
             Lewati ke konten utama
         </a>

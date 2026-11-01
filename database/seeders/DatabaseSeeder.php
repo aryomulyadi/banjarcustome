@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
 
 class DatabaseSeeder extends Seeder
@@ -52,13 +51,12 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call([
+            CatalogSeeder::class,
             GallerySeeder::class,
             FaqSeeder::class,
             TestimonialSeeder::class,
             JerseyOptionSeeder::class,
             OperationalOptionSeeder::class,
         ]);
-
-        Artisan::call('catalog:sync');
     }
 }

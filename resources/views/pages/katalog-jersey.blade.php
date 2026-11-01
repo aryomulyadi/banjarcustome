@@ -253,7 +253,7 @@
                         @endforeach
                     </x-select>
                 </div>
-                <div class="flex flex-col justify-center gap-2">
+                <div class="flex flex-col justify-center gap-2 rounded-lg border border-border/60 bg-card/60 p-3 sm:border-0 sm:bg-transparent sm:p-0">
                     <label class="flex cursor-pointer items-center gap-2 text-sm">
                         <input type="checkbox" x-model="vip" class="h-4 w-4 rounded border-input">
                         <span>VIP ORDER <span class="text-muted-foreground">(+{{ $rp((int) ($j['vip_fee'] ?? 0)) }}/pcs)</span></span>
@@ -265,18 +265,18 @@
                 </div>
             </div>
 
-            <div class="mt-4 flex flex-wrap items-end justify-between gap-4 rounded-xl border border-border bg-card p-4">
-                <dl class="space-y-1 text-xs text-muted-foreground">
-                    <div class="flex gap-2"><dt class="w-32 font-medium text-foreground">Harga dasar</dt><dd x-text="rp(base)"></dd></div>
-                    <div class="flex gap-2"><dt class="w-32 font-medium text-foreground">Kerah</dt><dd x-text="collarFee ? '+'.rp(collarFee) : 'standar'"></dd></div>
-                    <div class="flex gap-2"><dt class="w-32 font-medium text-foreground">Bahan</dt><dd x-text="fabricFee ? '+'.rp(fabricFee) : 'standar'"></dd></div>
-                    <div class="flex gap-2"><dt class="w-32 font-medium text-foreground">VIP ORDER</dt><dd x-text="vip ? '+'.rp(vipFee)+'/pcs' : 'tidak'"></dd></div>
-                    <div class="flex gap-2"><dt class="w-32 font-medium text-foreground">Biaya desain</dt><dd x-text="design ? rp(designFeeAmount) : 'tidak'"></dd></div>
-                    <div class="flex gap-2 pt-1"><dt class="w-32 font-medium text-foreground">Per pcs</dt><dd class="font-semibold text-foreground" x-text="rp(unitTotal)"></dd></div>
+            <div class="mt-4 flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-end sm:justify-between">
+                <dl class="space-y-1.5 text-xs text-muted-foreground">
+                    <div class="flex gap-2"><dt class="w-28 font-medium text-foreground sm:w-32">Harga dasar</dt><dd x-text="rp(base)"></dd></div>
+                    <div class="flex gap-2"><dt class="w-28 font-medium text-foreground sm:w-32">Kerah</dt><dd x-text="collarFee ? '+'.rp(collarFee) : 'standar'"></dd></div>
+                    <div class="flex gap-2"><dt class="w-28 font-medium text-foreground sm:w-32">Bahan</dt><dd x-text="fabricFee ? '+'.rp(fabricFee) : 'standar'"></dd></div>
+                    <div class="flex gap-2"><dt class="w-28 font-medium text-foreground sm:w-32">VIP ORDER</dt><dd x-text="vip ? '+'.rp(vipFee)+'/pcs' : 'tidak'"></dd></div>
+                    <div class="flex gap-2"><dt class="w-28 font-medium text-foreground sm:w-32">Biaya desain</dt><dd x-text="design ? rp(designFeeAmount) : 'tidak'"></dd></div>
+                    <div class="flex gap-2 border-t border-border/60 pt-1.5"><dt class="w-28 font-semibold text-foreground sm:w-32">Per pcs</dt><dd class="font-semibold text-foreground" x-text="rp(unitTotal)"></dd></div>
                 </dl>
-                <div class="text-right">
+                <div class="rounded-lg bg-primary/10 p-3 sm:bg-transparent sm:p-0 sm:text-right">
                     <p class="text-xs font-semibold uppercase tracking-widest text-primary">Estimasi Total</p>
-                    <p class="mt-0.5 text-3xl font-black text-primary sm:text-4xl" x-text="rp(total)"></p>
+                    <p class="mt-0.5 text-2xl font-black text-primary sm:text-4xl" x-text="rp(total)"></p>
                     <p class="mt-1 text-[11px] text-muted-foreground" x-text="fmt(Math.max(0, Number(qty) || 0)) + ' pcs'"></p>
                 </div>
             </div>
@@ -288,17 +288,18 @@
                 Jumlah minimal {{ $exampleQty }} pcs untuk pemesanan jersey.
             </p>
 
-            <div class="mt-4 flex flex-wrap gap-3">
+            <div class="mt-4 flex flex-col gap-2.5 sm:flex-row sm:gap-3">
                 <x-button
                     href="{{ config('banjarcustom.whatsapp_link') }}?text={{ rawurlencode($defaultWaText) }}"
                     x-bind:href="waHref"
                     target="_blank"
                     rel="noopener noreferrer"
                     size="lg"
+                    class="w-full sm:w-auto"
                 >
                     Pesan via WhatsApp
                 </x-button>
-                <x-button href="{{ route('pesan.create') }}" size="lg" variant="outline">
+                <x-button href="{{ route('pesan.create') }}" size="lg" variant="outline" class="w-full sm:w-auto">
                     Isi Form Pesanan
                 </x-button>
             </div>

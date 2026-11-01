@@ -60,7 +60,7 @@
             </ul>
         </div>
 
-        <div>
+        <div class="col-span-2 sm:col-span-1">
             <h3 class="text-sm font-semibold uppercase tracking-wider">Kontak</h3>
             <ul class="mt-4 space-y-3 text-sm text-muted-foreground">
                 <li class="flex gap-2">

@@ -4,9 +4,9 @@
 >
 
     {{-- Hero Slider --}}
-    <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
         <div
-            class="relative h-[440px] overflow-hidden rounded-2xl border border-border bg-muted sm:h-[480px]"
+            class="relative h-[460px] overflow-hidden rounded-2xl border border-border bg-muted sm:h-[480px] lg:h-[520px]"
             x-data="heroSlider({{ count($slides) }})"
             @touchstart.passive="swipeStart($event)"
             @touchend="swipeEnd($event)"
@@ -41,25 +41,25 @@
                             height="700"
                             decoding="async"
                             @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif
-                            class="absolute inset-0 h-full w-full object-cover"
+                            class="absolute inset-0 h-full w-full object-cover object-right sm:object-center"
                         >
                     @else
                         <x-placeholder-image label="Banner Promo {{ $i + 1 }}" class="absolute inset-0 h-full w-full" />
                     @endif
-                    <div class="absolute inset-0 bg-gradient-to-r from-background/95 via-background/75 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/30 sm:bg-gradient-to-r sm:from-background/95 sm:via-background/75 sm:to-transparent"></div>
 
-                    <div class="relative flex h-full max-w-2xl flex-col justify-center gap-4 px-6 sm:px-12">
-                        <h1 class="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                    <div class="relative flex h-full max-w-2xl flex-col justify-end pb-14 px-5 sm:justify-center sm:pb-0 sm:px-12 gap-3 sm:gap-4">
+                        <h1 class="text-2xl font-bold leading-tight sm:text-4xl lg:text-5xl">
                             {{ $slide['title'] }}
                         </h1>
-                        <p class="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                        <p class="max-w-xl text-xs leading-relaxed text-muted-foreground sm:text-base">
                             {{ $slide['subtitle'] }}
                         </p>
-                        <div class="mt-2 flex flex-wrap gap-3">
-                            <x-button href="{{ route('produk.index') }}" size="lg">
+                        <div class="mt-2 flex flex-col gap-2.5 sm:flex-row sm:gap-3">
+                            <x-button href="{{ route('produk.index') }}" size="lg" class="w-full sm:w-auto">
                                 Lihat Katalog
                             </x-button>
-                            <x-button href="{{ route('pesan.create') }}" size="lg" variant="outline">
+                            <x-button href="{{ route('pesan.create') }}" size="lg" variant="outline" class="w-full sm:w-auto">
                                 Mulai Pesan
                             </x-button>
                         </div>
@@ -68,17 +68,17 @@
             @endforeach
 
             @if (count($slides) > 1)
-                <button type="button" @click="prev()" class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background" aria-label="Slide sebelumnya">
+                <button type="button" @click="prev()" class="hidden sm:flex absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background" aria-label="Slide sebelumnya">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 </button>
-                <button type="button" @click="next()" class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background" aria-label="Slide berikutnya">
+                <button type="button" @click="next()" class="hidden sm:flex absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background" aria-label="Slide berikutnya">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                 </button>
 
                 <button
                     type="button"
                     @click="toggle()"
-                    class="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background"
+                    class="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm transition hover:bg-background sm:h-10 sm:w-10"
                     :aria-label="paused ? 'Putar slide otomatis' : 'Jeda slide otomatis'"
                     :aria-pressed="paused.toString()"
                 >
@@ -170,21 +170,21 @@
     </section>
 
     {{-- CTA Custom Design --}}
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div class="relative overflow-hidden rounded-2xl bg-primary px-6 py-12 text-center text-primary-foreground sm:px-12 sm:py-16">
+    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div class="relative overflow-hidden rounded-2xl bg-primary px-5 py-10 text-center text-primary-foreground sm:px-12 sm:py-16">
             <div class="mx-auto max-w-3xl">
                 <span class="inline-block rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold uppercase tracking-widest">
                     Custom Design
                 </span>
-                <h2 class="mt-4 text-3xl font-bold leading-tight sm:text-4xl">
+                <h2 class="mt-4 text-2xl font-bold leading-tight sm:text-4xl">
                     Buat Seragam/Kaos Custom Anda Sendiri!
                 </h2>
-                <p class="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-primary-foreground/85 sm:text-base">
+                <p class="mx-auto mt-3 max-w-2xl text-xs leading-relaxed text-primary-foreground/85 sm:text-base">
                     Kirim desain, tentukan warna dan jumlahnya — kami produksi dengan sablon awet dan rapi.
                     Mulai dari satuan hingga grosir.
                 </p>
-                <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
-                    <x-button href="{{ route('pesan.create') }}" size="xl" variant="invert">
+                <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                    <x-button href="{{ route('pesan.create') }}" size="xl" variant="invert" class="w-full sm:w-auto">
                         Mulai Pesan Sekarang
                     </x-button>
                     <x-button
@@ -193,6 +193,7 @@
                         rel="noopener noreferrer"
                         size="xl"
                         variant="invert-outline"
+                        class="w-full sm:w-auto"
                     >
                         Chat WhatsApp
                     </x-button>

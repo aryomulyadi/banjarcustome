@@ -41,6 +41,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::get('/kalkulator/cetak', [CalculatorController::class, 'print'])->name('calculator.print');
 
         Route::get('/produk', [ProductController::class, 'index'])->name('products.index');
+        Route::post('/produk/sync', [ProductController::class, 'sync'])->name('products.sync');
         Route::get('/produk/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
         Route::get('/produk/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');

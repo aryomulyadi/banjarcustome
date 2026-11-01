@@ -2,10 +2,16 @@
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-muted-foreground">Kelola katalog produk yang tampil di situs publik.</p>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             <form method="GET" action="{{ route('admin.products.index') }}" class="flex gap-2">
                 <x-input name="q" value="{{ $search }}" placeholder="Cari produk / kategori…" class="w-full sm:w-56" aria-label="Cari produk" />
                 <x-button type="submit" variant="secondary">Cari</x-button>
+            </form>
+            <form method="POST" action="{{ route('admin.products.sync') }}" class="inline">
+                @csrf
+                <x-button type="submit" variant="outline" onclick="return confirm('Jalankan sinkronisasi katalog produk dan foto galeri?')">
+                    Sinkronkan Katalog
+                </x-button>
             </form>
             <x-button href="{{ route('admin.products.create') }}">Tambah Produk</x-button>
         </div>
@@ -13,7 +19,14 @@
 
     <div class="mt-5 overflow-hidden rounded-xl border border-border bg-card">
         @if ($products->isEmpty())
-            <p class="px-5 py-10 text-center text-sm text-muted-foreground">Belum ada produk.</p>
+            <div class="px-5 py-12 text-center">
+                <p class="font-medium">Belum ada produk di database.</p>
+                <p class="mt-1 text-xs text-muted-foreground">Klik tombol di bawah untuk mengisi kategori dan katalog produk asli Banjar Custome otomatis.</p>
+                <form method="POST" action="{{ route('admin.products.sync') }}" class="mt-4 inline-block">
+                    @csrf
+                    <x-button type="submit">Sinkronkan Katalog &amp; Galeri Sekarang</x-button>
+                </form>
+            </div>
         @else
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">

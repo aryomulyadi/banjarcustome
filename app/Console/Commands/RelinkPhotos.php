@@ -15,25 +15,20 @@ class RelinkPhotos extends Command
     protected $description = 'Menautkan kembali file foto lama di storage ke produk/galeri yang kolom image-nya kosong';
 
     private const PRODUCT_MAP = [
-        'vpQQxv0WeTmbQgVl6yFv2j8CjfXFUAoVQNNhiSJY.png' => 'sablon-kaos-satuan',
-        'zfKuZ4b3165RiHjUVlAkSxaQMucGB7Qts4cSZb1Z.png' => 'kaos-promosi-custom',
-        '3m0TI6qYftj49MlRF1RhMtUkjb0BqV3OZd2jobCz.png' => 'kaos-lengan-panjang-polos',
-        'dKApm4nvD0LhJsn49wAWX1zvhSNcOwKWCyiEKJuJ.png' => 'kaos-polos-cotton-combed-30s',
-        '29bMjsoDin91VOQlVGI7m9qYYgg0SFjKjpuJ3yhk.png' => 'jersey-futsal-printing',
-        '3wIQGoY09PC5zjDMflyeEJN2sVUDL7YnxrSL8l6O.png' => 'jersey-voli-tim',
-        'Js5ZnJ7QtpCfdy7u37WjlXbQb8AGgQ1Gy9UD57N5.png' => 'totebag-kanvas-custom',
-        's24xDswosjt3PBsceYmviJnufHA0mdzlKEylRrtP.png' => 'kemeja-kantor-seragam',
+        'dXtAXW1n3Miqw00lFcnY9q7sZbVqU0TkjqOKPh3G.png' => 'kemeja-kantor-seragam',
+        'nIQfs5VVj4xZ9rcvUutylC3F2mhm7q8e86TW8QMy.png' => 'tote-bag-kanvas-premium',
+        'tE9YjXYCPMrjJG9swApq5GCUH2Vr90fO7FszJytk.png' => 'tumbler-custom',
     ];
 
     private const GALLERY_MAP = [
-        'jBPDilczsfuBVBHxiOe0YpYAh98zoj42cRIqZmAv.jpg' => 'Kaos Event Promosi',
-        'HPw0nYnkvo0ikan49O5pD4Oh1PyGhXFKxAVvv4SW.jpg' => 'Jersey Futsal Komunitas Banjarmasin',
-        'o6wJTfS7PWeOVXsySfMn6ngR82eLpC5KxBD3GtOt.jpg' => 'Merchandise Totebag Event',
-        'xoKrFrhuHRsrdBPCjbGV0ztKZtiMADyfVAG4Mc1o.jpg' => 'Seragam Staf Lapangan',
-        'dqwGkuWnBx0qq9qF0DxGvKo6VfghETS9SrLrT6OP.jpg' => 'Kaos Polos Grosir Komunitas',
-        '24MT7B4GTBvwDkWEBxqhasp245ga2uE6uuln2nNb.jpg' => 'Jersey Basket Sekolah',
-        'dIhe6W76yJiwMcnesqrImBezW2lvTIv66fFT878C.jpg' => 'Seragam Kantor Perusahaan',
-        'VpJUFkUpXHxDUv7Wl7oG40KBxca5MyfnA1ZCMRUY.jpg' => 'Jaket Komunitas Motor',
+        'OavS5V8xaJKdQSxxFyo0HzapRIugurm6ePYwHLfa.png' => 'Jersey Futsal',
+        'HuJXj6tpIewc06vYhFLlVLJI1XgDB1Gi8RaJxtpK.jpg' => 'Seragam Kantor Perusahaan',
+        'SXJNO9YBYqUsYU6bWMoY6EoN06JB5JSXP0lB74Tc.jpg' => 'Kaos Panjang Gathering',
+        'DFFwfWVtiPyMHo4YhrMg8f4GEaaTspzew6fAoXL8.png' => 'Jersey Komunitas Motor',
+        'A98kr2Lj6QmreSiOG9faCxEOxof4jKqSxHOCMWzU.png' => 'Jersey Basket Sekolah',
+        'SoUdE05EKFKIQ7MMUOLSzj7ECH7TGTZG505166sV.jpg' => 'Merchandise Goodiebag Event',
+        'GHu0mWy8EexLRVniLoJsCFcAXnzvZlnbYhG1ZOuY.jpg' => 'Kaos Event',
+        'ZYGfXDLPX9jqBFbsV8ZatrzlrD4dkw1TCHqIsufv.jpg' => 'Tumbler',
     ];
 
     public function handle(): int
