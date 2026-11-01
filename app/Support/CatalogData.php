@@ -310,6 +310,7 @@ class CatalogData
             'tumbler-custom' => [
                 'category' => 'Tumbler',
                 'title' => 'Tumbler Custom',
+                'sort_order' => 8,
                 'price_estimate' => 'Mulai Rp 35.000',
                 'base_price' => 35000,
                 'moq_lusin' => false,
@@ -323,6 +324,7 @@ class CatalogData
             'kemeja-kantor-seragam' => [
                 'category' => 'Kemeja',
                 'title' => 'Kemeja Kantor Seragam',
+                'sort_order' => 5,
                 'price_estimate' => 'Mulai Rp 95.000',
                 'base_price' => 95000,
                 'moq_lusin' => false,
@@ -337,6 +339,7 @@ class CatalogData
             'jaket-coach-jacket' => [
                 'category' => 'Jaket',
                 'title' => 'Jaket Coach Jacket',
+                'sort_order' => 6,
                 'price_estimate' => 'Mulai Rp 135.000',
                 'base_price' => 135000,
                 'moq_lusin' => false,
@@ -350,6 +353,7 @@ class CatalogData
             'jaket-hoodie-zipper' => [
                 'category' => 'Jaket',
                 'title' => 'Jaket Hoodie Zipper',
+                'sort_order' => 7,
                 'price_estimate' => 'Mulai Rp 150.000',
                 'base_price' => 150000,
                 'moq_lusin' => false,
