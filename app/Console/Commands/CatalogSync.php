@@ -186,6 +186,7 @@ class CatalogSync extends Command
             $attributes = [
                 'category_id' => $category->id,
                 'title' => $data['title'],
+                'sort_order' => $data['sort_order'] ?? 0,
                 'description' => $data['description'],
                 'price_estimate' => $data['price_estimate'],
                 'base_price' => $data['base_price'],

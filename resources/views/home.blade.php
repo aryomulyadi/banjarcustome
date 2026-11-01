@@ -158,15 +158,31 @@
             </a>
         </div>
 
-        <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-4">
-            @forelse ($products as $product)
-                <x-scroll-row-item>
-                <x-product-card :product="$product" />
-                </x-scroll-row-item>
-            @empty
-                <p class="col-span-full w-full shrink-0 py-8 text-center text-sm text-muted-foreground">Belum ada produk.</p>
-            @endforelse
-        </x-scroll-row>
+        <div x-data="productCarousel">
+            <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-4" data-carousel-track>
+                @forelse ($products as $product)
+                    <x-scroll-row-item data-slide>
+                    <x-product-card :product="$product" />
+                    </x-scroll-row-item>
+                @empty
+                    <p class="col-span-full w-full shrink-0 py-8 text-center text-sm text-muted-foreground">Belum ada produk.</p>
+                @endforelse
+            </x-scroll-row>
+
+            @if (count($products) > 1)
+                <div class="mt-4 flex items-center justify-center gap-1.5 lg:hidden">
+                    @foreach ($products as $i => $product)
+                        <button
+                            type="button"
+                            @click="goTo({{ $i }})"
+                            :class="active === {{ $i }} ? 'w-6 bg-primary' : 'w-1.5 bg-border'"
+                            class="h-1.5 rounded-full transition-all duration-300"
+                            aria-label="Slide produk {{ $i + 1 }}"
+                        ></button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </section>
 
     {{-- CTA Custom Design --}}

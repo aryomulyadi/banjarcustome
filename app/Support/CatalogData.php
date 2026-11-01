@@ -148,6 +148,7 @@ class CatalogData
             'kaos-cotton-combed-24s' => [
                 'category' => 'Kaos',
                 'title' => 'Kaos Cotton Combed 24s',
+                'sort_order' => 1,
                 'price_estimate' => 'Mulai Rp 75.000',
                 'base_price' => 75000,
                 'moq_lusin' => true,
@@ -163,6 +164,7 @@ class CatalogData
             'kaos-dewasa-cotton-combed-30s' => [
                 'category' => 'Kaos',
                 'title' => 'Kaos Dewasa Cotton Combed 30s',
+                'sort_order' => 2,
                 'price_estimate' => 'Mulai Rp 65.000',
                 'base_price' => 65000,
                 'moq_lusin' => true,
@@ -177,6 +179,7 @@ class CatalogData
             'kaos-anak-cotton-combed-30s' => [
                 'category' => 'Kaos',
                 'title' => 'Kaos Anak Cotton Combed 30s',
+                'sort_order' => 3,
                 'price_estimate' => 'Mulai Rp 45.000',
                 'base_price' => 45000,
                 'moq_lusin' => true,
@@ -191,6 +194,7 @@ class CatalogData
             'polo-shirt-kerah' => [
                 'category' => 'Polo',
                 'title' => 'Polo Shirt Kerah',
+                'sort_order' => 4,
                 'price_estimate' => 'Mulai Rp 70.000',
                 'base_price' => 70000,
                 'moq_lusin' => true,
@@ -206,6 +210,7 @@ class CatalogData
             'topi-twill-drill-jaring-trucker' => [
                 'category' => 'Topi',
                 'title' => 'Topi Twill Drill / Jaring / Trucker',
+                'sort_order' => 9,
                 'price_estimate' => 'Mulai Rp 15.000',
                 'base_price' => 15000,
                 'moq_lusin' => false,
@@ -220,6 +225,7 @@ class CatalogData
             'topi-american-drill-ribstop' => [
                 'category' => 'Topi',
                 'title' => 'Topi American Drill / Ribstop',
+                'sort_order' => 10,
                 'price_estimate' => 'Mulai Rp 25.000',
                 'base_price' => 25000,
                 'moq_lusin' => false,
@@ -233,6 +239,7 @@ class CatalogData
             'topi-raphel-polyester-denim-sueding' => [
                 'category' => 'Topi',
                 'title' => 'Topi Raphel (Polyester, Denim, Sueding)',
+                'sort_order' => 11,
                 'price_estimate' => 'Mulai Rp 26.000',
                 'base_price' => 26000,
                 'moq_lusin' => false,
@@ -246,6 +253,7 @@ class CatalogData
             'topi-canvas-laken' => [
                 'category' => 'Topi',
                 'title' => 'Topi Canvas / Laken',
+                'sort_order' => 12,
                 'price_estimate' => 'Mulai Rp 30.000',
                 'base_price' => 30000,
                 'moq_lusin' => false,
@@ -259,6 +267,7 @@ class CatalogData
             'goodie-bag-spunbond' => [
                 'category' => 'Merchandise',
                 'title' => 'Goodie Bag Spunbond',
+                'sort_order' => 13,
                 'price_estimate' => 'Mulai Rp 3.000',
                 'base_price' => 3000,
                 'moq_lusin' => false,
@@ -273,6 +282,7 @@ class CatalogData
             'tote-bag-blacu' => [
                 'category' => 'Merchandise',
                 'title' => 'Tote Bag Blacu',
+                'sort_order' => 14,
                 'price_estimate' => 'Mulai Rp 10.000',
                 'base_price' => 10000,
                 'moq_lusin' => false,
@@ -286,6 +296,7 @@ class CatalogData
             'tote-bag-kanvas-premium' => [
                 'category' => 'Merchandise',
                 'title' => 'Tote Bag Kanvas Premium',
+                'sort_order' => 15,
                 'price_estimate' => 'Mulai Rp 35.000',
                 'base_price' => 35000,
                 'moq_lusin' => false,

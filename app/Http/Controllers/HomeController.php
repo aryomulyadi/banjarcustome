@@ -16,7 +16,7 @@ class HomeController extends Controller
         $slides = HomeContent::slides();
         $stats = HomeContent::stats();
 
-        $products = Cache::remember('home.products', now()->addMinutes(10), fn () => Product::with(['colors', 'category'])->latest()->orderByDesc('id')->take(8)->get());
+        $products = Cache::remember('home.products', now()->addMinutes(10), fn () => Product::with(['colors', 'category'])->orderBy('sort_order')->orderByDesc('id')->take(8)->get());
         $galleries = Cache::remember('home.galleries', now()->addMinutes(10), fn () => Gallery::latest()->orderByDesc('id')->take(6)->get());
         $testimonials = Cache::remember('home.testimonials', now()->addMinutes(10), fn () => Testimonial::active()->take(6)->get());
 

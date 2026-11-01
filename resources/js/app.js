@@ -114,4 +114,33 @@ Alpine.data('galleryLightbox', () => ({
     },
 }));
 
+Alpine.data('productCarousel', () => ({
+    active: 0,
+    total: 0,
+    init() {
+        this.total = this.$root.querySelectorAll('[data-slide]').length;
+        if (this.total < 2) return;
+
+        const container = this.$root.querySelector('[data-carousel-track]');
+        if (!container) return;
+
+        container.addEventListener('scroll', () => {
+            const child = container.querySelector('[data-slide]');
+            if (!child) return;
+            const w = child.offsetWidth + 16;
+            this.active = Math.round(container.scrollLeft / w);
+        }, { passive: true });
+    },
+    goTo(i) {
+        const container = this.$root.querySelector('[data-carousel-track]');
+        const child = container.querySelectorAll('[data-slide]')[i];
+        if (!child) return;
+        const style = getComputedStyle(container);
+        const pad = parseFloat(style.paddingLeft) || 0;
+        container.scrollTo({ left: child.offsetLeft - pad, behavior: 'smooth' });
+    },
+    prev() { this.goTo(Math.max(0, this.active - 1)); },
+    next() { this.goTo(Math.min(this.total - 1, this.active + 1)); },
+}));
+
 Alpine.start();
