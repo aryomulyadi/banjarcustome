@@ -7,12 +7,6 @@
                 <x-input name="q" value="{{ $search }}" placeholder="Cari produk / kategori…" class="w-full sm:w-56" aria-label="Cari produk" />
                 <x-button type="submit" variant="secondary">Cari</x-button>
             </form>
-            <form method="POST" action="{{ route('admin.products.sync') }}" class="inline">
-                @csrf
-                <x-button type="submit" variant="outline" onclick="return confirm('Jalankan sinkronisasi katalog produk dan foto galeri?')">
-                    Sinkronkan Katalog
-                </x-button>
-            </form>
             <x-button href="{{ route('admin.products.create') }}">Tambah Produk</x-button>
         </div>
     </div>
@@ -21,11 +15,10 @@
         @if ($products->isEmpty())
             <div class="px-5 py-12 text-center">
                 <p class="font-medium">Belum ada produk di database.</p>
-                <p class="mt-1 text-xs text-muted-foreground">Klik tombol di bawah untuk mengisi kategori dan katalog produk asli Banjar Custom otomatis.</p>
-                <form method="POST" action="{{ route('admin.products.sync') }}" class="mt-4 inline-block">
-                    @csrf
-                    <x-button type="submit">Sinkronkan Katalog &amp; Galeri Sekarang</x-button>
-                </form>
+                <p class="mt-1 text-xs text-muted-foreground">Klik tombol di bawah untuk menambahkan produk pertama.</p>
+                <div class="mt-4">
+                    <x-button href="{{ route('admin.products.create') }}">Tambah Produk</x-button>
+                </div>
             </div>
         @else
             <div class="overflow-x-auto">

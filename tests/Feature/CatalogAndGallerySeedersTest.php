@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Gallery;
 use App\Models\Product;
-use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\GallerySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,18 +44,5 @@ class CatalogAndGallerySeedersTest extends TestCase
 
         $this->seed(GallerySeeder::class);
         $this->assertSame($countFirst, Gallery::count());
-    }
-
-    public function test_admin_can_trigger_catalog_sync_via_post_endpoint(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin']);
-
-        $response = $this->actingAs($admin)->post(route('admin.products.sync'));
-
-        $response->assertRedirect();
-        $response->assertSessionHas('status');
-
-        $this->assertGreaterThan(0, Category::count());
-        $this->assertGreaterThan(0, Product::count());
     }
 }

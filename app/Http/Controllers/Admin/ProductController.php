@@ -9,7 +9,6 @@ use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -250,14 +249,5 @@ class ProductController extends Controller
                 'alt' => $product->title,
             ]);
         }
-    }
-
-    public function sync(): RedirectResponse
-    {
-        Artisan::call('catalog:sync');
-        Artisan::call('db:seed', ['--class' => 'GallerySeeder', '--force' => true]);
-        Artisan::call('photos:relink');
-
-        return back()->with('status', 'Katalog produk & foto galeri berhasil disinkronkan!');
     }
 }
