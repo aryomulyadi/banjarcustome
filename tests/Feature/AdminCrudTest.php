@@ -89,6 +89,32 @@ class AdminCrudTest extends TestCase
         $this->assertDatabaseCount('products', 0);
     }
 
+    public function test_product_sort_order_is_saved_and_editable(): void
+    {
+        $category = $this->category();
+
+        $this->actingAs($this->admin())->post(route('admin.products.store'), [
+            'title' => 'Produk Best Seller',
+            'category_id' => $category->id,
+            'sort_order' => 3,
+        ])->assertRedirect(route('admin.products.index'));
+
+        $product = Product::where('slug', 'produk-best-seller')->firstOrFail();
+        $this->assertSame(3, (int) $product->sort_order);
+
+        $this->actingAs($this->admin())->get(route('admin.products.edit', $product))
+            ->assertOk()
+            ->assertSee('Urutan tampil', false);
+
+        $this->actingAs($this->admin())->put(route('admin.products.update', $product), [
+            'title' => $product->title,
+            'category_id' => $category->id,
+            'sort_order' => 1,
+        ])->assertRedirect(route('admin.products.index'));
+
+        $this->assertSame(1, (int) $product->fresh()->sort_order);
+    }
+
     public function test_image_upload_creates_webp_variant_and_view_uses_picture(): void
     {
         Storage::fake('public');

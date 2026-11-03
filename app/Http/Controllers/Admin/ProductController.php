@@ -53,6 +53,7 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
             'title' => $validated['title'],
             'slug' => $this->uniqueSlug($validated['title']),
+            'sort_order' => $validated['sort_order'] ?? 0,
             'description' => $validated['description'] ?? null,
             'price_estimate' => $validated['price_estimate'] ?? null,
             'base_price' => $validated['base_price'] ?? null,
@@ -97,6 +98,7 @@ class ProductController extends Controller
             'category_id' => $validated['category_id'],
             'title' => $validated['title'],
             'slug' => $this->uniqueSlug($validated['title'], $product->id),
+            'sort_order' => $validated['sort_order'] ?? $product->sort_order,
             'description' => $validated['description'] ?? null,
             'price_estimate' => $validated['price_estimate'] ?? null,
             'base_price' => $validated['base_price'] ?? null,
@@ -139,6 +141,7 @@ class ProductController extends Controller
         $rules = [
             'title' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:10000'],
             'description' => ['nullable', 'string', 'max:3000'],
             'price_estimate' => ['nullable', 'string', 'max:100'],
             'base_price' => ['nullable', 'integer', 'min:0', 'max:100000000000'],

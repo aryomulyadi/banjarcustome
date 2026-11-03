@@ -48,6 +48,15 @@
                 </div>
 
                 <div class="space-y-2">
+                    <x-label for="sort_order">Urutan tampil (beranda)</x-label>
+                    <x-input id="sort_order" name="sort_order" type="number" min="0" max="10000" value="{{ old('sort_order', $product?->sort_order ?? 0) }}" placeholder="cth. 1" />
+                    <p class="mt-0.5 text-xs text-muted-foreground">Angka kecil tampil lebih dulu (best seller = 1, 2, 3…). Kosongkan = 0.</p>
+                    @error('sort_order')
+                        <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="space-y-2">
                     <x-label for="description">Deskripsi</x-label>
                     <x-textarea id="description" name="description" rows="4" placeholder="Deskripsi singkat produk…">{{ old('description', $product?->description) }}</x-textarea>
                 </div>
