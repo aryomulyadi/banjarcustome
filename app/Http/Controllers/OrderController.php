@@ -73,6 +73,14 @@ class OrderController extends Controller
         $validated['size_quantities'] = $sizes->all() ?: null;
         unset($validated['sizes']);
 
+        // Bila jenis pengerjaan kosong, otomatis gunakan judul produk yang dipilih.
+        if (empty($validated['service_type']) && ! empty($validated['product_id'])) {
+            $product = Product::find($validated['product_id']);
+            if ($product) {
+                $validated['service_type'] = mb_substr($product->title, 0, 60);
+            }
+        }
+
         // MOQ jersey (panduan 2026-2027): minimal 12 pcs per pesanan.
         $minOrder = (int) config('banjarcustom.jersey.min_order', 12);
 

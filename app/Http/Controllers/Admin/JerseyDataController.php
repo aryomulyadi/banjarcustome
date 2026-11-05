@@ -9,6 +9,7 @@ use App\Support\Spreadsheet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -34,9 +35,17 @@ class JerseyDataController extends Controller
             default => [],
         };
 
+        $activeBulan = $this->parseBulan($request);
+
         $base = JerseyData::query()
             ->when($q !== '', fn ($query) => $query->search($q))
-            ->filterDesainer($activeDesainer !== '' ? $activeDesainer : null);
+            ->filterDesainer($activeDesainer !== '' ? $activeDesainer : null)
+            ->when($activeBulan !== null, function ($query) use ($activeBulan) {
+                $start = Carbon::parse($activeBulan.'-01');
+                $query->whereBetween('tanggal_masuk', [$start, $start->copy()->endOfMonth()]);
+            });
+
+        $bulanOptions = $this->bulanOptions();
 
         $entries = (clone $base)
             ->filterStatus($activeStatuses)
@@ -60,8 +69,50 @@ class JerseyDataController extends Controller
             'activeDesainer' => $activeDesainer,
             'activeStatuses' => $activeStatuses,
             'statusCounts' => $statusCounts,
+            'activeBulan' => $activeBulan,
+            'bulanOptions' => $bulanOptions,
             'search' => $q,
         ]);
+    }
+
+    /**
+     * Filter bulan (YYYY-MM) dari query; nilai tidak valid diabaikan.
+     */
+    private function parseBulan(Request $request): ?string
+    {
+        $bulan = $request->query('bulan');
+
+        if (! is_string($bulan) || ! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $bulan)) {
+            return null;
+        }
+
+        return $bulan;
+    }
+
+    /**
+     * Opsi filter bulan dari rentang tanggal_masuk (portabel sqlite/mysql).
+     *
+     * @return list<string>
+     */
+    private function bulanOptions(): array
+    {
+        $min = JerseyData::min('tanggal_masuk');
+        $max = JerseyData::max('tanggal_masuk');
+
+        if ($min === null || $max === null) {
+            return [];
+        }
+
+        $options = [];
+        $cursor = Carbon::parse($min)->startOfMonth();
+        $end = Carbon::parse($max)->startOfMonth();
+
+        while ($cursor->lte($end) && count($options) < 120) {
+            $options[] = $cursor->format('Y-m');
+            $cursor = $cursor->copy()->addMonth();
+        }
+
+        return array_reverse($options);
     }
 
     public function updateStatus(Request $request, JerseyData $jersey): JsonResponse|RedirectResponse

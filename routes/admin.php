@@ -22,10 +22,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/pesanan/buat', [OrderController::class, 'create'])->name('orders.create');
+        Route::post('/pesanan', [OrderController::class, 'store'])->name('orders.store');
         Route::get('/pesanan/export', [OrderController::class, 'export'])->name('orders.export');
         Route::get('/pesanan/import', [OrderController::class, 'importForm'])->name('orders.import');
         Route::get('/pesanan/import/template', [OrderController::class, 'importTemplate'])->name('orders.import.template');
         Route::post('/pesanan/import', [OrderController::class, 'importStore'])->name('orders.import.store');
+        Route::delete('/pesanan/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
         Route::get('/pesanan/{order}/cetak', [OrderController::class, 'print'])->name('orders.print');
         Route::patch('/pesanan/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
         Route::patch('/pesanan/{order}/harga', [OrderController::class, 'updatePrice'])->name('orders.price');

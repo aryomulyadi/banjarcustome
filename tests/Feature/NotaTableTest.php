@@ -93,7 +93,7 @@ class NotaTableTest extends TestCase
         $this->assertStringNotContainsString('Jl. Contoh No. 1', $content);
     }
 
-    public function test_print_omits_order_number_and_status(): void
+    public function test_print_shows_order_number_and_omits_status(): void
     {
         $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
 
@@ -104,9 +104,8 @@ class NotaTableTest extends TestCase
 
         $content = $response->getContent();
 
-        // Nomor nota & status pesanan tidak tampil di lembar cetak.
-        $this->assertStringNotContainsString('<p class="muted">#', $content);
-        $this->assertStringNotContainsString('Nota Pesanan #', $content);
+        // Nomor pesanan (#id) tampil di lembar cetak; status pesanan tidak.
+        $this->assertStringContainsString('<p class="muted">#'.$order->id.'</p>', $content);
         $this->assertStringNotContainsString('Sedang Diproses', $content);
         $this->assertStringNotContainsString('class="badge"', $content);
         $this->assertStringContainsString('<title>Nota Pesanan — Banjar Custom</title>', $content);
@@ -221,6 +220,158 @@ class NotaTableTest extends TestCase
                 'bahan' => str_repeat('a', 121),
             ])
             ->assertSessionHasErrors('bahan');
+    }
+
+    public function test_multi_spec_groups_save_sync_sizes_and_render_on_print(): void
+    {
+        $order = $this->order();
+
+        $this->actingAs($this->admin())
+            ->from(route('admin.orders.show', $order))
+            ->patch(route('admin.orders.spec', $order), [
+                'bahan' => 'Dryfit Super',
+                'type' => 'Jersey Lengan Pendek',
+                'warna' => 'Navy',
+                'spec_groups' => [
+                    [
+                        'jenis' => 'Jersey',
+                        'bahan' => 'Dryfit Super',
+                        'type' => 'Lengan Pendek',
+                        'warna' => 'Navy',
+                        'rows' => [
+                            ['size' => 'S', 'qty' => '10', 'unit' => '45000'],
+                            ['size' => 'M', 'qty' => '12', 'unit' => ''],
+                        ],
+                    ],
+                    [
+                        'jenis' => 'Kaos',
+                        'bahan' => 'Cotton 30s',
+                        'type' => 'Oblong',
+                        'warna' => 'Putih',
+                        'rows' => [
+                            ['size' => 'S', 'qty' => '5', 'unit' => '50000'],
+                            ['size' => '', 'qty' => '3', 'unit' => '20000'],
+                        ],
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('admin.orders.show', $order))
+            ->assertSessionHas('status');
+
+        $order->refresh();
+
+        $this->assertCount(2, $order->specGroups());
+        $this->assertSame(30, $order->quantity);
+        $this->assertSame(['S' => 15, 'M' => 12], $order->size_quantities);
+        // M tanpa harga eksplisit → otomatis unit_price; baris tanpa ukuran tetap ikut subtotal.
+        // (10 × 45.000) + (12 × 45.000) + (5 × 50.000) + (3 × 20.000) = 1.300.000
+        $this->assertSame(1300000, $order->resolvedTotalPrice());
+
+        $content = $this->actingAs($this->admin())
+            ->get(route('admin.orders.print', $order))
+            ->assertOk()
+            ->getContent();
+
+        // Dua blok: kolom Jenis/Bahan/Type/Warna hanya baris pertama tiap blok.
+        $this->assertSame(1, substr_count($content, '>Jersey<'));
+        $this->assertSame(1, substr_count($content, 'Dryfit Super'));
+        $this->assertSame(1, substr_count($content, 'Cotton 30s'));
+        $this->assertSame(1, substr_count($content, '>Kaos<'));
+        $this->assertSame(4, substr_count($content, '<td class="wrap">'));
+        $this->assertStringContainsString('Rp 1.300.000', $content);
+    }
+
+    public function test_spec_groups_total_price_takes_priority_and_blank_falls_back(): void
+    {
+        $order = $this->order([
+            'total_price' => 999000,
+            'spec_groups' => [
+                ['jenis' => 'Kaos', 'bahan' => 'Cotton', 'type' => 'Oblong', 'warna' => 'Hitam',
+                    'rows' => [['size' => 'S', 'qty' => 10, 'unit' => 45000]]],
+            ],
+        ]);
+
+        // total_price menang atas subtotal grup.
+        $this->assertSame(999000, $order->resolvedTotalPrice());
+
+        $order->update(['total_price' => null]);
+        $this->assertSame(450000, $order->refresh()->resolvedTotalPrice());
+
+        // Blok tanpa baris valid dibuang → kembali ke rincian lama (size_quantities).
+        $order->update(['spec_groups' => [['jenis' => 'X', 'rows' => [['size' => 'S', 'qty' => 0]]]]]);
+
+        $this->assertSame([], $order->refresh()->specGroups());
+        $this->assertNull($order->groupsSubtotal());
+        $this->assertSame(24 * 45000, $order->resolvedTotalPrice());
+    }
+
+    public function test_spec_groups_show_page_has_repeater_ui(): void
+    {
+        $order = $this->order([
+            'spec_groups' => [
+                ['jenis' => 'Jersey', 'bahan' => 'Dryfit', 'type' => 'Pendek', 'warna' => 'Navy',
+                    'rows' => [['size' => 'S', 'qty' => 10, 'unit' => 45000]]],
+            ],
+        ]);
+
+        $content = $this->actingAs($this->admin())
+            ->get(route('admin.orders.show', $order))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Blok Spesifikasi', $content);
+        $this->assertStringContainsString('spec_groups[', $content);
+        $this->assertStringContainsString('groups.push(', $content);
+        $this->assertStringContainsString('group.rows.push(', $content);
+    }
+
+    public function test_customer_nota_via_token_shows_order_and_download_buttons(): void
+    {
+        $order = $this->order([
+            'bahan' => 'Cotton Combed 30s',
+            'unit_price' => 45000,
+        ]);
+
+        $response = $this->get(route('track.nota', ['token' => $order->tracking_token]));
+
+        $response->assertOk()
+            ->assertSee('NOTA PESANAN')
+            ->assertSee('#'.$order->id)
+            ->assertSee('Pelanggan Nota')
+            ->assertSee('Cotton Combed 30s')
+            ->assertSee('Unduh PDF')
+            ->assertSee('Unduh JPG')
+            ->assertSee('Cetak')
+            ->assertSee(route('track.token', ['token' => $order->tracking_token]), false);
+
+        $content = $response->getContent();
+
+        $this->assertStringContainsString('/lacak/'.$order->tracking_token.'"', $content);
+        $this->assertStringNotContainsString('/admin/orders/'.$order->id.'"', $content);
+        $this->assertStringContainsString('@media (max-width: 640px)', $content);
+        $this->assertStringContainsString('data-order-id="'.$order->id.'"', $content);
+        $this->assertStringContainsString('id="btn-pdf"', $content);
+        $this->assertStringContainsString('id="btn-jpg"', $content);
+    }
+
+    public function test_customer_nota_requires_valid_token(): void
+    {
+        $this->order();
+
+        $this->get(route('track.nota', ['token' => str_repeat('a', 40)]))
+            ->assertNotFound();
+    }
+
+    public function test_admin_print_has_download_buttons(): void
+    {
+        $order = $this->order();
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.orders.print', $order))
+            ->assertOk()
+            ->assertSee('Unduh PDF')
+            ->assertSee('Unduh JPG')
+            ->assertSee(route('admin.orders.show', $order), false);
     }
 
     public function test_calculator_page_has_quote_inputs_and_table(): void

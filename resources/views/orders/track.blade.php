@@ -116,6 +116,17 @@
                     </div>
                 </div>
 
+                <div class="mt-4">
+                    <a
+                        href="{{ route('track.nota', ['token' => $order->tracking_token]) }}"
+                        class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border text-sm font-medium transition-colors hover:bg-secondary"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Lihat Nota Pesanan
+                    </a>
+                    <p class="mt-1.5 text-center text-xs text-muted-foreground">Bisa dicetak atau diunduh sebagai PDF/JPG.</p>
+                </div>
+
                 @php $history = $order->statusHistory()->latest('id')->get(); @endphp
                 <div class="mt-6">
                     <h3 class="text-sm font-semibold">Riwayat Pesanan</h3>

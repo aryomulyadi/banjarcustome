@@ -190,6 +190,25 @@ class JerseyDataTest extends TestCase
             ->assertSee('TERLAMBAT');
     }
 
+    public function test_index_filters_by_month(): void
+    {
+        $this->seedMaster();
+        $this->entry(['customer' => 'OKT - 1', 'tanggal_masuk' => '2026-10-20']);
+        $this->entry(['customer' => 'NOV - 1', 'tanggal_masuk' => '2026-11-05']);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.jersey.index', ['bulan' => '2026-10']))
+            ->assertOk()
+            ->assertSee('OKT - 1')
+            ->assertDontSee('NOV - 1');
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.jersey.index', ['bulan' => 'bukan-bulan']))
+            ->assertOk()
+            ->assertSee('OKT - 1')
+            ->assertSee('NOV - 1');
+    }
+
     public function test_form_shows_master_dropdown_options(): void
     {
         $this->seedMaster();

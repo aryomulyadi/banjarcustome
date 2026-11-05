@@ -53,9 +53,9 @@ class FaqSeeder extends Seeder
         ];
 
         foreach ($faqs as $index => $faq) {
-            // updateOrCreate: jalankan ulang seeder untuk memperbarui jawaban default
-            // (editan manual admin di /admin/faq akan tertimpa bila seeder dijalankan lagi).
-            Faq::updateOrCreate(
+            // firstOrCreate: jalankan ulang seeder tidak pernah menimpa editan
+            // admin di /admin/faq — baris default hanya dibuat bila belum ada.
+            Faq::firstOrCreate(
                 ['question' => $faq['question']],
                 [
                     'answer' => $faq['answer'],

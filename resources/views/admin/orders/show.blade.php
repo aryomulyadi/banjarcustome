@@ -7,15 +7,38 @@
             {{ $isAdmin ? 'Kembali ke daftar pesanan' : 'Kembali ke antrian produksi' }}
         </a>
         @if ($isAdmin)
-        <a
-            href="{{ route('admin.orders.print', $order) }}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-secondary"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-            Cetak Nota
-        </a>
+        <div class="flex flex-wrap items-center gap-2">
+            <div x-data="{ copied: false }">
+                <button
+                    type="button"
+                    @click="navigator.clipboard.writeText('{{ $order->trackUrl() }}'); copied = true; setTimeout(() => copied = false, 1500)"
+                    class="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-secondary"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span x-text="copied ? 'Link tersalin ✓' : 'Salin Link Lacak'">Salin Link Lacak</span>
+                </button>
+            </div>
+            <a
+                href="{{ route('admin.orders.print', $order) }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-secondary"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                Cetak Nota
+            </a>
+            <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pesanan #{{ $order->id }} ({{ $order->name }})? Tindakan ini tidak dapat dibatalkan.')">
+                @csrf
+                @method('DELETE')
+                <button
+                    type="submit"
+                    class="inline-flex h-9 items-center gap-1.5 rounded-md border border-destructive/40 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    Hapus
+                </button>
+            </form>
+        </div>
         @endif
     </div>
 
@@ -272,84 +295,6 @@
                 </form>
             </div>
             @endif
-
-            @if ($isAdmin)
-            <div class="rounded-xl border border-border bg-card p-4">
-                <h2 class="text-base font-semibold">Desain</h2>
-
-                <div class="mt-2 space-y-2 text-sm">
-                    <div class="flex justify-between gap-3">
-                        <span class="text-muted-foreground">Pelanggan</span>
-                        <span class="text-right font-medium">
-                            @if ($order->design_approved_at)
-                                Disetujui {{ $order->design_approved_at->translatedFormat('d M Y, H:i') }}
-                            @else
-                                Belum disetujui
-                            @endif
-                        </span>
-                    </div>
-                    <div class="flex justify-between gap-3">
-                        <span class="text-muted-foreground">Jumlah revisi</span>
-                        <span class="text-right font-medium">{{ $order->design_revisions }}× (gratis)</span>
-                    </div>
-                    @if ($order->design_revision_reason)
-                        <div class="flex justify-between gap-3">
-                            <span class="text-muted-foreground">Alasan revisi terakhir</span>
-                            <span class="max-w-[60%] text-right font-medium">{{ $order->design_revision_reason }}</span>
-                        </div>
-                    @endif
-                </div>
-                @if ($order->design_file_admin)
-                    <a
-                        href="{{ route('admin.orders.design.preview', $order) }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border text-sm font-medium transition-colors hover:bg-secondary"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                        Lihat Hasil Desain
-                    </a>
-                @else
-                    <p class="mt-3 text-sm text-muted-foreground">Belum ada hasil desain yang diunggah.</p>
-                @endif
-
-                <form method="POST" action="{{ route('admin.orders.design.upload', $order) }}" enctype="multipart/form-data" class="mt-3 space-y-3">
-                    @csrf
-                    <div class="space-y-1.5">
-                        <x-label for="design_file_admin">Unggah hasil desain</x-label>
-                        <p class="text-xs text-muted-foreground">jpg, png, webp, atau pdf (maks 10 MB). Ganti file = persetujuan lama direset.</p>
-                        <input
-                            id="design_file_admin"
-                            name="design_file_admin"
-                            type="file"
-                            accept=".jpg,.jpeg,.png,.webp,.pdf"
-                            class="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-border file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-secondary/70"
-                        />
-                        @error('design_file_admin')
-                            <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <x-button type="submit" class="w-full">Simpan Desain</x-button>
-                </form>
-
-                @if ($order->design_approved_at === null && in_array($order->status, [\App\Models\CustomOrder::STATUS_DESIGN, \App\Models\CustomOrder::STATUS_READY], true))
-                    <form method="POST" action="{{ route('admin.orders.design.approve', $order) }}" class="mt-3">
-                        @csrf
-                        <x-button type="submit" variant="secondary" class="w-full">Tandai Disetujui (via WA)</x-button>
-                    </form>
-                @endif
-
-                @if ($order->design_file)
-                    <p class="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">File referensi dari pelanggan:</p>
-                    <a
-                        href="{{ route('admin.orders.design', $order) }}"
-                        class="mt-2 inline-flex h-10 w-full items-center justify-center rounded-md border border-border text-sm font-medium transition-colors hover:bg-secondary"
-                    >
-                        Unduh Referensi
-                    </a>
-                @endif
-            </div>
-            @endif
         </div>
 
         <div class="space-y-4">
@@ -399,7 +344,7 @@
                             @enderror
                         </div>
 
-                        <p class="text-xs text-muted-foreground">Urutan tahap: Menunggu Konfirmasi → Terkonfirmasi → Proses Desain → Siap Produksi → Sedang Diproses → Selesai. Lompat tahap tidak diizinkan.</p>
+                        <p class="text-xs text-muted-foreground">Urutan tahap: Menunggu Konfirmasi → Terkonfirmasi → Siap Produksi → Sedang Diproses → Selesai. Lompat tahap tidak diizinkan.</p>
 
                         <x-button type="submit" class="w-full">Simpan Status</x-button>
                     </form>
@@ -481,6 +426,69 @@
                         @error('collar_model')
                             <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <div class="space-y-1.5 rounded-lg border border-border p-3" x-data='{ groups: @json(old("spec_groups", $order->specGroups())) }'>
+                        <div class="flex items-center justify-between gap-2">
+                            <x-label>Blok Spesifikasi <span class="font-normal text-muted-foreground">(opsional, multi)</span></x-label>
+                            <x-button type="button" variant="outline" size="sm" @click="groups.push({ jenis: '', bahan: '', type: '', warna: '', rows: [{ size: '', qty: null, unit: null }] })">+ Blok</x-button>
+                        </div>
+                        <p class="text-xs text-muted-foreground">Kosong = ikuti Bahan/Type/Warna di atas. Tiap blok tampil sebagai kolom tersendiri di nota; kolom identik hanya baris pertama.</p>
+
+                        <template x-for="(group, gi) in groups" :key="gi">
+                            <div class="space-y-2 rounded-md border border-border bg-background p-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-xs font-medium text-muted-foreground" x-text="'Blok ' + (gi + 1)"></span>
+                                    <button type="button" class="text-xs text-destructive" @click="groups.splice(gi, 1)">Hapus blok</button>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="space-y-1">
+                                        <x-label>Jenis</x-label>
+                                        <x-input x-bind:name="`spec_groups[${gi}][jenis]`" x-model="group.jenis" placeholder="cth. Kaos" maxlength="60" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <x-label>Warna</x-label>
+                                        <x-input x-bind:name="`spec_groups[${gi}][warna]`" x-model="group.warna" placeholder="cth. Navy" maxlength="120" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <x-label>Bahan</x-label>
+                                        <x-input x-bind:name="`spec_groups[${gi}][bahan]`" x-model="group.bahan" placeholder="cth. Cotton 30s" maxlength="120" />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <x-label>Type</x-label>
+                                        <x-input x-bind:name="`spec_groups[${gi}][type]`" x-model="group.type" placeholder="cth. Lengan Pendek" maxlength="120" />
+                                    </div>
+                                </div>
+
+                                <template x-for="(row, ri) in group.rows" :key="ri">
+                                    <div class="flex items-end gap-2">
+                                        <div class="flex-1 space-y-1">
+                                            <x-label>Ukuran</x-label>
+                                            <x-input x-bind:name="`spec_groups[${gi}][rows][${ri}][size]`" x-model="row.size" placeholder="S / M / L" maxlength="20" />
+                                        </div>
+                                        <div class="w-20 space-y-1">
+                                            <x-label>Jumlah</x-label>
+                                            <x-input x-bind:name="`spec_groups[${gi}][rows][${ri}][qty]`" x-model="row.qty" type="number" min="1" max="1000000" />
+                                        </div>
+                                        <div class="w-28 space-y-1">
+                                            <x-label>Harga (Rp)</x-label>
+                                            <x-input x-bind:name="`spec_groups[${gi}][rows][${ri}][unit]`" x-model="row.unit" type="number" min="0" placeholder="otomatis" />
+                                        </div>
+                                        <button type="button" class="pb-2.5 text-xs text-destructive" @click="group.rows.splice(ri, 1)" :disabled="group.rows.length === 1">✕</button>
+                                    </div>
+                                </template>
+
+                                <button type="button" class="text-xs underline" @click="group.rows.push({ size: '', qty: null, unit: null })">+ Ukuran</button>
+                            </div>
+                        </template>
+
+                        <p x-show="groups.length === 0" class="text-xs text-muted-foreground">Belum ada blok — cukup isi Bahan/Type/Warna di atas.</p>
+                        @foreach ($errors->keys() as $errorKey)
+                            @if (str_starts_with($errorKey, 'spec_groups'))
+                                <p class="text-xs text-destructive" role="alert">{{ $errors->first($errorKey) }}</p>
+                            @endif
+                        @endforeach
                     </div>
 
                     <x-button type="submit" class="w-full">Simpan Spesifikasi</x-button>

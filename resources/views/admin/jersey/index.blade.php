@@ -32,6 +32,15 @@
                 @endforeach
             </x-select>
         </div>
+        <div class="sm:w-44">
+            <x-label for="bulan">Bulan</x-label>
+            <x-select id="bulan" name="bulan" @change="$el.form.submit()">
+                <option value="">Semua bulan</option>
+                @foreach ($bulanOptions as $value)
+                    <option value="{{ $value }}" @selected($activeBulan === $value)>{{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $value)->translatedFormat('F Y') }}</option>
+                @endforeach
+            </x-select>
+        </div>
         {{-- Filter multi-status ala spreadsheet: checklist, boleh lebih dari satu. --}}
         <div class="sm:w-56 relative" x-data="{ statusOpen: false }" @click.outside="statusOpen = false">
             <x-label>Status</x-label>
@@ -65,7 +74,7 @@
                 <div class="mt-2 flex items-center gap-2 border-t border-border pt-2">
                     <x-button type="submit" class="flex-1">Terapkan</x-button>
                     <a
-                        href="{{ route('admin.jersey.index', array_filter(['q' => $search, 'desainer' => $activeDesainer, 'sort' => $activeSort])) }}"
+                        href="{{ route('admin.jersey.index', array_filter(['q' => $search, 'desainer' => $activeDesainer, 'sort' => $activeSort, 'bulan' => $activeBulan])) }}"
                         class="inline-flex h-10 items-center justify-center rounded-md border border-border px-3 text-xs font-medium transition-colors hover:bg-secondary"
                     >
                         Reset status
@@ -145,7 +154,7 @@
 
         @if ($entries->isEmpty())
             <div class="mt-4 rounded-xl border border-border bg-card px-5 py-10 text-center text-sm text-muted-foreground">
-                @if ($search !== '' || $activeDesainer !== '' || $activeStatuses !== [])
+                @if ($search !== '' || $activeDesainer !== '' || $activeStatuses !== [] || $activeBulan !== null)
                     Tidak ada data yang cocok dengan filter.
                     <a href="{{ route('admin.jersey.index') }}" class="font-medium text-primary underline underline-offset-2">Reset filter</a>
                 @else

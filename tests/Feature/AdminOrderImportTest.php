@@ -356,10 +356,12 @@ class AdminOrderImportTest extends TestCase
         $this->assertDatabaseCount('custom_orders', 0);
     }
 
-    public function test_jenis_asing_is_rejected_but_known_jenis_is_accepted(): void
+    public function test_jenis_bebas_diterima_dan_tidak_menolak(): void
     {
         $admin = $this->admin();
 
+        // Jenis apapun sekarang diterima (tidak lagi di-reject).
+        // Ini memungkinkan import data lama dengan jenis non-standar.
         $unknown = implode("\n", [
             'customer,jenis',
             'Jenis Salah,Sablon Emas 24 Karat',
@@ -371,11 +373,15 @@ class AdminOrderImportTest extends TestCase
                 'file' => $this->makeFile($unknown, 'jenis.csv'),
             ])
             ->assertOk()
-            ->assertSee('tidak dikenal')
-            ->assertSee('Sablon Emas 24 Karat');
+            ->assertDontSee('tidak dikenal')
+            ->assertSee('Berhasil mengimpor 1 pesanan');
 
-        $this->assertDatabaseCount('custom_orders', 0);
+        $this->assertDatabaseCount('custom_orders', 1);
 
+        $order = CustomOrder::where('name', 'Jenis Salah')->firstOrFail();
+        $this->assertSame('Sablon Emas 24 Karat', $order->service_type);
+
+        // Jenis yang cocok dengan daftar juga tetap valid.
         $known = implode("\n", [
             'customer,jenis',
             'Jenis Valid,bordir',
@@ -389,8 +395,11 @@ class AdminOrderImportTest extends TestCase
             ->assertOk()
             ->assertSee('Berhasil mengimpor 1 pesanan');
 
-        // Casing mengikuti judul resmi dari Pengaturan.
-        $this->assertSame('Bordir', CustomOrder::firstOrFail()->service_type);
+        $this->assertDatabaseCount('custom_orders', 2);
+
+        $order = CustomOrder::where('name', 'Jenis Valid')->firstOrFail();
+
+        $this->assertSame('Bordir', $order->service_type);
     }
 
     public function test_progress_flag_values_parse_ok_nok_and_reject_unknown(): void

@@ -27,6 +27,7 @@ class CustomOrder extends Model
         'is_express',
         'address',
         'size_quantities',
+        'spec_groups',
         'notes',
         'order_details',
         'design_file',
@@ -48,6 +49,7 @@ class CustomOrder extends Model
     protected $casts = [
         'deadline' => 'date',
         'size_quantities' => 'array',
+        'spec_groups' => 'array',
         'size_prices' => 'array',
         'is_express' => 'boolean',
         'unit_price' => 'integer',
@@ -92,14 +94,14 @@ class CustomOrder extends Model
     ];
 
     /**
-     * Matriks transisi status (admin via updateStatus; pelanggan hanya lewat
-     * mekanisme revisi desain — lihat ready → design). Lompat tahap ditolak.
+     * Matriks transisi status.
+     * Catatan: Dari Terkonfirmasi bisa LANGSUNG ke Siap Produksi tanpa persetujuan desain.
      *
      * @var array<string, list<string>>
      */
     public const TRANSITIONS = [
         self::STATUS_PENDING => [self::STATUS_CONFIRMED, self::STATUS_CANCELLED],
-        self::STATUS_CONFIRMED => [self::STATUS_DESIGN, self::STATUS_CANCELLED],
+        self::STATUS_CONFIRMED => [self::STATUS_READY, self::STATUS_DESIGN, self::STATUS_CANCELLED],
         self::STATUS_DESIGN => [self::STATUS_READY, self::STATUS_CANCELLED],
         self::STATUS_READY => [self::STATUS_PRODUCTION, self::STATUS_DESIGN, self::STATUS_CANCELLED],
         self::STATUS_PRODUCTION => [self::STATUS_COMPLETED, self::STATUS_CANCELLED],
@@ -188,14 +190,6 @@ class CustomOrder extends Model
     public function readyBlockers(): array
     {
         $issues = [];
-
-        if ($this->status !== self::STATUS_DESIGN) {
-            $issues[] = 'Status harus dari "'.self::STATUS_LABELS[self::STATUS_DESIGN].'" terlebih dahulu.';
-        }
-
-        if ($this->design_approved_at === null) {
-            $issues[] = 'Desain belum disetujui pelanggan.';
-        }
 
         if ($this->size_quantities === null || $this->size_quantities === []) {
             $issues[] = 'Rincian ukuran belum diisi.';
@@ -399,6 +393,12 @@ class CustomOrder extends Model
             return $this->total_price;
         }
 
+        // Nota multi-spesifikasi: subtotal grup lebih dulu (bila semua baris berharga).
+        $groupsSubtotal = $this->groupsSubtotal();
+        if ($groupsSubtotal !== null) {
+            return $groupsSubtotal;
+        }
+
         // Rincian per ukuran (termasuk surcharge) lebih akurat daripada
         // satuan × jumlah ketika size_quantities terisi.
         $rowsSubtotal = $this->sizeRowsSubtotal();
@@ -411,6 +411,116 @@ class CustomOrder extends Model
         }
 
         return null;
+    }
+
+    /**
+     * Blok spesifikasi nota (JSON `spec_groups`): tiap blok = Jenis/Bahan/Type/Warna
+     * + baris ukuran. Baris tanpa jumlah valid & blok tanpa baris dibuang.
+     * `unit` = nilai tersimpan (null = harga otomatis dari sizePriceFor).
+     *
+     * @return list<array{jenis: string, bahan: string, type: string, warna: string, rows: list<array{size: string, qty: int, unit: int|null}>}>
+     */
+    public function specGroups(): array
+    {
+        if (! is_array($this->spec_groups)) {
+            return [];
+        }
+
+        $groups = [];
+
+        foreach ($this->spec_groups as $group) {
+            if (! is_array($group)) {
+                continue;
+            }
+
+            $rows = [];
+
+            foreach (is_array($group['rows'] ?? null) ? $group['rows'] : [] as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+
+                $size = trim((string) ($row['size'] ?? ''));
+                $qty = filter_var($row['qty'] ?? null, FILTER_VALIDATE_INT);
+
+                if ($qty === false || $qty < 1) {
+                    continue;
+                }
+
+                $unit = $row['unit'] ?? null;
+                $unit = ($unit === null || $unit === '') ? null : filter_var($unit, FILTER_VALIDATE_INT);
+
+                if ($unit === false) {
+                    $unit = null;
+                }
+
+                $rows[] = [
+                    'size' => $size,
+                    'qty' => $qty,
+                    'unit' => $unit,
+                ];
+            }
+
+            if ($rows === []) {
+                continue;
+            }
+
+            $groups[] = [
+                'jenis' => trim((string) ($group['jenis'] ?? '')),
+                'bahan' => trim((string) ($group['bahan'] ?? '')),
+                'type' => trim((string) ($group['type'] ?? '')),
+                'warna' => trim((string) ($group['warna'] ?? '')),
+                'rows' => $rows,
+            ];
+
+            if (count($groups) >= 20) {
+                break;
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Harga satuan efektif satu baris grup: nilai tersimpan, atau otomatis
+     * unit + surcharge (sizePriceFor) bila kosong & ukuran dikenal.
+     */
+    public function groupRowUnit(string $size, ?int $unit): ?int
+    {
+        if ($unit !== null) {
+            return $unit;
+        }
+
+        return $size !== '' ? $this->sizePriceFor($size) : null;
+    }
+
+    /**
+     * Σ (qty × harga efektif) semua baris grup — null bila tanpa blok atau
+     * ada baris berharga tanpa harga efektif.
+     */
+    public function groupsSubtotal(): ?int
+    {
+        $groups = $this->specGroups();
+
+        if ($groups === []) {
+            return null;
+        }
+
+        $subtotal = 0;
+
+        foreach ($groups as $group) {
+            foreach ($group['rows'] as $row) {
+                $unit = $this->groupRowUnit($row['size'], $row['unit']);
+
+                if ($unit === null) {
+                    return null;
+                }
+
+                $subtotal += $unit * $row['qty'];
+            }
+        }
+
+        return $subtotal;
     }
 
     public function expressFeeNumber(): ?int

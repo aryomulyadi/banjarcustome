@@ -86,7 +86,8 @@ class AdminOrderFlowTest extends TestCase
 
     public function test_ready_rejects_when_prereqs_missing_and_names_them(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_DESIGN]);
+        // Tanpa STATUS_DESIGN, status awal adalah STATUS_CONFIRMED
+        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
 
         $this->actingAs($this->admin())
             ->from(route('admin.orders.show', $order))
@@ -94,19 +95,19 @@ class AdminOrderFlowTest extends TestCase
             ->assertSessionHasErrors('status');
 
         $errors = session('errors')->get('status');
-        $this->assertStringContainsString('Desain belum disetujui', $errors[0]);
+        // Desain tidak lagi jadi pemblokir status
         $this->assertStringContainsString('Rincian ukuran', $errors[0]);
         $this->assertStringContainsString('Harga', $errors[0]);
         $this->assertStringContainsString('DP 50%', $errors[0]);
 
-        $this->assertSame(CustomOrder::STATUS_DESIGN, $order->fresh()->status);
+        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
     }
 
     public function test_ready_succeeds_when_all_prereqs_met(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_DESIGN]);
+        // Tanpa STATUS_DESIGN, naik dari STATUS_CONFIRMED langsung ke ready
+        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
         $order->forceFill([
-            'design_approved_at' => now(),
             'size_quantities' => ['S' => 2, 'M' => 3],
             'quantity' => 5,
             'unit_price' => 40000,
@@ -126,9 +127,9 @@ class AdminOrderFlowTest extends TestCase
 
     public function test_ready_rejects_size_sum_mismatch(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_DESIGN]);
+        // Tanpa STATUS_DESIGN, naik dari STATUS_CONFIRMED langsung ke ready
+        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
         $order->forceFill([
-            'design_approved_at' => now(),
             'size_quantities' => ['S' => 2],
             'quantity' => 10,
             'unit_price' => 40000,
@@ -145,7 +146,7 @@ class AdminOrderFlowTest extends TestCase
 
         $errors = session('errors')->get('status');
         $this->assertStringContainsString('tidak sama dengan jumlah pesanan', $errors[0]);
-        $this->assertSame(CustomOrder::STATUS_DESIGN, $order->fresh()->status);
+        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
     }
 
     public function test_ready_to_design_resets_approval(): void

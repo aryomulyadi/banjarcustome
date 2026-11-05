@@ -44,6 +44,15 @@ class TrackOrderController extends Controller
         return view('orders.track', compact('order'));
     }
 
+    /** Nota pesanan pelanggan via token — tampilan sama dgn cetak admin, tanpa data internal. */
+    public function nota(string $token): View
+    {
+        $order = CustomOrder::where('tracking_token', $token)->firstOrFail();
+        $order->load('product');
+
+        return view('admin.orders.print', ['order' => $order, 'customerMode' => true]);
+    }
+
     public function downloadDesign(string $token): StreamedResponse
     {
         $order = CustomOrder::where('tracking_token', $token)->firstOrFail();

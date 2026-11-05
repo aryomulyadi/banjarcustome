@@ -2261,5 +2261,39 @@ Niagahoster (Tahap 3). TANPA perubahan kode aplikasi — hanya file konfigurasi.
 
 4. Langkah user selanjutnya (Tahap B): push repo ke GitHub → daftar render.com
    (login GitHub) → New Web Service pilih repo → paste APP_KEY + simpan →
-   Deploy → beri tahu URL → Tahap C: buat admin via tinker + smoke test
-   publik (CDP) oleh asisten.
+    Deploy → beri tahu URL → Tahap C: buat admin via tinker + smoke test
+    publik (CDP) oleh asisten.
+
+FASE PRODUKSI 1 - DOMAIN FINAL & PENYEMPURNAAN NOTA (SELESAI)
+=============================================================
+
+Tujuan: migrasi ke banjarcustom.com (shared hosting Hostinger, tanpa SSH), 
+rebranding logo/sosmed, dan implementasi 7 penyempurnaan fitur utama.
+
+1. Infrastruktur & Deploy (Hostinger Shared):
+   - `deploy-update.php`: script PHP mandiri (tanpa exec()) untuk ekstrak ZIP, 
+     migrasi in-process, symlink storage, dan log rowcounts before/after.
+   - `deploy.sh`: wrapper bash lokal untuk automation.
+   - `CHECKLIST-DEPLOY.md`: panduan teknis deploy via script cron.
+   - `update-rebrand.zip`: paket update (app, config, database, resources, routes, 
+     bootstrap/app.php, public/build) TANPA database.sqlite & .gitignore.
+
+2. Fitur Nota & Multi-Spesifikasi (P1, P2):
+   - Unduh Nota PDF/JPG: integrasi `html2canvas` & `jsPDF` (bundle `nota.js`).
+   - Multi-Spesifikasi (Excel-like): kolom Jenis/Bahan/Type/Warna per blok, 
+     baris identik hanya baris pertama tiap blok; repeater Alpine di Dashboard.
+   - Sinkronisasi: simpan multi-spec otomatis sinkron ke `size_quantities` & `quantity`.
+   - Lacak Nota Pelanggan: `/lacak/{token}/nota` (akses tanpa login via token).
+   - Responsive Mobile: tabel nota scroll-horizontal & tata letak ringkasan tumpuk.
+
+3. Filter & UI Admin (P3, P4, P5):
+   - Filter Bulan & Jenis: filter `bulan` (regex YYYY-MM) & `jenis[]` (multi-checklist 
+     Alpine) pada daftar pesanan & data jersey.
+   - Salin Link Lacak: tombol clipboard (navigator.clipboard) di detail pesanan.
+   - Rebranding: sort_order admin produk & WA di kartu produk beranda.
+
+4. Verifikasi Akhir:
+   - Pint: PASSED.
+   - Full Test Suite: 403 TESTS / 2580 ASSERTIONS HIJAU (baseline 391 + 12 test baru).
+   - Vite Build: `nota-y1HDWm7A.js` (589 kB) berhasil dibundel & disertakan di ZIP.
+   - Migrasi: `2026_11_03_000001_add_spec_groups_to_custom_orders_table` terverifikasi.

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CustomOrder;
 use App\Models\MasterOption;
+use App\Models\Product;
 use App\Support\ServiceTypes;
 use App\Support\Spreadsheet;
 use Illuminate\Http\RedirectResponse;
@@ -63,48 +64,38 @@ class OrderController extends Controller
 
     public function index(Request $request): View
     {
-        $activeStatus = $request->query('status');
-
-        if (! in_array($activeStatus, array_keys(CustomOrder::STATUS_LABELS), true)) {
-            $activeStatus = null;
-        }
-
-        $activeSource = $request->query('source');
-
-        if (! in_array($activeSource, array_keys(CustomOrder::SOURCE_LABELS), true)) {
-            $activeSource = null;
-        }
+        [$activeStatus, $activeSource, $activeBulan, $activeJenis, $search] = $this->parseFilters($request);
 
         $query = CustomOrder::with('product')->latest()->orderByDesc('id');
-
-        if ($activeStatus) {
-            $query->where('status', $activeStatus);
-        }
-
-        if ($activeSource) {
-            $query->where('source', $activeSource);
-        }
-
-        if ($request->filled('q')) {
-            $search = $request->string('q')->trim();
-
-            $query->where(function ($builder) use ($search) {
-                $builder->where('name', 'like', "%{$search}%")
-                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
-            });
-        }
+        $this->applyFilters($query, $activeStatus, $activeSource, $activeBulan, $activeJenis, $search);
 
         $countsQuery = CustomOrder::query();
+        $this->applyFilters($countsQuery, null, $activeSource, $activeBulan, $activeJenis, $search);
 
-        if ($activeSource) {
-            $countsQuery->where('source', $activeSource);
+        $jenisBase = CustomOrder::query();
+        $this->applyFilters($jenisBase, $activeStatus, $activeSource, $activeBulan, null, $search);
+
+        $jenisCounts = [];
+
+        foreach ((clone $jenisBase)
+            ->whereNotNull('service_type')
+            ->selectRaw('service_type, count(*) as total')
+            ->groupBy('service_type')
+            ->pluck('total', 'service_type') as $name => $total) {
+            $jenisCounts[(string) $name] = (int) $total;
         }
+
+        $jenisCounts['kosong'] = (clone $jenisBase)->whereNull('service_type')->count();
 
         return view('admin.orders.index', [
             'orders' => $query->paginate(10)->withQueryString(),
             'activeStatus' => $activeStatus,
             'activeSource' => $activeSource,
-            'search' => $request->query('q', ''),
+            'activeBulan' => $activeBulan,
+            'activeJenis' => $activeJenis,
+            'bulanOptions' => $this->bulanOptions(),
+            'jenisCounts' => $jenisCounts,
+            'search' => $search,
             'statusLabels' => CustomOrder::STATUS_LABELS,
             'statusCounts' => [
                 'all' => (clone $countsQuery)->count(),
@@ -119,36 +110,10 @@ class OrderController extends Controller
 
     public function export(Request $request): BinaryFileResponse
     {
-        $activeStatus = $request->query('status');
-
-        if (! in_array($activeStatus, array_keys(CustomOrder::STATUS_LABELS), true)) {
-            $activeStatus = null;
-        }
-
-        $activeSource = $request->query('source');
-
-        if (! in_array($activeSource, array_keys(CustomOrder::SOURCE_LABELS), true)) {
-            $activeSource = null;
-        }
+        [$activeStatus, $activeSource, $activeBulan, $activeJenis, $search] = $this->parseFilters($request);
 
         $query = CustomOrder::query()->latest()->orderByDesc('id');
-
-        if ($activeStatus) {
-            $query->where('status', $activeStatus);
-        }
-
-        if ($activeSource) {
-            $query->where('source', $activeSource);
-        }
-
-        if ($request->filled('q')) {
-            $search = $request->string('q')->trim();
-
-            $query->where(function ($builder) use ($search) {
-                $builder->where('name', 'like', "%{$search}%")
-                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
-            });
-        }
+        $this->applyFilters($query, $activeStatus, $activeSource, $activeBulan, $activeJenis, $search);
 
         $path = tempnam(sys_get_temp_dir(), 'bc-export');
 
@@ -176,6 +141,127 @@ class OrderController extends Controller
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ])
             ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Baca & normalisasi filter bersama index/export.
+     *
+     * @return array{0: ?string, 1: ?string, 2: ?string, 3: list<string>, 4: string}
+     *                                                                               [status, source, bulan YYYY-MM, jenis[], q]
+     */
+    private function parseFilters(Request $request): array
+    {
+        $status = $request->query('status');
+
+        if (! in_array($status, array_keys(CustomOrder::STATUS_LABELS), true)) {
+            $status = null;
+        }
+
+        $source = $request->query('source');
+
+        if (! in_array($source, array_keys(CustomOrder::SOURCE_LABELS), true)) {
+            $source = null;
+        }
+
+        $bulan = $request->query('bulan');
+
+        if (! is_string($bulan) || ! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $bulan)) {
+            $bulan = null;
+        }
+
+        $rawJenis = $request->query('jenis');
+        $jenis = [];
+
+        if (is_array($rawJenis)) {
+            foreach ($rawJenis as $value) {
+                if (is_string($value) && $value !== '' && strlen($value) <= 60) {
+                    $jenis[] = $value;
+                }
+            }
+        } elseif (is_string($rawJenis) && $rawJenis !== '' && strlen($rawJenis) <= 60) {
+            $jenis[] = $rawJenis;
+        }
+
+        $jenis = array_values(array_unique($jenis));
+
+        $search = $request->filled('q') ? trim((string) $request->query('q')) : '';
+
+        return [$status, $source, $bulan, $jenis, $search];
+    }
+
+    /**
+     * Terapkan filter ke query pesanan. `kosong` pada jenis = service_type NULL.
+     *
+     * @param  list<string>  $jenis
+     */
+    private function applyFilters(
+        $query,
+        ?string $status,
+        ?string $source,
+        ?string $bulan,
+        ?array $jenis,
+        string $search,
+    ): void {
+        if ($status !== null) {
+            $query->where('status', $status);
+        }
+
+        if ($source !== null) {
+            $query->where('source', $source);
+        }
+
+        if ($bulan !== null) {
+            $start = Carbon::parse($bulan.'-01');
+            $query->whereBetween('created_at', [$start, $start->copy()->endOfMonth()]);
+        }
+
+        if ($jenis !== null && $jenis !== []) {
+            $names = array_values(array_filter($jenis, static fn ($value) => $value !== 'kosong'));
+            $hasKosong = in_array('kosong', $jenis, true);
+
+            $query->where(function ($builder) use ($names, $hasKosong) {
+                if ($names !== []) {
+                    $builder->whereIn('service_type', $names);
+                }
+
+                if ($hasKosong) {
+                    $builder->orWhereNull('service_type');
+                }
+            });
+        }
+
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('name', 'like', "%{$search}%")
+                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
+            });
+        }
+    }
+
+    /**
+     * Opsi filter bulan dari rentang tanggal pesanan (portabel sqlite/mysql).
+     *
+     * @return list<string>
+     */
+    private function bulanOptions(): array
+    {
+        $min = CustomOrder::min('created_at');
+        $max = CustomOrder::max('created_at');
+
+        if ($min === null || $max === null) {
+            return [];
+        }
+
+        $options = [];
+        $cursor = Carbon::parse($min)->startOfMonth();
+        $end = Carbon::parse($max)->startOfMonth();
+
+        while ($cursor->lte($end) && count($options) < 120) {
+            $options[] = $cursor->format('Y-m');
+            $cursor = $cursor->copy()->addMonth();
+        }
+
+        return array_reverse($options);
     }
 
     /**
@@ -220,6 +306,26 @@ class OrderController extends Controller
             $order->statusLabel(),
             $order->notes,
         ];
+    }
+
+    public function destroy(CustomOrder $order): RedirectResponse
+    {
+        $id = $order->id;
+        $customer = $order->name;
+
+        if ($order->design_file && Storage::disk('local')->exists($order->design_file)) {
+            Storage::disk('local')->delete($order->design_file);
+        }
+
+        if ($order->design_file_admin && Storage::disk('public')->exists($order->design_file_admin)) {
+            Storage::disk('public')->delete($order->design_file_admin);
+        }
+
+        $order->delete();
+
+        return redirect()
+            ->route('admin.orders.index')
+            ->with('status', "Pesanan #{$id} ({$customer}) berhasil dihapus.");
     }
 
     public function show(CustomOrder $order): View
@@ -548,18 +654,190 @@ class OrderController extends Controller
             'type' => ['nullable', 'string', 'max:120'],
             'warna' => ['nullable', 'string', 'max:120'],
             'collar_model' => ['nullable', 'string', 'max:60'],
+            'spec_groups' => ['nullable', 'array', 'max:20'],
+            'spec_groups.*.jenis' => ['nullable', 'string', 'max:60'],
+            'spec_groups.*.bahan' => ['nullable', 'string', 'max:120'],
+            'spec_groups.*.type' => ['nullable', 'string', 'max:120'],
+            'spec_groups.*.warna' => ['nullable', 'string', 'max:120'],
+            'spec_groups.*.rows' => ['nullable', 'array', 'max:100'],
+            'spec_groups.*.rows.*.size' => ['nullable', 'string', 'max:20'],
+            'spec_groups.*.rows.*.qty' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+            'spec_groups.*.rows.*.unit' => ['nullable', 'integer', 'min:0', 'max:100000000000'],
         ]);
 
-        $order->update([
+        $specGroups = self::normalizeSpecGroups($validated['spec_groups'] ?? null);
+
+        $data = [
             'bahan' => ($validated['bahan'] ?? null) ?: null,
             'type' => ($validated['type'] ?? null) ?: null,
             'warna' => ($validated['warna'] ?? null) ?: null,
             'collar_model' => ($validated['collar_model'] ?? null) ?: null,
-        ]);
+            'spec_groups' => $specGroups,
+        ];
+
+        // Selaras saat blok multi-spesifikasi terisi: qty per ukuran & total qty
+        // dipakai template WA, kartu progres, dan export.
+        if ($specGroups !== null) {
+            $sizeQuantities = [];
+            $quantity = 0;
+
+            foreach ($specGroups as $group) {
+                foreach ($group['rows'] as $row) {
+                    $quantity += $row['qty'];
+
+                    if ($row['size'] !== '') {
+                        $sizeQuantities[$row['size']] = ($sizeQuantities[$row['size']] ?? 0) + $row['qty'];
+                    }
+                }
+            }
+
+            $data['size_quantities'] = $sizeQuantities !== [] ? $sizeQuantities : null;
+            $data['quantity'] = $quantity;
+        }
+
+        $order->update($data);
 
         return redirect()
             ->route('admin.orders.show', $order)
             ->with('status', 'Spesifikasi nota disimpan.');
+    }
+
+    public function create(): View
+    {
+        $products = Product::orderBy('title')->get();
+        $serviceTypes = ServiceTypes::titles();
+
+        return view('admin.orders.create', compact('products', 'serviceTypes'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'product_id' => ['nullable', 'integer', 'exists:products,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'whatsapp_number' => ['required', 'string', 'max:32', 'regex:/^[0-9+\-\s()]+$/'],
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+            'deadline' => ['nullable', 'date', 'after_or_equal:today'],
+            'service_type' => ['nullable', 'string', 'max:60'],
+            'unit_price' => ['nullable', 'integer', 'min:0', 'max:100000000000'],
+            'total_price' => ['nullable', 'integer', 'min:0', 'max:100000000000'],
+            'status' => ['nullable', 'in:pending,confirmed,ready,production,completed,cancelled'],
+            'delivery_method' => ['nullable', 'in:kirim,ambil'],
+            'address' => ['required_if:delivery_method,kirim', 'nullable', 'string', 'max:500'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'order_details' => ['nullable', 'string', 'min:10', 'max:3000'],
+            'size_quantities' => ['nullable', 'array'],
+            'size_quantities.*' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'express' => ['nullable', 'boolean'],
+        ], [
+            'whatsapp_number.regex' => 'Nomor WhatsApp hanya boleh berisi angka dan tanda + - ( ).',
+            'deadline.after_or_equal' => 'Deadline tidak boleh sebelum hari ini.',
+            'address.required_if' => 'Alamat pengiriman wajib diisi jika pesanan dikirim.',
+            'order_details.min' => 'Detail pesanan minimal 10 karakter.',
+            'size_quantities' => 'Rincian ukuran tidak valid.',
+        ]);
+
+        // Auto-fill service_type dari produk jika kosong
+        if (empty($validated['service_type']) && ! empty($validated['product_id'])) {
+            $product = Product::find($validated['product_id']);
+            if ($product) {
+                $validated['service_type'] = mb_substr($product->title, 0, 60);
+            }
+        }
+
+        // Normalize size_quantities
+        $sizeQuantities = collect($validated['size_quantities'] ?? [])->filter(fn ($qty) => $qty > 0);
+        $validated['size_quantities'] = $sizeQuantities->all() ?: null;
+
+        // Auto-fill quantity jika size_quantities ada
+        if (! empty($validated['size_quantities']) && empty($validated['quantity'])) {
+            $validated['quantity'] = (int) array_sum($validated['size_quantities']);
+        }
+
+        // Jika tidak ada harga, set status ke pending
+        if ($validated['unit_price'] === null && $validated['total_price'] === null) {
+            $validated['status'] = CustomOrder::STATUS_PENDING;
+        }
+
+        // Handle design file (opsional, untuk admin)
+        if ($request->hasFile('design_file')) {
+            $validated['design_file'] = $request->file('design_file')->store('designs', 'local');
+        }
+
+        $validated['is_express'] = $request->boolean('express');
+
+        $order = CustomOrder::create($validated);
+
+        return redirect()
+            ->route('admin.orders.show', $order)
+            ->with('status', "Pesanan baru #{$order->id} berhasil dibuat.");
+    }
+
+    /**
+     * Buang blok/baris kosong & normalisasi angka; hasil = JSON siap simpan atau null.
+     *
+     * @param  array<array-key, mixed>|null  $input
+     * @return list<array{jenis: string, bahan: string, type: string, warna: string, rows: list<array{size: string, qty: int, unit: int|null}>}>|null
+     */
+    private static function normalizeSpecGroups(?array $input): ?array
+    {
+        if ($input === null || $input === []) {
+            return null;
+        }
+
+        $groups = [];
+
+        foreach ($input as $group) {
+            if (! is_array($group)) {
+                continue;
+            }
+
+            $rows = [];
+
+            foreach (is_array($group['rows'] ?? null) ? $group['rows'] : [] as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+
+                $size = trim((string) ($row['size'] ?? ''));
+                $qty = filter_var($row['qty'] ?? null, FILTER_VALIDATE_INT);
+
+                if ($qty === false || $qty < 1) {
+                    continue;
+                }
+
+                $unit = $row['unit'] ?? null;
+                $unit = ($unit === null || $unit === '') ? null : filter_var($unit, FILTER_VALIDATE_INT);
+
+                if ($unit === false) {
+                    $unit = null;
+                }
+
+                $rows[] = [
+                    'size' => mb_substr($size, 0, 20),
+                    'qty' => $qty,
+                    'unit' => $unit,
+                ];
+            }
+
+            if ($rows === []) {
+                continue;
+            }
+
+            $groups[] = [
+                'jenis' => mb_substr(trim((string) ($group['jenis'] ?? '')), 0, 60),
+                'bahan' => mb_substr(trim((string) ($group['bahan'] ?? '')), 0, 120),
+                'type' => mb_substr(trim((string) ($group['type'] ?? '')), 0, 120),
+                'warna' => mb_substr(trim((string) ($group['warna'] ?? '')), 0, 120),
+                'rows' => $rows,
+            ];
+
+            if (count($groups) >= 20) {
+                break;
+            }
+        }
+
+        return $groups !== [] ? $groups : null;
     }
 
     public function importForm(): View
@@ -692,12 +970,10 @@ class OrderController extends Controller
                         }
                     }
 
-                    if ($matched === null) {
-                        $rowErrors[] = 'Jenis "'.$jenis.'" tidak dikenal — gunakan jenis yang terdaftar di Pengaturan → Jenis Sablon & Teknik.';
-                        $jenis = null;
-                    } else {
-                        $jenis = $matched;
-                    }
+                    // Bila cocok dengan layanan terdaftar, pakai format kanonikalnya.
+                    // Bila tidak (mis. nama produk seperti "KAOS", "JERSEY POLA RAGLAN"),
+                    // tetap terima apa adanya sebagai jenis pengerjaan/produk agar tidak memblokir impor.
+                    $jenis = $matched ?? $jenis;
                 }
             } else {
                 $jenis = null;

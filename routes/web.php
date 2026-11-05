@@ -31,6 +31,9 @@ Route::post('/cek-pesanan', [TrackOrderController::class, 'store'])->middleware(
 Route::get('/lacak/{token}', [TrackOrderController::class, 'token'])
     ->where('token', '[A-Za-z0-9]{40}')
     ->name('track.token');
+Route::get('/lacak/{token}/nota', [TrackOrderController::class, 'nota'])
+    ->where('token', '[A-Za-z0-9]{40}')
+    ->name('track.nota');
 Route::get('/lacak/{token}/desain', [TrackOrderController::class, 'downloadDesign'])
     ->where('token', '[A-Za-z0-9]{40}')
     ->name('track.design');

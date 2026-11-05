@@ -61,7 +61,8 @@ class GallerySeeder extends Seeder
         ];
 
         foreach ($items as $item) {
-            Gallery::updateOrCreate(
+            // firstOrCreate: re-run tidak pernah menimpa foto/caption editan admin.
+            Gallery::firstOrCreate(
                 ['title' => $item['title']],
                 $item
             );

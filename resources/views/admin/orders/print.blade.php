@@ -25,13 +25,28 @@
         .summary th { width: auto; }
         .summary .grand th, .summary .grand td { border-top: 2px solid #1c1917; font-size: 15px; }
         .foot { margin-top: 28px; font-size: 12px; color: #78716c; display: flex; justify-content: space-between; gap: 12px; }
-        .actions { max-width: 860px; margin: 16px auto 0; display: flex; gap: 8px; }
+        .actions { max-width: 860px; margin: 16px auto 0; display: flex; flex-wrap: wrap; gap: 8px; }
         .actions button, .actions a { font: inherit; font-size: 14px; padding: 8px 16px; border: 1px solid #1c1917; background: #fff; color: #1c1917; cursor: pointer; text-decoration: none; border-radius: 6px; }
         .actions .primary { background: #1c1917; color: #fff; }
+        .actions button:disabled { opacity: .6; cursor: wait; }
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .nota { padding: 16px; }
+            .head { flex-direction: column; gap: 8px; }
+            .head > div:last-child { text-align: left !important; }
+            table { font-size: 13px; }
+            th, td { padding: 6px 6px; }
+            th { width: 38%; }
+            .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .nota-table { min-width: 560px; }
+            .summary { width: 100%; }
+            .foot { flex-direction: column; gap: 4px; }
+            .actions button, .actions a { flex: 1; min-width: 44%; text-align: center; }
+        }
         @media print { .actions { display: none; } body { padding: 0; } .nota { border: 0; } }
     </style>
 </head>
-<body>
+<body data-order-id="{{ $order->id }}">
     <div class="nota">
         <div class="head">
             <div>
@@ -41,6 +56,7 @@
             </div>
             <div style="text-align:right">
                 <strong>NOTA PESANAN</strong>
+                <p class="muted">#{{ $order->id }}</p>
             </div>
         </div>
 
@@ -53,44 +69,70 @@
         <p class="section-title">Rincian Perhitungan</p>
 
         @php
-            // 1 baris per ukuran (Jumlah = qty ukuran); kolom identik
-            // (Jenis/Bahan/Type/Warna) hanya di baris pertama.
-            $sizeRows = $order->sizeRows();
+            // Nota multi-spesifikasi: blok `spec_groups` (Jenis/Bahan/Type/Warna per blok).
+            // Kolom identik hanya di baris pertama tiap blok — seperti Excel.
+            $specGroups = $order->specGroups();
             $tableRows = [];
 
-            if ($sizeRows !== null) {
-                foreach ($sizeRows as $index => $row) {
+            if ($specGroups !== []) {
+                foreach ($specGroups as $group) {
+                    foreach ($group['rows'] as $index => $row) {
+                        $first = $index === 0;
+                        $unit = $order->groupRowUnit($row['size'], $row['unit']);
+                        $tableRows[] = [
+                            'jenis' => $first ? ($group['jenis'] !== '' ? $group['jenis'] : ($order->service_type ?? '—')) : '',
+                            'bahan' => $first ? ($group['bahan'] !== '' ? $group['bahan'] : ($order->bahan ?? '—')) : '',
+                            'type' => $first ? ($group['type'] !== '' ? $group['type'] : ($order->type ?? $order->product?->title ?? 'Custom')) : '',
+                            'warna' => $first ? ($group['warna'] !== '' ? $group['warna'] : ($order->warna ?? '—')) : '',
+                            'ukuran' => $row['size'] !== '' ? $row['size'] : '—',
+                            'jumlah' => $row['qty'].' pcs',
+                            'harga' => $unit !== null ? 'Rp '.number_format($unit, 0, ',', '.') : '—',
+                            'total' => $unit !== null ? 'Rp '.number_format($unit * $row['qty'], 0, ',', '.') : '—',
+                        ];
+                    }
+                }
+
+                $rowsSubtotal = $order->groupsSubtotal();
+            } else {
+                $sizeRows = $order->sizeRows();
+
+                if ($sizeRows !== null) {
+                    foreach ($sizeRows as $index => $row) {
+                        $tableRows[] = [
+                            'jenis' => $index === 0 ? ($order->service_type ?? '—') : '',
+                            'bahan' => $index === 0 ? ($order->bahan ?? '—') : '',
+                            'type' => $index === 0 ? ($order->type ?? $order->product?->title ?? 'Custom') : '',
+                            'warna' => $index === 0 ? ($order->warna ?? '—') : '',
+                            'ukuran' => $row['size'],
+                            'jumlah' => $row['qty'].' pcs',
+                            'harga' => $row['unit'] !== null ? 'Rp '.number_format($row['unit'], 0, ',', '.') : '—',
+                            'total' => $row['total'] !== null ? 'Rp '.number_format($row['total'], 0, ',', '.') : '—',
+                        ];
+                    }
+                } else {
                     $tableRows[] = [
-                        'jenis' => $index === 0 ? ($order->service_type ?? '—') : '',
-                        'bahan' => $index === 0 ? ($order->bahan ?? '—') : '',
-                        'type' => $index === 0 ? ($order->type ?? $order->product?->title ?? 'Custom') : '',
-                        'warna' => $index === 0 ? ($order->warna ?? '—') : '',
-                        'ukuran' => $row['size'],
-                        'jumlah' => $row['qty'].' pcs',
-                        'harga' => $row['unit'] !== null ? 'Rp '.number_format($row['unit'], 0, ',', '.') : '—',
-                        'total' => $row['total'] !== null ? 'Rp '.number_format($row['total'], 0, ',', '.') : '—',
+                        'jenis' => $order->service_type ?? '—',
+                        'bahan' => $order->bahan ?? '—',
+                        'type' => $order->type ?? $order->product?->title ?? 'Custom',
+                        'warna' => $order->warna ?? '—',
+                        'ukuran' => '—',
+                        'jumlah' => $order->quantity ? $order->quantity.' pcs' : '—',
+                        'harga' => $order->unit_price !== null ? 'Rp '.number_format($order->unit_price, 0, ',', '.') : '—',
+                        'total' => $order->resolvedTotalPrice() !== null ? 'Rp '.number_format($order->resolvedTotalPrice(), 0, ',', '.') : '—',
                     ];
                 }
-            } else {
-                $tableRows[] = [
-                    'jenis' => $order->service_type ?? '—',
-                    'bahan' => $order->bahan ?? '—',
-                    'type' => $order->type ?? $order->product?->title ?? 'Custom',
-                    'warna' => $order->warna ?? '—',
-                    'ukuran' => '—',
-                    'jumlah' => $order->quantity ? $order->quantity.' pcs' : '—',
-                    'harga' => $order->unit_price !== null ? 'Rp '.number_format($order->unit_price, 0, ',', '.') : '—',
-                    'total' => $order->resolvedTotalPrice() !== null ? 'Rp '.number_format($order->resolvedTotalPrice(), 0, ',', '.') : '—',
-                ];
+
+                $rowsSubtotal = $order->sizeRowsSubtotal();
             }
 
-            $rowsSubtotal = $order->sizeRowsSubtotal();
             $hasAdjustment = $rowsSubtotal !== null
                 && $order->total_price !== null
                 && $order->total_price !== $rowsSubtotal;
         @endphp
 
-        @include('admin.orders._nota-table', ['rows' => $tableRows])
+        <div class="table-scroll">
+            @include('admin.orders._nota-table', ['rows' => $tableRows])
+        </div>
 
         @if ($order->grandTotalPrice() !== null)
             <table class="summary">
@@ -115,10 +157,20 @@
                         <td style="text-align:right">Rp {{ number_format($order->expressFeeNumber(), 0, ',', '.') }}</td>
                     </tr>
                 @endif
-                <tr class="grand">
+                <tr class="{{ $order->dp_amount !== null ? '' : 'grand' }}">
                     <th>Total pembayaran</th>
                     <td style="text-align:right"><strong>Rp {{ number_format($order->grandTotalPrice(), 0, ',', '.') }}</strong></td>
                 </tr>
+                @if ($order->dp_amount !== null)
+                    <tr>
+                        <th>DP Diterima</th>
+                        <td style="text-align:right">− Rp {{ number_format($order->dp_amount, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="grand">
+                        <th>Sisa Pelunasan</th>
+                        <td style="text-align:right"><strong>Rp {{ number_format(max(0, $order->grandTotalPrice() - $order->dp_amount), 0, ',', '.') }}</strong></td>
+                    </tr>
+                @endif
             </table>
         @endif
 
@@ -143,11 +195,18 @@
 
     <div class="actions">
         <button type="button" class="primary" id="btn-cetak">Cetak</button>
-        <a href="{{ route('admin.orders.show', $order) }}">Kembali</a>
+        <button type="button" id="btn-pdf">Unduh PDF</button>
+        <button type="button" id="btn-jpg">Unduh JPG</button>
+        @if ($customerMode ?? false)
+            <a href="{{ route('track.token', ['token' => $order->tracking_token]) }}">Kembali</a>
+        @else
+            <a href="{{ route('admin.orders.show', $order) }}">Kembali</a>
+        @endif
     </div>
 
     <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         document.getElementById('btn-cetak').addEventListener('click', function () { window.print(); });
     </script>
+    @vite(['resources/js/nota.js'])
 </body>
 </html>
