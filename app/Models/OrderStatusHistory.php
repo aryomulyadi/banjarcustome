@@ -28,11 +28,15 @@ class OrderStatusHistory extends Model
 
     public function fromLabel(): string
     {
-        return CustomOrder::STATUS_LABELS[$this->from_status] ?? $this->from_status;
+        return CustomOrder::STATUS_LABELS[$this->from_status]
+            ?? CustomOrder::LEGACY_STATUS_LABELS[$this->from_status]
+            ?? $this->from_status;
     }
 
     public function toLabel(): string
     {
-        return CustomOrder::STATUS_LABELS[$this->to_status] ?? $this->to_status;
+        return CustomOrder::STATUS_LABELS[$this->to_status]
+            ?? CustomOrder::LEGACY_STATUS_LABELS[$this->to_status]
+            ?? $this->to_status;
     }
 }

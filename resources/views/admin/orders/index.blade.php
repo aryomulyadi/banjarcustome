@@ -93,7 +93,7 @@
                 <x-label for="q">Pencarian</x-label>
                 <x-input id="q" name="q" value="{{ $search }}" placeholder="Cari nama / no. WA…" aria-label="Cari pesanan" />
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <x-button type="submit" variant="secondary">Cari</x-button>
                 <a
                     href="{{ route('admin.orders.create') }}"

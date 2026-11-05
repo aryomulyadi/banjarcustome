@@ -5,20 +5,16 @@
             href="{{ route('admin.produksi') }}"
             class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === '' && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
         >
-            Semua <span>({{ $counts[App\Models\CustomOrder::STATUS_READY] + $counts[App\Models\CustomOrder::STATUS_PRODUCTION] }})</span>
+            Semua <span>({{ array_sum($counts) }})</span>
         </a>
-        <a
-            href="{{ route('admin.produksi', array_filter(['status' => App\Models\CustomOrder::STATUS_READY])) }}"
-            class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === App\Models\CustomOrder::STATUS_READY && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
-        >
-            Siap Produksi <span>({{ $counts[App\Models\CustomOrder::STATUS_READY] }})</span>
-        </a>
-        <a
-            href="{{ route('admin.produksi', array_filter(['status' => App\Models\CustomOrder::STATUS_PRODUCTION])) }}"
-            class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === App\Models\CustomOrder::STATUS_PRODUCTION && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
-        >
-            Sedang Diproses <span>({{ $counts[App\Models\CustomOrder::STATUS_PRODUCTION] }})</span>
-        </a>
+        @foreach (\App\Models\CustomOrder::PRODUCTION_STAGES as $stage)
+            <a
+                href="{{ route('admin.produksi', array_filter(['status' => $stage])) }}"
+                class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $activeStatus === $stage && ! $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
+            >
+                {{ \App\Models\CustomOrder::STATUS_LABELS[$stage] }} <span>({{ $counts[$stage] ?? 0 }})</span>
+            </a>
+        @endforeach
         <a
             href="{{ route('admin.produksi', array_filter(['status' => $activeStatus ?: null, 'milik' => 1])) }}"
             class="rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors {{ $mine ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary' }}"
@@ -28,7 +24,7 @@
     </div>
 
     <p class="mt-3 text-xs text-muted-foreground">
-        Hanya pesanan berstatus Siap Produksi dan Sedang Diproses. Filter "Milik Saya" menampilkan pesanan
+        Hanya pesanan yang sedang dalam tahap produksi. Filter "Milik Saya" menampilkan pesanan
         yang operatornya sama dengan nama akun Anda.
     </p>
 

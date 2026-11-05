@@ -355,6 +355,12 @@ class OrderController extends Controller
         $previous = $order->status;
         $reason = trim((string) ($validated['cancel_reason'] ?? ''));
 
+        if ($order->isFinalStatus()) {
+            return back()->withErrors([
+                'status' => 'Status "'.$order->statusLabel().'" sudah final dan tidak bisa diubah.',
+            ])->onlyInput(['status', 'cancel_reason']);
+        }
+
         if ($to === CustomOrder::STATUS_CANCELLED && $reason === '') {
             return back()->withErrors([
                 'status' => 'Pembatalan pesanan wajib beralasan.',
@@ -362,28 +368,11 @@ class OrderController extends Controller
             ])->onlyInput(['status', 'cancel_reason']);
         }
 
-        if ($to !== $previous && ! $order->canTransitionTo($to)) {
-            $allowed = array_map(
-                fn (string $key) => CustomOrder::STATUS_LABELS[$key],
-                $order->allowedNextStatuses(),
-            );
-
+        if ($to !== CustomOrder::STATUS_CANCELLED && ! in_array($to, $order->stages(), true)) {
             return back()->withErrors([
-                'status' => 'Transisi "'
-                    .$order->statusLabel().'" → "'.$order->statusLabelFor($to).'" tidak diizinkan.'
-                    .($allowed !== [] ? ' Status yang tersedia: '.implode(', ', $allowed).'.' : ''),
+                'status' => 'Tahap "'.$order->statusLabelFor($to).'" tidak tersedia untuk pesanan '
+                    .($order->isJersey() ? 'jersey' : 'kaos/lain').'.',
             ])->onlyInput(['status', 'cancel_reason']);
-        }
-
-        if ($to === CustomOrder::STATUS_READY && $to !== $previous) {
-            $blockers = $order->readyBlockers();
-
-            if ($blockers !== []) {
-                return back()->withErrors([
-                    'status' => 'Belum bisa naik ke "'
-                        .CustomOrder::STATUS_LABELS[CustomOrder::STATUS_READY].'": '.implode(' ', $blockers),
-                ])->onlyInput(['status', 'cancel_reason']);
-            }
         }
 
         if ($to === $previous) {
@@ -472,10 +461,18 @@ class OrderController extends Controller
 
     public function approveDesign(CustomOrder $order): RedirectResponse
     {
-        if (! in_array($order->status, [CustomOrder::STATUS_DESIGN, CustomOrder::STATUS_READY], true)) {
+        $tooEarly = in_array($order->status, [
+            CustomOrder::STATUS_PENDING,
+            CustomOrder::STATUS_CONFIRMED,
+            CustomOrder::STATUS_COMPLETED,
+            CustomOrder::STATUS_CANCELLED,
+        ], true);
+
+        if ($tooEarly) {
             return redirect()
                 ->route('admin.orders.show', $order)
-                ->with('status', 'Persetujuan desain hanya berlaku pada tahap "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_DESIGN].'" / "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_READY].'".');
+                ->with('status', 'Persetujuan desain hanya berlaku pada tahap "'
+                    .CustomOrder::STATUS_LABELS[CustomOrder::STATUS_DESIGN].'" dan setelahnya (sebelum Selesai/Dibatalkan).');
         }
 
         if ($order->design_approved_at === null) {

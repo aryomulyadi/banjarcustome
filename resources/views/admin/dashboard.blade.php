@@ -7,9 +7,9 @@
             <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat leads →</a>
         </div>
         <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
-            <p class="text-sm font-medium text-muted-foreground">Sedang Diproses</p>
+            <p class="text-sm font-medium text-muted-foreground">Dalam Produksi</p>
             <p class="mt-2 text-2xl font-bold sm:text-3xl">{{ $stats['production'] }}</p>
-            <a href="{{ route('admin.orders.index', ['status' => 'production']) }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat pesanan →</a>
+            <a href="{{ route('admin.produksi') }}" class="mt-1.5 inline-block py-1.5 text-xs font-medium text-primary hover:underline">Lihat antrian →</a>
         </div>
         <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
             <p class="text-sm font-medium text-muted-foreground">Selesai</p>

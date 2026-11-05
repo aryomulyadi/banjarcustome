@@ -19,6 +19,7 @@ class JerseyData extends Model
         'Layout',
         'Printing',
         'Jahit',
+        'QC',
         'Done',
         'Cancel',
     ];

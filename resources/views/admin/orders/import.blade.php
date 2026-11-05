@@ -110,7 +110,7 @@
                 <li><span class="font-medium">jumlah</span> — pcs, bilangan bulat (bila kosong diisi jumlah dari kolom ukuran)</li>
                 <li><span class="font-medium">ukuran</span> — per ukuran, format "S:6, M:12" (maks 30 baris)</li>
                 <li><span class="font-medium">whatsapp</span> — minimal 5 angka bila diisi</li>
-                <li><span class="font-medium">status</span> — pending / production / completed / cancelled (label juga diterima; kosong = pending)</li>
+                <li><span class="font-medium">status</span> — pending / confirmed / design / layout / printing / jahit / material_prep / cetak / qc / completed / cancelled (label juga diterima; kosong = pending)</li>
                 <li><span class="font-medium">catatan</span> — maks 1000 karakter</li>
             </ul>
             <p class="mt-3 text-xs text-muted-foreground">

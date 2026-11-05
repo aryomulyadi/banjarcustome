@@ -8,8 +8,7 @@
         @include('partials.favicon')
         <script nonce="{{ request()->attributes->get('csp_nonce') }}">
             (function () {
-                var stored = localStorage.getItem('theme');
-                if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                if (localStorage.getItem('theme') === 'dark') {
                     document.documentElement.classList.add('dark');
                 }
             })();

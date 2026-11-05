@@ -1,5 +1,5 @@
 <footer class="border-t border-border bg-muted/40">
-    <div class="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-12 sm:gap-10 sm:px-6 md:grid-cols-4 lg:px-8">
+    <div class="mx-auto grid max-w-[1440px] grid-cols-2 gap-8 px-4 py-12 sm:gap-10 sm:px-6 md:grid-cols-4 lg:px-8">
         <div class="col-span-2 md:col-span-1">
             <div class="flex items-center gap-2.5">
                 <x-logo />
@@ -84,7 +84,7 @@
     </div>
 
     <div class="border-t border-border py-6">
-        <p class="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
+        <p class="mx-auto max-w-[1440px] px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
             &copy; {{ date('Y') }} Banjar Custom. Hak cipta dilindungi.
         </p>
     </div>

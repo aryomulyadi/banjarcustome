@@ -131,7 +131,7 @@ class AdminContentTest extends TestCase
         $this->assertDatabaseMissing('testimonials', ['id' => $testimonial->id]);
     }
 
-    public function test_testimonial_photo_upload_creates_webp_and_renders_on_home(): void
+    public function test_testimonial_photo_upload_creates_webp_but_not_shown_on_home(): void
     {
         Storage::fake('public');
 
@@ -156,13 +156,13 @@ class AdminContentTest extends TestCase
         Storage::disk('public')->assertExists($testimonial->photo);
         Storage::disk('public')->assertExists(ImageOptimizer::webpPath($testimonial->photo));
 
+        // Section testimoni dihapus dari homepage (batch revisi) — modul admin tetap ada.
         $this->get('/')
             ->assertOk()
-            ->assertSee('type="image/webp"', false)
-            ->assertSee('Budi Santoso');
+            ->assertDontSee('Budi Santoso');
     }
 
-    public function test_active_testimonial_shows_on_home_page(): void
+    public function test_active_testimonial_not_shown_on_home_page(): void
     {
         Testimonial::create([
             'name' => 'Pelanggan Puas',
@@ -173,8 +173,8 @@ class AdminContentTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('Sablon awet, warna tidak pudar.')
-            ->assertSee('Pelanggan Puas');
+            ->assertDontSee('Sablon awet, warna tidak pudar.')
+            ->assertDontSee('Pelanggan Puas');
     }
 
     public function test_seeded_faqs_are_shown_on_public_faq_page(): void
@@ -192,19 +192,19 @@ class AdminContentTest extends TestCase
         $this->assertSame(10, Faq::active()->count());
     }
 
-    public function test_seeded_google_reviews_show_on_home_with_badge(): void
+    public function test_seeded_google_reviews_not_shown_on_home_with_badge(): void
     {
         $this->seed(TestimonialSeeder::class);
 
         $response = $this->get('/');
 
         $response->assertOk()
-            ->assertSee('Abdul Haris Haris')
-            ->assertSee('syamsuri uwie')
-            ->assertSee('marthadys 1103')
-            ->assertSee('Ulasan Google')
-            ->assertSee('AH', false)
-            ->assertSee('makasih Banjar Custom.');
+            ->assertDontSee('Abdul Haris Haris')
+            ->assertDontSee('syamsuri uwie')
+            ->assertDontSee('marthadys 1103')
+            ->assertDontSee('Diposting di Google')
+            ->assertDontSee('ulasan Google')
+            ->assertDontSee('makasih Banjar Custom.');
     }
 
     public function test_profile_requires_current_password_and_strong_new_password(): void
@@ -241,8 +241,8 @@ class AdminContentTest extends TestCase
             ->patch(route('admin.orders.status', $order), ['status' => 'confirmed'])
             ->assertRedirect(route('admin.orders.show', $order));
 
-        // Setup lompat ke production tanpa lewat guard (uji riwayat saja).
-        $order->forceFill(['status' => CustomOrder::STATUS_PRODUCTION])->save();
+        // Setup lompat ke printing tanpa lewat guard (uji riwayat saja).
+        $order->forceFill(['status' => CustomOrder::STATUS_PRINTING])->save();
 
         $this->actingAs($admin)
             ->patch(route('admin.orders.status', $order), ['status' => 'completed'])
@@ -256,7 +256,7 @@ class AdminContentTest extends TestCase
         $this->assertSame(CustomOrder::STATUS_PENDING, $history[1]->from_status);
         $this->assertSame(CustomOrder::STATUS_CONFIRMED, $history[1]->to_status);
         $this->assertSame($admin->id, $history[1]->changed_by);
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, $history[2]->from_status);
+        $this->assertSame(CustomOrder::STATUS_PRINTING, $history[2]->from_status);
         $this->assertSame(CustomOrder::STATUS_COMPLETED, $history[2]->to_status);
     }
 

@@ -4,7 +4,7 @@
 >
 
     {{-- Hero Slider --}}
-    <section class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+    <section class="mx-auto max-w-[1440px] px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
         <div
             class="relative h-[460px] overflow-hidden rounded-2xl border border-border bg-muted sm:h-[480px] lg:h-[520px]"
             x-data="heroSlider({{ count($slides) }})"
@@ -48,7 +48,7 @@
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-background via-background/85 to-background/30 sm:bg-gradient-to-r sm:from-background/95 sm:via-background/75 sm:to-transparent"></div>
 
-                    <div class="relative flex h-full max-w-2xl flex-col justify-end pb-14 px-5 sm:justify-center sm:pb-0 sm:px-12 gap-3 sm:gap-4">
+                    <div class="relative flex h-full max-w-2xl flex-col justify-end gap-3 px-5 pb-14 sm:justify-center sm:gap-4 sm:px-12 sm:pb-0">
                         <h1 class="text-2xl font-bold leading-tight sm:text-4xl lg:text-5xl">
                             {{ $slide['title'] }}
                         </h1>
@@ -105,49 +105,34 @@
         </div>
     </section>
 
-    {{-- USP --}}
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <x-scroll-row grid="sm:grid-cols-3">
-            <x-scroll-row-item>
-            <div class="flex items-start gap-4 rounded-xl border border-border bg-card p-5">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
-                </span>
-                <div>
-                    <h2 class="font-semibold">Bebas Custom Desain</h2>
-                    <p class="mt-1 text-sm text-muted-foreground">Punya desain sendiri? Kirim aja. Belum punya? Tim kami bantu buatkan.</p>
-                </div>
-            </div>
-            </x-scroll-row-item>
+    {{-- Dipercaya oleh — marquee logo klien --}}
+    <x-logo-marquee :items="$clients" />
 
-            <x-scroll-row-item>
-            <div class="flex items-start gap-4 rounded-xl border border-border bg-card p-5">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
-                </span>
-                <div>
-                    <h2 class="font-semibold">Sablon Awet &amp; Tidak Pecah</h2>
-                    <p class="mt-1 text-sm text-muted-foreground">Bahan dan teknik sablon berkualitas, hasil tetap elastis setelah berulang kali dicuci.</p>
-                </div>
-            </div>
-            </x-scroll-row-item>
+    {{-- Alur Pemesanan --}}
+    <section class="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold sm:text-3xl">Alur Pemesanan</h2>
+            <p class="mt-1 text-sm text-muted-foreground">Empat langkah mudah dari konsultasi sampai pesanan di tangan Anda.</p>
+        </div>
 
-            <x-scroll-row-item>
-            <div class="flex items-start gap-4 rounded-xl border border-border bg-card p-5">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-                </span>
-                <div>
-                    <h2 class="font-semibold">Melayani Ecer &amp; Grosir</h2>
-                    <p class="mt-1 text-sm text-muted-foreground">Satuan untuk keperluan pribadi maupun ratusan pcs untuk komunitas dan perusahaan.</p>
-                </div>
-            </div>
-            </x-scroll-row-item>
-        </x-scroll-row>
+        <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ([
+                ['no' => '01', 'title' => 'Konsultasi & Pilih Produk', 'desc' => 'Ceritakan kebutuhan Anda lewat WhatsApp — kami bantu pilih model, bahan, dan jumlah yang paling pas.'],
+                ['no' => '02', 'title' => 'Desain & Approval', 'desc' => 'Kirim desain sendiri atau minta tim kami buatkan. Desain disetujui dulu sebelum produksi dimulai.'],
+                ['no' => '03', 'title' => 'DP & Mulai Produksi', 'desc' => 'Bayar DP, pesanan langsung masuk antrean produksi, dan statusnya bisa dilacak kapan saja.'],
+                ['no' => '04', 'title' => 'QC & Pengiriman', 'desc' => 'Dicek rapi sebelum dikirim ke seluruh Indonesia — atau ambil langsung di tempat kami.'],
+            ] as $step)
+                <li class="rounded-xl border border-border bg-card p-5">
+                    <span class="text-3xl font-black tracking-tight text-primary/30" aria-hidden="true">{{ $step['no'] }}</span>
+                    <h3 class="mt-2 font-semibold">{{ $step['title'] }}</h3>
+                    <p class="mt-1 text-sm text-muted-foreground">{{ $step['desc'] }}</p>
+                </li>
+            @endforeach
+        </ol>
     </section>
 
     {{-- Katalog Preview --}}
-    <section class="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-[1440px] px-4 pb-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex items-end justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold sm:text-3xl">Katalog Produk</h2>
@@ -186,7 +171,7 @@
     </section>
 
     {{-- CTA Custom Design --}}
-    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <section class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div class="relative overflow-hidden rounded-2xl bg-primary px-5 py-10 text-center text-primary-foreground sm:px-12 sm:py-16">
             <div class="mx-auto max-w-3xl">
                 <span class="inline-block rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold uppercase tracking-widest">
@@ -219,7 +204,7 @@
     </section>
 
     {{-- Galeri Preview --}}
-    <section class="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-[1440px] px-4 pb-4 sm:px-6 lg:px-8">
         <div class="mb-6 flex items-end justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold sm:text-3xl">Galeri Hasil Produksi</h2>
@@ -253,68 +238,8 @@
         </x-scroll-row>
     </section>
 
-    {{-- Testimoni --}}
-    @if ($testimonials->isNotEmpty())
-        <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold sm:text-3xl">Kata Mereka</h2>
-                <p class="mt-1 text-sm text-muted-foreground">Ulasan asli pelanggan yang pesan langsung di Banjar Custom — tampil di Google Reviews.</p>
-            </div>
-
-            <x-scroll-row grid="sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ($testimonials as $testimonial)
-                    @php
-                        $initials = collect(explode(' ', trim($testimonial->name)))
-                            ->filter()
-                            ->take(2)
-                            ->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))
-                            ->implode('');
-                    @endphp
-                    <x-scroll-row-item>
-                    <figure class="flex flex-col rounded-xl border border-border bg-card p-5">
-                        <figcaption class="flex items-center gap-3">
-                            @if ($testimonial->photo)
-                                <span class="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-primary/15">
-                                    <x-img :src="$testimonial->photo" :alt="$testimonial->name" width="88" height="88" loading="lazy" decoding="async" sizes="88px" class="h-11 w-11 object-cover" />
-                                </span>
-                            @else
-                                <span aria-hidden="true" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
-                                    {{ $initials }}
-                                </span>
-                            @endif
-                            <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="truncate text-sm font-semibold">{{ $testimonial->name }}</span>
-                                    <span class="inline-flex shrink-0 items-center rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                                        Ulasan Google
-                                    </span>
-                                </div>
-                                @if ($testimonial->role || $testimonial->city)
-                                    <span class="block truncate text-xs text-muted-foreground">
-                                        {{ collect([$testimonial->role, $testimonial->city])->filter()->implode(' · ') }}
-                                    </span>
-                                @endif
-                            </div>
-                        </figcaption>
-
-                        <div class="mt-3 flex items-center gap-1 text-primary" role="img" aria-label="Rating {{ $testimonial->rating }} dari 5">
-                            @for ($i = 1; $i <= 5; $i++)
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="{{ $i <= $testimonial->rating ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.123 2.123 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
-                            @endfor
-                        </div>
-
-                        <blockquote class="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
-                            "{{ $testimonial->content }}"
-                        </blockquote>
-                    </figure>
-                    </x-scroll-row-item>
-                @endforeach
-            </x-scroll-row>
-        </section>
-    @endif
-
     {{-- Profil Perusahaan --}}
-    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8">
         <div class="grid items-center gap-8 rounded-2xl border border-border bg-muted/40 p-6 sm:p-10 lg:grid-cols-2">
             <div>
                 <span class="text-xs font-semibold uppercase tracking-widest text-primary">Tentang Kami</span>
@@ -324,6 +249,7 @@
                     dan merchandise untuk satuan, grup, maupun komunitas. Dengan sablon berkualitas dan proses
                     produksi yang terkontrol, kami siap membantu mewujudkan desain tim Anda.
                 </p>
+
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a href="{{ route('tentang') }}" class="inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
                         Selengkapnya
@@ -334,13 +260,32 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-3 sm:gap-4">
+            <div class="grid gap-3 sm:gap-4">
                 @foreach ($stats as $stat)
-                    <div class="rounded-xl border border-border bg-card p-3 text-center sm:p-5">
-                        <p class="text-lg font-bold text-primary sm:text-2xl">{{ $stat['value'] }}</p>
+                    <div class="rounded-xl border border-border bg-card p-5 text-center sm:p-6">
+                        <p class="text-4xl font-bold text-primary sm:text-5xl">{{ $stat['value'] }}</p>
                         <p class="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">{{ $stat['label'] }}</p>
                     </div>
                 @endforeach
+
+                <div class="rounded-xl border border-border bg-card p-4 sm:p-5">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cabang Kami</p>
+                    <ul class="mt-3 space-y-2.5">
+                        @foreach ([
+                            ['city' => 'Banjarmasin', 'prov' => 'Kalimantan Selatan'],
+                            ['city' => 'Banjarbaru', 'prov' => 'Kalimantan Selatan'],
+                            ['city' => 'Bandung', 'prov' => 'Jawa Barat'],
+                        ] as $branch)
+                            <li class="flex items-center gap-3">
+                                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                </span>
+                                <span class="text-sm font-medium">{{ $branch['city'] }}</span>
+                                <span class="text-xs text-muted-foreground">— {{ $branch['prov'] }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
         </div>
     </section>

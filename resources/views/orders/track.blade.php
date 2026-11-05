@@ -148,6 +148,11 @@
                     </ol>
                 </div>
 
+                @php
+                    $designStage = ! $order->isFinalStatus()
+                        && ! in_array($order->status, [\App\Models\CustomOrder::STATUS_PENDING, \App\Models\CustomOrder::STATUS_CONFIRMED], true);
+                @endphp
+
                 @if ($order->design_file_admin)
                     <div class="mt-6 rounded-xl border border-border p-5">
                         <h3 class="text-sm font-semibold">Desain</h3>
@@ -165,7 +170,7 @@
                         </a>
                     </div>
 
-                    @if ($order->design_approved_at === null && in_array($order->status, [\App\Models\CustomOrder::STATUS_DESIGN, \App\Models\CustomOrder::STATUS_READY], true))
+                    @if ($order->design_approved_at === null && $designStage)
                         <div class="mt-4 rounded-xl border border-border p-5">
                             <h3 class="text-sm font-semibold">Persetujuan Desain</h3>
                             <form method="POST" action="{{ route('track.approve', ['token' => $order->tracking_token]) }}" class="mt-3">
@@ -198,7 +203,7 @@
                             </details>
                         </div>
                     @endif
-                @elseif (in_array($order->status, [\App\Models\CustomOrder::STATUS_DESIGN, \App\Models\CustomOrder::STATUS_READY], true))
+                @elseif ($designStage)
                     <div class="mt-6 rounded-xl border border-border p-5">
                         <h3 class="text-sm font-semibold">Desain</h3>
                         <p class="mt-1 text-xs text-muted-foreground">Desain sedang disiapkan — akan muncul di halaman ini beserta tombol persetujuan.</p>

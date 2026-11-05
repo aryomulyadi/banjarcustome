@@ -95,7 +95,7 @@ class NotaTableTest extends TestCase
 
     public function test_print_shows_order_number_and_omits_status(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING]);
 
         $response = $this->actingAs($this->admin())
             ->get(route('admin.orders.print', $order));
@@ -106,7 +106,7 @@ class NotaTableTest extends TestCase
 
         // Nomor pesanan (#id) tampil di lembar cetak; status pesanan tidak.
         $this->assertStringContainsString('<p class="muted">#'.$order->id.'</p>', $content);
-        $this->assertStringNotContainsString('Sedang Diproses', $content);
+        $this->assertStringNotContainsString('Printing', $content);
         $this->assertStringNotContainsString('class="badge"', $content);
         $this->assertStringContainsString('<title>Nota Pesanan — Banjar Custom</title>', $content);
     }

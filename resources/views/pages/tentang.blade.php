@@ -26,6 +26,27 @@
             </p>
         </div>
 
+        <div class="mt-6 rounded-xl border border-border bg-card p-5">
+            <h2 class="font-semibold">Cabang Kami</h2>
+            <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                @foreach ([
+                    ['city' => 'Banjarmasin', 'prov' => 'Kalimantan Selatan'],
+                    ['city' => 'Banjarbaru', 'prov' => 'Kalimantan Selatan'],
+                    ['city' => 'Bandung', 'prov' => 'Jawa Barat'],
+                ] as $branch)
+                    <div class="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </span>
+                        <span>
+                            <span class="block text-sm font-medium text-foreground">{{ $branch['city'] }}</span>
+                            <span class="block text-xs text-muted-foreground">{{ $branch['prov'] }}</span>
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
         <div class="mt-8 grid gap-4 sm:grid-cols-2">
             <div class="rounded-xl border border-border bg-card p-5">
                 <h2 class="font-semibold">Visi</h2>

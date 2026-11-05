@@ -137,6 +137,23 @@ class ThemeContrastTest extends TestCase
         $response->assertSee("localStorage.getItem('theme')", false);
     }
 
+    public function test_light_is_default_regardless_of_os_preference(): void
+    {
+        // Fase UI/UX: light harus tampil pertama; dark hanya jika pengunjung
+        // memilih toggle — preferensi OS (prefers-color-scheme) tidak lagi ikut.
+        // Dibaca dari file view langsung (tanpa HTTP) agar tak bergantung DB.
+        foreach ([
+            'components/layouts/app.blade.php',
+            'components/layouts/admin.blade.php',
+            'errors/404.blade.php',
+        ] as $view) {
+            $source = file_get_contents(resource_path('views/'.$view));
+
+            $this->assertStringNotContainsString('prefers-color-scheme', $source, $view);
+            $this->assertStringContainsString("localStorage.getItem('theme') === 'dark'", $source, $view);
+        }
+    }
+
     private function css(): string
     {
         return file_get_contents(base_path('resources/css/app.css'));

@@ -2297,3 +2297,154 @@ rebranding logo/sosmed, dan implementasi 7 penyempurnaan fitur utama.
    - Full Test Suite: 403 TESTS / 2580 ASSERTIONS HIJAU (baseline 391 + 12 test baru).
    - Vite Build: `nota-y1HDWm7A.js` (589 kB) berhasil dibundel & disertakan di ZIP.
    - Migrasi: `2026_11_03_000001_add_spec_groups_to_custom_orders_table` terverifikasi.
+
+FASE PRODUKSI 2 - 5 FITUR PESANAN (SELESAI)
+============================================
+
+Tujuan: melengkapi alur operasional pesanan: pelunasan di nota, desain tidak
+menghalangi produksi, fleksibilitas impor jenis produk, penghapusan pesanan,
+dan pembuatan pesanan oleh admin.
+
+1. Pelunasan: `print.blade.php` menampilkan baris DP & Sisa Pelunasan
+   (tagihan akhir = total - DP) agar nota cetak memuat info pembayaran lengkap.
+2. Desain tidak memblokir: `readyBlockers()` tidak lagi memasukkan syarat
+   desain; kartu "Desain" dihapus dari `orders/show.blade.php`.
+3. Impor fleksibel: jenis produk bebas diimpor; `service_type` otomatis
+   terisi dari judul produk bila kosong.
+4. Hapus pesanan: route + controller `destroy` + tombol konfirmasi di
+   daftar pesanan admin.
+5. Admin buat pesanan: route `orders.create`/`store` + view
+   `admin/orders/create.blade.php`; test baru `AdminOrderCreateTest`.
+
+FASE PRODUKSI 3 - UI/UX MENYELURUH & KONTEN HOMEPAGE (SELESAI)
+==============================================================
+
+Tujuan: memperbaiki keluhan padding kanan di semua halaman publik,
+menjadikan light mode default dengan palet gelap baru, membereskan cacat
+mobile, dan menyelaraskan homepage dengan referensi gayatexkonveksi.com.
+
+1. Lebar konten (Fase A): semua `max-w-7xl` publik → `max-w-[1440px]`
+   (header, footer, home 7 titik, katalog index/show, galeri); header
+   `px-3` → `px-4` selaras dengan konten; spacer kosong di header dihapus.
+2. Light default + palet gelap (Fase B): skrip tema di layout publik,
+   layout admin, dan halaman error 403/404/500 hanya menambah kelas `dark`
+   bila `localStorage.getItem('theme') === 'dark'` (preferensi OS
+   `prefers-color-scheme` dihapus total); token `.dark` diganti palet
+   baru (bg 220 18% 8%, card 220 16% 12%, primary 36 90% 52%,
+   border 220 12% 20%) — lolos ThemeContrastTest 12 pasang WCAG (min 5.54).
+3. Cacat mobile (Fase C): `flex-wrap` baris tombol admin (pesanan & kategori);
+   SPK A4 dibungkus wrapper scroll + reset cetak; builder spesifikasi responsif
+   (input min-w-0, ukuran tombol); hero `h-*` → `min-h-*` dengan slide in-flow
+   (tumbuh mengikuti tinggi teks, aman dari potong teks di layar kecil);
+   FAB WhatsApp pakai `env(safe-area-inset-bottom)`; tabel kalkulator &
+   kartu kerja diberi wrapper scroll horizontal via media query.
+   Catatan: `overflow-x-hidden` di body dipertahankan sebagai jaring
+   pengaman terakhir (sumber overflow publik sudah tertangani).
+4. Homepage referensi (Fase D):
+   - Marquee logo klien: komponen baru `logo-marquee.blade.php` (2 salinan
+     identik, translateX(-50%) loop mulus, hover pause, mask fade,
+     reduced-motion statis); placeholder segmen pelanggan hardcoded di
+     `HomeContent::clients()` (tanpa migrasi) — slot `image` siap ganti logo asli.
+   - Section USP 3 kartu diganti Alur Pemesanan 4 langkah (Konsultasi →
+     Desain & Approval → DP & Produksi → QC & Pengiriman).
+   - Stats `500+` → `5000+` (`HomeContent::stats()`).
+   - Testimoni gaya Google Reviews: header agregat (logo Google SVG baru
+     `google-g.blade.php`, rata-rata bintang, `X ulasan Google`, tombol
+     "Lihat di Google" → `banjarcustom.maps_place_url`), footer kartu
+     "Diposting di Google", chip "Ulasan Google" dihapus; stats dihitung
+     `HomeController` (cache `home.testimonial_stats`) dan di-flush
+     `Testimonial::booted()`.
+5. Verifikasi: Pint PASSED; Full Test Suite 407 TESTS / 2612 ASSERTIONS
+   HIJAU (termasuk test baru light-default di ThemeContrastTest);
+   Vite Build `app-CnKSVgD7.css` (70.88 kB, memuat `bc-marquee` + token
+   gelap baru).
+
+FASE PRODUKSI 4 - REVISI UI PESANAN, TANGGAL SELESAI & STATUS BEBAS (SELESAI)
+=============================================================================
+
+Tujuan: memperbaiki glitch banner hero, menyederhanakan homepage (hapus
+section testimoni dan stats sisa), mengganti baris Estimasi dengan
+Tanggal Selesai per jenis produk, menambah filter QC pada data jersey,
+dan mengubah pembaruan status pesanan menjadi ceklis bebas per jenis
+produk.
+
+1. Hero banner (fix glitch): slide dikembalikan ke positioning
+   absolute inset-0 dengan kontainer tetap
+   h-[460px] sm:h-[480px] lg:h-[520px] - saat crossfade dua slide
+   tidak lagi menempati layout sehingga tinggi kontainer tidak melonjak
+   (akar glitch: slide sempat in-flow, tinggi melompat saat dua slide
+   tampil bersamaan).
+2. Homepage disederhanakan: section Kata Mereka dihapus dari
+   home.blade.php (modul admin Testimoni tetap ada; komponen
+   google-g.blade.php dihapus), HomeController tanpa data dan
+   agregat testimoni; stats HomeContent::stats() tinggal 1 entri
+   5000+ Pesanan Selesai (grid kanan jadi kartu tunggal).
+3. Tanggal Selesai (pengganti Estimasi): baris Estimasi menjadi
+   Tanggal Selesai di detail admin, dihitung
+   CustomOrder::estimatedCompletionDate() = created_at +10 hari
+   (express) / +12 hari (jersey) / +7 hari (kaos dan lainnya); express
+   menang atas jenis produk; badge Express same-day / <10 hari
+   tetap tampil di baris yang sama.
+4. Filter QC data jersey: JerseyData::STATUSES + QC (antara
+   Jahit dan Done) sehingga filter status, quick-edit, bulk-status, dan
+   impor menerima QC.
+5. Status ceklis bebas per jenis produk: konstanta baru
+   (layout, printing, jahit, material_prep, cetak, qc), stage list
+   JERSEY_STAGES/KAOS_STAGES, PRODUCTION_STAGES;
+   TRANSITIONS dan allowedNextStatuses dihapus menjadi
+   selectableStatuses()/isFinalStatus(); kartu Perbarui
+   Status jadi radio-ceklis (checkmark tahap lewat, badge Saat ini,
+   legend jenis produk), Selesai dan Batal final, alasan wajib saat
+   batal; gerbang prereq (ukuran/harga/DP) pindah ke tahap produksi
+   pertama (layout/material_prep); approve dan revisi desain
+   dari track diizinkan di semua tahap aktif (ditolak sebelum desain
+   dan setelah final); antrean produksi dan dashboard memakai
+   PRODUCTION_STAGES (Dalam Produksi, chip per tahap); label
+   legacy ready/production dipertahankan di
+   LEGACY_STATUS_LABELS (riwayat) plus warna StatusTheme;
+   impor Excel memakai label dan kunci baru; migrasi
+   2026_11_05_000001_convert_legacy_order_statuses.php
+   (ready ke layout/material_prep, production ke printing/cetak).
+6. Verifikasi: Pint PASSED; Full Test Suite 411 TESTS / 2648 ASSERTIONS
+   HIJAU (test lama disesuaikan plus test baru: lompat bebas, gerbang
+   tahap pertama, checklist per jenis, Tanggal Selesai, filter QC, chip
+   antrean, homepage tanpa testimoni dan stats lama); Vite Build
+   app-CplzJ9Mf.css (71.74 kB).
+FASE PRODUKSI 5 - STATUS BEBAS TOTAL, MARQUEE LOGO & INFO CABANG (SELESAI)
+===========================================================================
+
+Tujuan: menghapus sisa gerbang prereq agar status pesanan benar-benar
+pilih bebas, memperbaiki proporsi dan warna slide logo klien (lebih
+banyak placeholder), serta memperbaiki layout section Tentang Kami
+homepage dengan info cabang Banjarmasin, Banjarbaru, dan Bandung.
+
+1. Status bebas total: blok gerbang readyBlockers() dihapus dari
+   OrderController::updateStatus() - pindah tahap kini hanya ditolak
+   bila status final, alasan batal kosong, atau tahap tidak ada di
+   daftar jenis produk; method readyBlockers() dan
+   firstProductionStage() dihapus dari CustomOrder (dead code);
+   teks catatan DP di kartu DP 50% tidak lagi menyebut "syarat masuk
+   tahap produksi"; test gerbang diganti
+   test_first_production_stage_enterable_without_prereqs (kaos ->
+   material_prep dan jersey -> layout tanpa ukuran/harga/DP tetap
+   berhasil).
+2. Slide logo klien (logo-marquee.blade.php): kartu diseragamkan
+   h-14 w-[150px] (sm: h-16 w-[180px]) sehingga proporsi rapi; class
+   grayscale dan opacity-70 dihapus - warna logo asli tampil penuh;
+   tinggi gambar dibatasi max-h-9/sm:max-h-10 object-contain (rasio
+   asli terjaga); placeholder tanpa gambar memakai monogram berwarna
+   (lingkaran bg-primary/10 berisi inisial) + nama segmen;
+   HomeContent::clients() bertambah 6 placeholder (Sekolah Dasar,
+   Masjid & Yayasan, Restoran & Kafe, Komunitas Motor, Hotel & Villa,
+   Organisasi Pemuda) total 14 item; durasi animasi bc-marquee 35s ->
+   45s (track lebih panjang, kecepatan tetap nyaman).
+3. Section Tentang Kami homepage: paragraf baru menyebut cabang di
+   Banjarmasin, Banjarbaru, dan Bandung; kolom kanan kini kartu
+   "5000+ Pesanan Selesai" (lebih menonjol) + kartu "Cabang Kami"
+   berisi 3 baris ikon map-pin (kota + provinsi) sehingga ruang kosong
+   terisi; halaman /tentang mendapat blok "Cabang Kami" (grid 3 kartu)
+   setelah paragraf intro.
+4. Verifikasi: Pint PASSED; Full Test Suite 409 TESTS / 2649 ASSERTIONS
+   HIJAU (3 test gerbang diganti 1 + assertion baru di HomePageTest
+   dan PagesTest); Vite Build app-Dl89-uxr.css (71.78 kB, memuat
+   w-[150px], h-4.5, monogram, dan bc-marquee 45s).

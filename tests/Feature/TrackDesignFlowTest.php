@@ -38,7 +38,7 @@ class TrackDesignFlowTest extends TestCase
 
     public function test_track_token_page_shows_status_and_timeline_without_admin_name(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION, 'deadline' => now()->addDays(3)]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING, 'deadline' => now()->addDays(3)]);
 
         $this->get(route('track.token', ['token' => $order->tracking_token]))
             ->assertOk()
@@ -86,9 +86,9 @@ class TrackDesignFlowTest extends TestCase
         $this->assertNotNull(session('track_error'));
     }
 
-    public function test_customer_can_request_revision_from_ready(): void
+    public function test_customer_can_request_revision_from_production_stage(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_READY]);
+        $order = $this->order(['status' => CustomOrder::STATUS_LAYOUT]);
         $order->forceFill(['design_approved_at' => now(), 'design_revisions' => 1])->save();
 
         $token = $order->tracking_token;
@@ -105,7 +105,7 @@ class TrackDesignFlowTest extends TestCase
         $this->assertSame('Nama pemain diganti menjadi ARDI.', $fresh->design_revision_reason);
 
         $last = $fresh->statusHistory()->latest('id')->first();
-        $this->assertSame(CustomOrder::STATUS_READY, $last->from_status);
+        $this->assertSame(CustomOrder::STATUS_LAYOUT, $last->from_status);
         $this->assertSame(CustomOrder::STATUS_DESIGN, $last->to_status);
         $this->assertNull($last->changed_by);
     }
@@ -123,9 +123,9 @@ class TrackDesignFlowTest extends TestCase
         $this->assertSame(0, $order->fresh()->design_revisions);
     }
 
-    public function test_revision_rejected_in_production(): void
+    public function test_revision_rejected_before_design_stage(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
 
         $this->from(route('track.token', ['token' => $order->tracking_token]))
             ->post(route('track.revision', ['token' => $order->tracking_token]), [
@@ -133,7 +133,7 @@ class TrackDesignFlowTest extends TestCase
             ])
             ->assertRedirect(route('track.token', ['token' => $order->tracking_token]));
 
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, $order->fresh()->status);
+        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
         $this->assertNotNull(session('track_error'));
     }
 

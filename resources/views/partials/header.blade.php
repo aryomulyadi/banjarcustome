@@ -7,7 +7,7 @@
     x-data="{ mobileOpen: false }"
     x-effect="document.body.style.overflow = mobileOpen ? 'hidden' : ''"
 >
-    <div class="mx-auto flex h-16 max-w-7xl items-center gap-1.5 px-3 sm:gap-4 sm:px-6 lg:px-8">
+    <div class="mx-auto flex h-16 max-w-[1440px] items-center gap-1.5 px-4 sm:gap-4 sm:px-6 lg:px-8">
         <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-2 sm:gap-2.5">
             <x-logo />
             <span class="min-w-0 leading-tight">
@@ -143,7 +143,6 @@
                 Katalog Jersey
             </a>
         </nav>
-        <div class="hidden flex-1 lg:block"></div>
 
         <div class="ml-auto flex items-center gap-1 sm:gap-2">
             <button
@@ -251,7 +250,7 @@
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-2"
     >
-        <nav class="mx-auto grid max-w-7xl gap-1 px-4 py-3 sm:px-6">
+        <nav class="mx-auto grid max-w-[1440px] gap-1 px-4 py-3 sm:px-6">
             <a
                 href="{{ route('home') }}"
                 class="rounded-md px-3 py-2.5 text-sm font-medium {{ request()->routeIs('home') ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground' }}"

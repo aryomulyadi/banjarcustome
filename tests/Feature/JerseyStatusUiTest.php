@@ -97,6 +97,28 @@ class JerseyStatusUiTest extends TestCase
         $this->assertSame('Printing', $entry->fresh()->status);
     }
 
+    public function test_qc_status_is_filterable_and_settable(): void
+    {
+        $this->seedMaster();
+        JerseyData::create(['tanggal_masuk' => '2026-10-20', 'desainer' => 'AAN', 'customer' => 'Cust QC', 'status' => 'QC']);
+        JerseyData::create(['tanggal_masuk' => '2026-10-21', 'desainer' => 'AAN', 'customer' => 'Cust Jahit', 'status' => 'Jahit']);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.jersey.index', ['status' => 'QC']))
+            ->assertOk()
+            ->assertSee('Cust QC')
+            ->assertDontSee('Cust Jahit');
+
+        $entry = JerseyData::where('customer', 'Cust Jahit')->firstOrFail();
+
+        $this->actingAs($this->admin())
+            ->patchJson(route('admin.jersey.status', $entry), ['status' => 'QC'])
+            ->assertOk()
+            ->assertJson(['status' => 'QC']);
+
+        $this->assertSame('QC', $entry->fresh()->status);
+    }
+
     public function test_row_tint_classes_rendered(): void
     {
         $this->seedMaster();

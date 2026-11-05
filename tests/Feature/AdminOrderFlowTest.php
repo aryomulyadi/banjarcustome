@@ -42,22 +42,24 @@ class AdminOrderFlowTest extends TestCase
         return $order->refresh();
     }
 
-    public function test_pending_can_only_go_confirmed_or_cancelled(): void
+    public function test_pending_can_jump_free_but_unknown_status_rejected(): void
     {
         $order = $this->order(['status' => CustomOrder::STATUS_PENDING]);
 
+        // Tahap asing (tidak ada di daftar ceklis jenis produk) tetap ditolak.
         $this->actingAs($this->admin())
             ->from(route('admin.orders.show', $order))
-            ->patch(route('admin.orders.status', $order), ['status' => 'production'])
+            ->patch(route('admin.orders.status', $order), ['status' => 'unknown_stage'])
             ->assertSessionHasErrors('status');
 
         $this->assertSame(CustomOrder::STATUS_PENDING, $order->fresh()->status);
 
+        // Lompat bebas: pending → QC (di luar urutan, tanpa gerbang prereq).
         $this->actingAs($this->admin())
-            ->patch(route('admin.orders.status', $order), ['status' => 'confirmed'])
+            ->patch(route('admin.orders.status', $order), ['status' => CustomOrder::STATUS_QC])
             ->assertRedirect(route('admin.orders.show', $order));
 
-        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
+        $this->assertSame(CustomOrder::STATUS_QC, $order->fresh()->status);
     }
 
     public function test_cancel_requires_reason_and_stores_it(): void
@@ -84,78 +86,40 @@ class AdminOrderFlowTest extends TestCase
         $this->assertSame('Bahan tidak tersedia.', $fresh->cancel_reason);
     }
 
-    public function test_ready_rejects_when_prereqs_missing_and_names_them(): void
+    public function test_first_production_stage_enterable_without_prereqs(): void
     {
-        // Tanpa STATUS_DESIGN, status awal adalah STATUS_CONFIRMED
-        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
+        // Tanpa gerbang prereq: ukuran/harga/spesifikasi/DP tidak lagi
+        // syarat masuk tahap produksi pertama — pilih status bebas.
+        $kaos = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
+
+        $this->assertNull($kaos->resolvedTotalPrice());
+        $this->assertNull($kaos->dp_amount);
 
         $this->actingAs($this->admin())
-            ->from(route('admin.orders.show', $order))
-            ->patch(route('admin.orders.status', $order), ['status' => 'ready'])
-            ->assertSessionHasErrors('status');
+            ->patch(route('admin.orders.status', $kaos), ['status' => CustomOrder::STATUS_MATERIAL_PREP])
+            ->assertRedirect(route('admin.orders.show', $kaos));
 
-        $errors = session('errors')->get('status');
-        // Desain tidak lagi jadi pemblokir status
-        $this->assertStringContainsString('Rincian ukuran', $errors[0]);
-        $this->assertStringContainsString('Harga', $errors[0]);
-        $this->assertStringContainsString('DP 50%', $errors[0]);
+        $this->assertSame(CustomOrder::STATUS_MATERIAL_PREP, $kaos->fresh()->status);
 
-        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
-    }
-
-    public function test_ready_succeeds_when_all_prereqs_met(): void
-    {
-        // Tanpa STATUS_DESIGN, naik dari STATUS_CONFIRMED langsung ke ready
-        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
-        $order->forceFill([
-            'size_quantities' => ['S' => 2, 'M' => 3],
-            'quantity' => 5,
-            'unit_price' => 40000,
-            'bahan' => 'Cotton Combed 30s',
-            'type' => 'Kaos Polos',
-            'warna' => 'Navy',
-            'dp_amount' => 100000,
-            'dp_received_at' => now(),
-        ])->save();
+        $jersey = $this->order([
+            'status' => CustomOrder::STATUS_CONFIRMED,
+            'service_type' => 'Printing Sublim - Jersey',
+        ]);
 
         $this->actingAs($this->admin())
-            ->patch(route('admin.orders.status', $order), ['status' => 'ready'])
-            ->assertRedirect(route('admin.orders.show', $order));
+            ->patch(route('admin.orders.status', $jersey), ['status' => CustomOrder::STATUS_LAYOUT])
+            ->assertRedirect(route('admin.orders.show', $jersey));
 
-        $this->assertSame(CustomOrder::STATUS_READY, $order->fresh()->status);
+        $this->assertSame(CustomOrder::STATUS_LAYOUT, $jersey->fresh()->status);
     }
 
-    public function test_ready_rejects_size_sum_mismatch(): void
+    public function test_move_back_to_design_resets_approval(): void
     {
-        // Tanpa STATUS_DESIGN, naik dari STATUS_CONFIRMED langsung ke ready
-        $order = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
-        $order->forceFill([
-            'size_quantities' => ['S' => 2],
-            'quantity' => 10,
-            'unit_price' => 40000,
-            'bahan' => 'Cotton',
-            'type' => 'Kaos',
-            'warna' => 'Hitam',
-            'dp_amount' => 50000,
-        ])->save();
-
-        $this->actingAs($this->admin())
-            ->from(route('admin.orders.show', $order))
-            ->patch(route('admin.orders.status', $order), ['status' => 'ready'])
-            ->assertSessionHasErrors('status');
-
-        $errors = session('errors')->get('status');
-        $this->assertStringContainsString('tidak sama dengan jumlah pesanan', $errors[0]);
-        $this->assertSame(CustomOrder::STATUS_CONFIRMED, $order->fresh()->status);
-    }
-
-    public function test_ready_to_design_resets_approval(): void
-    {
-        $order = $this->order(['status' => CustomOrder::STATUS_READY]);
+        $order = $this->order(['status' => CustomOrder::STATUS_LAYOUT]);
         $order->forceFill(['design_approved_at' => now()])->save();
 
         $this->actingAs($this->admin())
-            ->patch(route('admin.orders.status', $order), ['status' => 'design'])
+            ->patch(route('admin.orders.status', $order), ['status' => CustomOrder::STATUS_DESIGN])
             ->assertRedirect(route('admin.orders.show', $order));
 
         $fresh = $order->fresh();
@@ -299,16 +263,62 @@ class AdminOrderFlowTest extends TestCase
         $this->assertLessThan($spec, $progress, 'Progres Produksi harus sebelum kartu editor (Fase 28).');
     }
 
+    public function test_status_checklist_is_product_specific_and_freely_pickable(): void
+    {
+        $jersey = $this->order([
+            'status' => CustomOrder::STATUS_CONFIRMED,
+            'service_type' => 'Printing Sublim - Jersey',
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.orders.show', $jersey))
+            ->assertOk()
+            ->assertSee('Tahap Jersey')
+            ->assertSee('pilih bebas, tidak harus berurutan')
+            ->assertSee('Saat ini')
+            ->assertSee('value="layout"', false)
+            ->assertSee('value="jahit"', false)
+            ->assertSee('value="qc"', false)
+            ->assertDontSee('value="material_prep"', false);
+
+        $kaos = $this->order(['status' => CustomOrder::STATUS_CONFIRMED]);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.orders.show', $kaos))
+            ->assertOk()
+            ->assertSee('Tahap Kaos &amp; Lainnya', false)
+            ->assertSee('value="material_prep"', false)
+            ->assertSee('value="cetak"', false)
+            ->assertDontSee('value="jahit"', false);
+
+        // Pending: radio tahap pertama (Terkonfirmasi) otomatis tercentang.
+        $pending = $this->order(['status' => CustomOrder::STATUS_PENDING]);
+        $html = $this->actingAs($this->admin())
+            ->get(route('admin.orders.show', $pending))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('/value="confirmed"\s+checked/', $html);
+    }
+
     public function test_completed_and_cancelled_have_final_state_in_show(): void
     {
         $completed = $this->order(['status' => CustomOrder::STATUS_COMPLETED]);
 
-        // Completed masih boleh dibatalkan (dengan alasan) — satu-satunya opsi.
+        // Completed final: ceklis & form batal disembunyikan.
         $this->actingAs($this->admin())
             ->get(route('admin.orders.show', $completed))
             ->assertOk()
             ->assertSee('Perbarui Status')
-            ->assertSee('Dibatalkan');
+            ->assertSee('sudah final')
+            ->assertDontSee('Batalkan Pesanan');
+
+        $this->actingAs($this->admin())
+            ->from(route('admin.orders.show', $completed))
+            ->patch(route('admin.orders.status', $completed), ['status' => CustomOrder::STATUS_DESIGN])
+            ->assertSessionHasErrors('status');
+
+        $this->assertSame(CustomOrder::STATUS_COMPLETED, $completed->fresh()->status);
 
         $cancelled = $this->order(['status' => CustomOrder::STATUS_CANCELLED]);
         $cancelled->forceFill(['cancel_reason' => 'Alasan uji coba.'])->save();

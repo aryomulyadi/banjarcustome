@@ -19,7 +19,7 @@ class DashboardController extends Controller
             'admin' => $request->user(),
             'stats' => [
                 'pending' => CustomOrder::where('status', CustomOrder::STATUS_PENDING)->count(),
-                'production' => CustomOrder::where('status', CustomOrder::STATUS_PRODUCTION)->count(),
+                'production' => CustomOrder::whereIn('status', CustomOrder::PRODUCTION_STAGES)->count(),
                 'completed' => CustomOrder::where('status', CustomOrder::STATUS_COMPLETED)->count(),
                 'cancelled' => CustomOrder::where('status', CustomOrder::STATUS_CANCELLED)->count(),
                 'orders' => CustomOrder::count(),

@@ -3,7 +3,7 @@
     :description="$activeCategory?->description ?: 'Katalog produk konveksi & sablon Banjar Custom: kaos, jersey, kemeja, jaket, seragam, dan merchandise. Tersedia ecer & grosir.'"
 >
 
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
         <nav class="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
             <a href="{{ route('home') }}" class="inline-block py-1.5 hover:text-primary">Beranda</a>
             <span>/</span>

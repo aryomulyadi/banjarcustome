@@ -75,38 +75,79 @@ class CustomOrder extends Model
 
     public const STATUS_DESIGN = 'design';
 
-    public const STATUS_READY = 'ready';
+    public const STATUS_LAYOUT = 'layout';
 
-    public const STATUS_PRODUCTION = 'production';
+    public const STATUS_PRINTING = 'printing';
+
+    public const STATUS_JAHIT = 'jahit';
+
+    public const STATUS_MATERIAL_PREP = 'material_prep';
+
+    public const STATUS_CETAK = 'cetak';
+
+    public const STATUS_QC = 'qc';
 
     public const STATUS_COMPLETED = 'completed';
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    /**
+     * Label status lama (data pra-migrasi & entri riwayat) — bukan pilihan
+     * ceklis lagi, tetap dirender agar riwayat lama tetap terbaca.
+     */
+    public const LEGACY_STATUS_LABELS = [
+        'ready' => 'Siap Produksi',
+        'production' => 'Sedang Diproses',
+    ];
+
     public const STATUS_LABELS = [
         self::STATUS_PENDING => 'Menunggu Konfirmasi',
         self::STATUS_CONFIRMED => 'Terkonfirmasi',
         self::STATUS_DESIGN => 'Proses Desain',
-        self::STATUS_READY => 'Siap Produksi',
-        self::STATUS_PRODUCTION => 'Sedang Diproses',
+        self::STATUS_LAYOUT => 'Layout',
+        self::STATUS_PRINTING => 'Printing',
+        self::STATUS_JAHIT => 'Jahit',
+        self::STATUS_MATERIAL_PREP => 'Persiapan Bahan',
+        self::STATUS_CETAK => 'Proses Cetak',
+        self::STATUS_QC => 'QC',
         self::STATUS_COMPLETED => 'Selesai',
         self::STATUS_CANCELLED => 'Dibatalkan',
     ];
 
     /**
-     * Matriks transisi status.
-     * Catatan: Dari Terkonfirmasi bisa LANGSUNG ke Siap Produksi tanpa persetujuan desain.
+     * Urutan tahap ceklis per jenis produk. Pemilihan bebas — boleh lompat
+     * maju/mundur; yang final hanya Selesai & Batal.
      *
-     * @var array<string, list<string>>
+     * @var list<string>
      */
-    public const TRANSITIONS = [
-        self::STATUS_PENDING => [self::STATUS_CONFIRMED, self::STATUS_CANCELLED],
-        self::STATUS_CONFIRMED => [self::STATUS_READY, self::STATUS_DESIGN, self::STATUS_CANCELLED],
-        self::STATUS_DESIGN => [self::STATUS_READY, self::STATUS_CANCELLED],
-        self::STATUS_READY => [self::STATUS_PRODUCTION, self::STATUS_DESIGN, self::STATUS_CANCELLED],
-        self::STATUS_PRODUCTION => [self::STATUS_COMPLETED, self::STATUS_CANCELLED],
-        self::STATUS_COMPLETED => [self::STATUS_CANCELLED],
-        self::STATUS_CANCELLED => [],
+    public const JERSEY_STAGES = [
+        self::STATUS_CONFIRMED,
+        self::STATUS_DESIGN,
+        self::STATUS_LAYOUT,
+        self::STATUS_PRINTING,
+        self::STATUS_JAHIT,
+        self::STATUS_QC,
+        self::STATUS_COMPLETED,
+    ];
+
+    /** @var list<string> */
+    public const KAOS_STAGES = [
+        self::STATUS_CONFIRMED,
+        self::STATUS_DESIGN,
+        self::STATUS_MATERIAL_PREP,
+        self::STATUS_CETAK,
+        self::STATUS_QC,
+        self::STATUS_COMPLETED,
+    ];
+
+    /** Status yang dihitung "dalam produksi" (antrean kerja & dashboard). */
+    public const PRODUCTION_STAGES = [
+        self::STATUS_LAYOUT,
+        self::STATUS_PRINTING,
+        self::STATUS_JAHIT,
+        self::STATUS_MATERIAL_PREP,
+        self::STATUS_CETAK,
+        self::STATUS_QC,
     ];
 
     public const PROGRESS_FLAGS = [
@@ -157,77 +198,38 @@ class CustomOrder extends Model
 
     public function statusLabel(): string
     {
-        return self::STATUS_LABELS[$this->status] ?? $this->status;
+        return $this->statusLabelFor((string) $this->status);
     }
 
     public function statusLabelFor(string $status): string
     {
-        return self::STATUS_LABELS[$status] ?? $status;
+        return self::STATUS_LABELS[$status] ?? self::LEGACY_STATUS_LABELS[$status] ?? $status;
     }
 
-    public function canTransitionTo(string $to): bool
+    /** Status akhir: tidak bisa diubah lagi lewat ceklis. */
+    public function isFinalStatus(): bool
     {
-        return in_array($to, self::TRANSITIONS[$this->status] ?? [], true);
-    }
-
-    /**
-     * Status tujuan yang diizinkan dari status saat ini (untuk select admin).
-     *
-     * @return list<string>
-     */
-    public function allowedNextStatuses(): array
-    {
-        return self::TRANSITIONS[$this->status] ?? [];
+        return in_array($this->status, [self::STATUS_COMPLETED, self::STATUS_CANCELLED], true);
     }
 
     /**
-     * Daftar syarat yang belum terpenuhi untuk naik ke status "ready".
-     * Kosong = boleh naik. Pesan memakai bahasa admin (dipakai juga di pesan
-     * error validasi).
+     * Tahapan ceklis sesuai jenis produk (jersey vs kaos/lain).
      *
      * @return list<string>
      */
-    public function readyBlockers(): array
+    public function stages(): array
     {
-        $issues = [];
+        return $this->isJersey() ? self::JERSEY_STAGES : self::KAOS_STAGES;
+    }
 
-        if ($this->size_quantities === null || $this->size_quantities === []) {
-            $issues[] = 'Rincian ukuran belum diisi.';
-        } elseif ($this->quantity) {
-            $sum = 0;
-
-            foreach ($this->size_quantities as $qty) {
-                if ($qty !== null && $qty !== '') {
-                    $sum += (int) $qty;
-                }
-            }
-
-            if ($sum !== (int) $this->quantity) {
-                $issues[] = 'Jumlah rincian ukuran ('.$sum.') tidak sama dengan jumlah pesanan ('.$this->quantity.').';
-            }
-        }
-
-        if ($this->resolvedTotalPrice() === null) {
-            $issues[] = 'Harga pesanan belum diisi.';
-        }
-
-        $missingSpec = [];
-
-        foreach (['bahan', 'type', 'warna'] as $column) {
-            if ($this->{$column} === null || trim((string) $this->{$column}) === '') {
-                $missingSpec[] = $column;
-            }
-        }
-
-        if ($missingSpec !== []) {
-            $issues[] = 'Spesifikasi nota belum lengkap ('.implode(', ', $missingSpec).').';
-        }
-
-        if ($this->dp_amount === null) {
-            $issues[] = 'DP 50% belum diterima.';
-        }
-
-        return $issues;
+    /**
+     * Status yang boleh dipilih admin pada ceklis (kosong bila final).
+     *
+     * @return list<string>
+     */
+    public function selectableStatuses(): array
+    {
+        return $this->isFinalStatus() ? [] : $this->stages();
     }
 
     public function isOverdue(): bool
@@ -240,6 +242,17 @@ class CustomOrder extends Model
     public function isJersey(): bool
     {
         return ServiceTypes::isJerseyTitle($this->service_type);
+    }
+
+    /**
+     * Perkiraan tanggal selesai dari tanggal masuk (batas atas estimasi):
+     * express +10 hari, jersey +12 hari, kaos/lain +7 hari.
+     */
+    public function estimatedCompletionDate(): \DateTimeInterface
+    {
+        $days = $this->is_express ? 10 : ($this->isJersey() ? 12 : 7);
+
+        return ($this->created_at ?? now())->copy()->addDays($days);
     }
 
     /**

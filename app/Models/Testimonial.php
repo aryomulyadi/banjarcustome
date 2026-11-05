@@ -29,7 +29,10 @@ class Testimonial extends Model
 
     protected static function booted(): void
     {
-        $forget = fn () => Cache::forget('home.testimonials');
+        $forget = function () {
+            Cache::forget('home.testimonials');
+            Cache::forget('home.testimonial_stats');
+        };
 
         static::saved($forget);
         static::deleted($forget);

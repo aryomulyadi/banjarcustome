@@ -31,7 +31,10 @@ class PagesTest extends TestCase
         $this->get('/tentang')
             ->assertOk()
             ->assertSee('Banjar Custom')
-            ->assertSee('Alur Pemesanan');
+            ->assertSee('Alur Pemesanan')
+            ->assertSee('Cabang Kami')
+            ->assertSee('Banjarbaru')
+            ->assertSee('Bandung');
     }
 
     public function test_size_chart_displays_sizes(): void

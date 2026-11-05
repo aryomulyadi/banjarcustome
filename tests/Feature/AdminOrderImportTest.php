@@ -91,7 +91,7 @@ class AdminOrderImportTest extends TestCase
         $csv = implode("\n", [
             'BULAN, customer, jenis, waktu pengambilan, type, bahan, warna, pesan bahan, produksi, finish, TOTAL, jumlah, ukuran, whatsapp, status, catatan',
             'Oktober 2026, Budi Santoso, Bordir, 20/10/2026, Kaos Lengan Panjang, Cotton Combed 30s, Navy, ok, OK, nok, "1.500.000", 24, , 081234567890, completed, Pesanan lama via Excel',
-            'November 2026, Siti Aminah, , , , , , , , , , 10, , 081200001111, production,',
+            'November 2026, Siti Aminah, , , , , , , , , , 10, , 081200001111, printing,',
         ]);
 
         $response = $this->actingAs($this->admin())
@@ -146,7 +146,7 @@ class AdminOrderImportTest extends TestCase
 
         $this->assertSame('2026-11-01', $second->created_at->format('Y-m-d'));
         $this->assertSame(10, $second->quantity);
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, $second->status);
+        $this->assertSame(CustomOrder::STATUS_PRINTING, $second->status);
         $this->assertFalse($second->pesan_bahan_ok);
     }
 
@@ -517,7 +517,7 @@ class AdminOrderImportTest extends TestCase
 
         $csv = implode("\n", [
             'customer,status',
-            'Label Sah,Sedang Diproses',
+            'Label Sah,Persiapan Bahan',
             'Key Sah,completed',
         ]);
 
@@ -529,7 +529,7 @@ class AdminOrderImportTest extends TestCase
             ->assertOk()
             ->assertSee('Berhasil mengimpor 2 pesanan');
 
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, CustomOrder::where('name', 'Label Sah')->firstOrFail()->status);
+        $this->assertSame(CustomOrder::STATUS_MATERIAL_PREP, CustomOrder::where('name', 'Label Sah')->firstOrFail()->status);
         $this->assertSame(CustomOrder::STATUS_COMPLETED, CustomOrder::where('name', 'Key Sah')->firstOrFail()->status);
 
         $bad = implode("\n", [
@@ -567,7 +567,7 @@ class AdminOrderImportTest extends TestCase
             'finish_ok' => false,
         ]);
 
-        $order->forceFill(['status' => CustomOrder::STATUS_PRODUCTION])->save();
+        $order->forceFill(['status' => CustomOrder::STATUS_PRINTING])->save();
 
         $export = $this->actingAs($this->admin())->get(route('admin.orders.export'));
 
@@ -607,7 +607,7 @@ class AdminOrderImportTest extends TestCase
         $this->assertSame(['S' => 6, 'M' => 12], $reimported->size_quantities);
         $this->assertSame(1080000, $reimported->total_price);
         $this->assertSame('Catatan roundtrip', $reimported->notes);
-        $this->assertSame(CustomOrder::STATUS_PRODUCTION, $reimported->status);
+        $this->assertSame(CustomOrder::STATUS_PRINTING, $reimported->status);
         $this->assertTrue($reimported->pesan_bahan_ok);
         $this->assertTrue($reimported->produksi_ok);
         $this->assertFalse($reimported->finish_ok);

@@ -33,6 +33,19 @@
         .actions button, .actions a { font: inherit; font-size: 14px; padding: 8px 16px; border: 1px solid #1c1917; background: #fff; color: #1c1917; cursor: pointer; text-decoration: none; border-radius: 6px; }
         .actions .primary { background: #1c1917; color: #fff; }
         @media print { .actions { display: none; } body { padding: 0; } .sheet { border: 0; } }
+        .t-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .sheet { padding: 14px; }
+            .head { flex-direction: column; gap: 8px; }
+            .head .doc { text-align: left; }
+            th { width: auto; }
+            .sizes { min-width: 480px; }
+            .design-thumb img { max-width: 100%; }
+            .sign { flex-direction: column; gap: 16px; }
+            .sign .box { min-width: 0; text-align: left; }
+            .actions { flex-wrap: wrap; }
+        }
     </style>
 </head>
 <body>
@@ -89,24 +102,26 @@
             }
         @endphp
 
-        <table class="sizes">
-            <thead>
-                <tr>
-                    <th>Ukuran</th>
-                    <th class="num">Jumlah</th>
-                    <th class="num">Harga Satuan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($tableRows as $row)
+        <div class="t-scroll">
+            <table class="sizes">
+                <thead>
                     <tr>
-                        <td>{{ $row['ukuran'] }}</td>
-                        <td class="num">{{ $row['jumlah'] }}</td>
-                        <td class="num">{{ $row['harga'] }}</td>
+                        <th>Ukuran</th>
+                        <th class="num">Jumlah</th>
+                        <th class="num">Harga Satuan</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($tableRows as $row)
+                        <tr>
+                            <td>{{ $row['ukuran'] }}</td>
+                            <td class="num">{{ $row['jumlah'] }}</td>
+                            <td class="num">{{ $row['harga'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
         @if ($order->design_file_admin)
             <p class="section-title">Desain</p>

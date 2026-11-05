@@ -32,9 +32,31 @@ class HomeContent
     public static function stats(): array
     {
         return [
-            ['value' => '500+', 'label' => 'Pesanan Selesai'],
-            ['value' => '100%', 'label' => 'Sablon Anti Pecah'],
-            ['value' => '3-7 Hari', 'label' => 'Estimasi Produksi'],
+            ['value' => '5000+', 'label' => 'Pesanan Selesai'],
+        ];
+    }
+
+    /**
+     * Section "Dipercaya oleh" (marquee logo klien) di beranda.
+     * Placeholder memakai segmen pelanggan — saat logo asli tersedia, isi
+     * 'image' dengan path file di public/ (mis. images/clients/pln.png);
+     * view tidak perlu diubah.
+     *
+     * @return array<int, array{name: string, image: string|null}>
+     */
+    public static function clients(): array
+    {
+        return [
+            ['name' => 'Instansi Pemerintah', 'image' => 'images/clients/Logo1.webp'],
+            ['name' => 'Sekolah & Kampus', 'image' => 'images/clients/Logo2.png'],
+            ['name' => 'Perusahaan Lokal', 'image' => 'images/clients/Logo3.webp'],
+            ['name' => 'Komunitas & Ormas', 'image' => 'images/clients/Logo4.png'],
+            ['name' => 'Tim Olahraga', 'image' => 'images/clients/Logo5.webp'],
+            ['name' => 'Event Organizer', 'image' => 'images/clients/Logo6.png'],
+            ['name' => 'UMKM & Brand', 'image' => 'images/clients/Logo7.webp'],
+            ['name' => 'Organisasi Kampus', 'image' => 'images/clients/Logo8.webp'],
+            ['name' => 'Sekolah Dasar', 'image' => 'images/clients/Logo9.png'],
+
         ];
     }
 }

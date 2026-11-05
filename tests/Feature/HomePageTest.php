@@ -26,14 +26,19 @@ class HomePageTest extends TestCase
         $response->assertOk()
             ->assertSee('Banjar Custom')
             ->assertSee('Jasa Konveksi & Sablon Custom Banjarmasin')
-            ->assertSee('Bebas Custom Desain')
-            ->assertSee('Sablon Awet')
-            ->assertSee('Melayani Ecer')
+            ->assertSee('Alur Pemesanan')
+            ->assertSee('Konsultasi & Pilih Produk')
+            ->assertSee('Sudah Dipercaya Berbagai Instansi')
             ->assertSee('Buat Seragam/Kaos Custom Anda Sendiri!')
             ->assertSee('Tumbler Custom')
             ->assertDontSee('Kaos Promosi Custom')
             ->assertSee('Jl Veteran komplek halim ruko No.01')
             ->assertSee('0813-4813-8440')
-            ->assertSee('3-7 Hari');
+            ->assertSee('5000+')
+            ->assertSee('Cabang Kami')
+            ->assertSee('Banjarbaru')
+            ->assertSee('Sekolah Dasar')
+            ->assertDontSee('3-7 Hari')
+            ->assertDontSee('Kata Mereka');
     }
 }

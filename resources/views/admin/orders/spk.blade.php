@@ -31,7 +31,8 @@
         <a href="{{ route('admin.orders.show', $order) }}" class="rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold hover:bg-secondary">Kembali ke Detail</a>
     </div>
 
-    <main class="sheet mx-auto my-4 flex w-[297mm] min-h-[210mm] flex-col border border-border bg-white p-6 shadow-sm sm:p-7">
+    <div class="mx-auto max-w-full overflow-x-auto print:overflow-visible">
+        <main class="sheet my-4 flex w-[297mm] min-h-[210mm] flex-col border border-border bg-white p-6 shadow-sm sm:p-7 print:mx-0 print:my-0">
         {{-- Strip atas --}}
         <header class="flex items-center justify-between gap-4 border-b-2 border-foreground pb-4">
             <div>
@@ -142,6 +143,7 @@
             <span>{{ $order->quantity ? 'Total pesanan: '.$order->quantity.' pcs' : '' }}</span>
         </footer>
     </main>
+    </div>
 
     <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         document.getElementById('btn-print').addEventListener('click', function () { window.print(); });

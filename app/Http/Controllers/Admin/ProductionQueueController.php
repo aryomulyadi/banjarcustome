@@ -12,14 +12,14 @@ class ProductionQueueController extends Controller
     public function index(Request $request): View
     {
         $status = (string) $request->query('status');
-        if (! in_array($status, [CustomOrder::STATUS_READY, CustomOrder::STATUS_PRODUCTION], true)) {
+        if (! in_array($status, CustomOrder::PRODUCTION_STAGES, true)) {
             $status = '';
         }
 
         $mine = $request->boolean('milik');
 
         $query = CustomOrder::query()
-            ->whereIn('status', [CustomOrder::STATUS_READY, CustomOrder::STATUS_PRODUCTION])
+            ->whereIn('status', CustomOrder::PRODUCTION_STAGES)
             ->orderByRaw('deadline IS NULL')
             ->orderBy('deadline')
             ->orderByDesc('id');
@@ -32,14 +32,17 @@ class ProductionQueueController extends Controller
             $query->where('assigned_operator', (string) $request->user()?->name);
         }
 
+        $counts = [];
+
+        foreach (CustomOrder::PRODUCTION_STAGES as $stage) {
+            $counts[$stage] = CustomOrder::where('status', $stage)->count();
+        }
+
         return view('admin.produksi.index', [
             'orders' => $query->get(),
             'activeStatus' => $status,
             'mine' => $mine,
-            'counts' => [
-                CustomOrder::STATUS_READY => CustomOrder::where('status', CustomOrder::STATUS_READY)->count(),
-                CustomOrder::STATUS_PRODUCTION => CustomOrder::where('status', CustomOrder::STATUS_PRODUCTION)->count(),
-            ],
+            'counts' => $counts,
         ]);
     }
 }

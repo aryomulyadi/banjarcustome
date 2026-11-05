@@ -29,7 +29,18 @@
         .actions { max-width: 860px; margin: 16px auto 0; display: flex; gap: 8px; }
         .actions button, .actions a { font: inherit; font-size: 14px; padding: 8px 16px; border: 1px solid #1c1917; background: #fff; color: #1c1917; cursor: pointer; text-decoration: none; border-radius: 6px; }
         .actions .primary { background: #1c1917; color: #fff; }
+        .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         @media print { .actions { display: none; } body { padding: 0; } .nota { border: 0; } }
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .nota { padding: 14px; }
+            .head { flex-direction: column; gap: 8px; }
+            .head > div[style] { text-align: left !important; }
+            .nota-table { min-width: 560px; }
+            .summary { width: 100%; }
+            .foot { flex-direction: column; gap: 6px; }
+            .actions { flex-wrap: wrap; }
+        }
     </style>
 </head>
 <body>
@@ -86,7 +97,9 @@
             }
         @endphp
 
-        @include('admin.orders._nota-table', ['rows' => $tableRows])
+        <div class="table-scroll">
+            @include('admin.orders._nota-table', ['rows' => $tableRows])
+        </div>
 
         <table class="summary">
             <tr>

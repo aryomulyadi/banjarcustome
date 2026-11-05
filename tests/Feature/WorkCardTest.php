@@ -51,7 +51,7 @@ class WorkCardTest extends TestCase
 
     public function test_card_print_requires_admin_and_shows_rows(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_READY]);
+        $order = $this->order(['status' => CustomOrder::STATUS_LAYOUT]);
 
         $this->get(route('admin.orders.card', $order))->assertRedirect(route('login'));
 
@@ -67,7 +67,7 @@ class WorkCardTest extends TestCase
 
     public function test_spk_generates_number_once_and_shows_banner(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_READY]);
+        $order = $this->order(['status' => CustomOrder::STATUS_LAYOUT]);
         $order->forceFill(['assigned_operator' => 'Pak Rusdi'])->save();
 
         $this->actingAs($this->admin())
@@ -102,8 +102,8 @@ class WorkCardTest extends TestCase
     public function test_spk_shows_collar_for_jersey_only(): void
     {
         $jersey = $this->order([
-            'status' => CustomOrder::STATUS_READY,
-            'service_type' => 'Printing Sublim — Jersey',
+            'status' => CustomOrder::STATUS_LAYOUT,
+            'service_type' => 'Printing Sublim â€” Jersey',
             'collar_model' => 'Wangky Zipper',
         ]);
 
@@ -113,7 +113,7 @@ class WorkCardTest extends TestCase
             ->assertSee('Model Kerah')
             ->assertSee('Wangky Zipper');
 
-        $kaos = $this->order(['status' => CustomOrder::STATUS_READY]);
+        $kaos = $this->order(['status' => CustomOrder::STATUS_LAYOUT]);
 
         $this->actingAs($this->admin())
             ->get(route('admin.orders.spk', $kaos))

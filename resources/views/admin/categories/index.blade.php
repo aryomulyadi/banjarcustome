@@ -2,9 +2,9 @@
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-muted-foreground">Kategori tampil sebagai menu navigasi di header dan footer.</p>
-        <div class="flex gap-2">
-            <form method="GET" action="{{ route('admin.categories.index') }}" class="flex gap-2">
-                <x-input name="q" value="{{ $search }}" placeholder="Cari kategori…" class="w-full sm:w-48" aria-label="Cari kategori" />
+        <div class="flex flex-wrap gap-2">
+            <form method="GET" action="{{ route('admin.categories.index') }}" class="flex min-w-40 flex-1 gap-2">
+                <x-input name="q" value="{{ $search }}" placeholder="Cari kategori…" class="min-w-0 flex-1 sm:w-48 sm:flex-none" aria-label="Cari kategori" />
                 <x-button type="submit" variant="secondary">Cari</x-button>
             </form>
             <x-button href="{{ route('admin.categories.create') }}">Tambah Kategori</x-button>

@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\CustomOrder;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class OrderModelTest extends TestCase
@@ -30,11 +31,42 @@ class OrderModelTest extends TestCase
 
         $this->assertSame(CustomOrder::STATUS_PENDING, $order->status);
         $this->assertSame('Menunggu Konfirmasi', $order->statusLabel());
-        $this->assertSame('Sedang Diproses', CustomOrder::STATUS_LABELS[CustomOrder::STATUS_PRODUCTION]);
+        $this->assertSame('Persiapan Bahan', CustomOrder::STATUS_LABELS[CustomOrder::STATUS_MATERIAL_PREP]);
+        $this->assertSame('Sedang Diproses', CustomOrder::LEGACY_STATUS_LABELS['production']);
         $this->assertSame(
             'status-aneh',
             (new CustomOrder)->forceFill(['status' => 'status-aneh'])->statusLabel()
         );
+    }
+
+    public function test_estimated_completion_date_scales_by_product_type(): void
+    {
+        $base = Carbon::parse('2026-11-01 09:00:00');
+
+        $kaos = CustomOrder::create(['name' => 'Kaos', 'whatsapp_number' => '081111111111']);
+        $kaos->forceFill(['created_at' => $base])->save();
+        $this->assertSame('2026-11-08', $kaos->fresh()->estimatedCompletionDate()->format('Y-m-d'));
+
+        $jersey = CustomOrder::create([
+            'name' => 'Jersey',
+            'whatsapp_number' => '081111111112',
+            'service_type' => 'Printing Sublim - Jersey',
+        ]);
+        $jersey->forceFill(['created_at' => $base])->save();
+        $this->assertSame('2026-11-13', $jersey->fresh()->estimatedCompletionDate()->format('Y-m-d'));
+
+        $express = CustomOrder::create(['name' => 'Express', 'whatsapp_number' => '081111111113']);
+        $express->forceFill(['created_at' => $base, 'is_express' => true])->save();
+        $this->assertSame('2026-11-11', $express->fresh()->estimatedCompletionDate()->format('Y-m-d'));
+
+        // Express menang atas jenis produk (batas atas tetap +10 hari).
+        $expressJersey = CustomOrder::create([
+            'name' => 'Express Jersey',
+            'whatsapp_number' => '081111111114',
+            'service_type' => 'Printing Sublim - Jersey',
+        ]);
+        $expressJersey->forceFill(['created_at' => $base, 'is_express' => true])->save();
+        $this->assertSame('2026-11-11', $expressJersey->fresh()->estimatedCompletionDate()->format('Y-m-d'));
     }
 
     public function test_status_is_not_mass_assignable(): void

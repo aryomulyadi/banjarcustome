@@ -52,7 +52,7 @@ class TrackOrderTest extends TestCase
 
     public function test_matching_order_id_and_phone_shows_status(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING]);
 
         $response = $this->post('/cek-pesanan', [
             'order_id' => $order->id,
@@ -60,7 +60,7 @@ class TrackOrderTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertSee('Sedang Diproses')
+            ->assertSee('Printing')
             ->assertSee('Kaos Polos Cotton')
             ->assertSee('081234567890');
     }
@@ -77,7 +77,7 @@ class TrackOrderTest extends TestCase
             ])
             ->assertOk()
             ->assertSee('Nomor order atau nomor WhatsApp tidak cocok.')
-            ->assertDontSee('Sedang Diproses')
+            ->assertDontSee('Printing')
             ->assertDontSee('Kaos Polos Cotton');
     }
 

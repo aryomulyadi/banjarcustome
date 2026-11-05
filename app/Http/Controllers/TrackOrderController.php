@@ -70,10 +70,10 @@ class TrackOrderController extends Controller
     {
         $order = CustomOrder::where('tracking_token', $token)->firstOrFail();
 
-        if (! in_array($order->status, [CustomOrder::STATUS_DESIGN, CustomOrder::STATUS_READY], true)) {
+        if ($order->isFinalStatus() || in_array($order->status, [CustomOrder::STATUS_PENDING, CustomOrder::STATUS_CONFIRMED], true)) {
             return redirect()
                 ->route('track.token', $token)
-                ->with('track_error', 'Persetujuan desain baru bisa diberikan pada tahap "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_DESIGN].'" / "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_READY].'".');
+                ->with('track_error', 'Persetujuan desain baru bisa diberikan pada tahap "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_DESIGN].'" dan setelahnya (sebelum Selesai/Dibatalkan).');
         }
 
         if ($order->design_approved_at !== null) {
@@ -99,10 +99,10 @@ class TrackOrderController extends Controller
             'revision_reason.min' => 'Alasan revisi minimal 5 karakter.',
         ]);
 
-        if (! in_array($order->status, [CustomOrder::STATUS_DESIGN, CustomOrder::STATUS_READY], true)) {
+        if ($order->isFinalStatus() || in_array($order->status, [CustomOrder::STATUS_PENDING, CustomOrder::STATUS_CONFIRMED], true)) {
             return redirect()
                 ->route('track.token', $token)
-                ->with('track_error', 'Revisi desain hanya bisa diminta pada tahap "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_DESIGN].'" / "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_READY].'". Silakan hubungi kami via WhatsApp.');
+                ->with('track_error', 'Revisi desain hanya bisa diminta pada tahap "'.CustomOrder::STATUS_LABELS[CustomOrder::STATUS_DESIGN].'" dan setelahnya (sebelum Selesai/Dibatalkan). Silakan hubungi kami via WhatsApp.');
         }
 
         $from = $order->status;

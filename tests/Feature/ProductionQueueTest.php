@@ -79,14 +79,14 @@ class ProductionQueueTest extends TestCase
         $this->actingAs($user)->get('/admin/produksi')->assertForbidden();
     }
 
-    public function test_queue_lists_only_ready_and_production_orders(): void
+    public function test_queue_lists_only_production_stage_orders(): void
     {
         $ready = $this->order([
-            'status' => CustomOrder::STATUS_READY,
+            'status' => CustomOrder::STATUS_LAYOUT,
             'name' => 'Pelanggan Siap Produksi',
         ]);
         $running = $this->order([
-            'status' => CustomOrder::STATUS_PRODUCTION,
+            'status' => CustomOrder::STATUS_PRINTING,
             'name' => 'Pelanggan Sedang Diproses',
         ]);
         $this->order([
@@ -108,18 +108,36 @@ class ProductionQueueTest extends TestCase
             ->assertSee('#'.$running->id);
     }
 
+    public function test_queue_shows_filter_chips_for_every_production_stage(): void
+    {
+        $this->order([
+            'status' => CustomOrder::STATUS_LAYOUT,
+            'name' => 'Pelanggan Layout',
+        ]);
+
+        $this->actingAs($this->produksi())->get('/admin/produksi')
+            ->assertOk()
+            ->assertSee('status=layout', false)
+            ->assertSee('status=printing', false)
+            ->assertSee('status=jahit', false)
+            ->assertSee('status=material_prep', false)
+            ->assertSee('status=cetak', false)
+            ->assertSee('status=qc', false)
+            ->assertSee('Layout <span>(1)</span>', false);
+    }
+
     public function test_queue_status_filter_shows_only_the_requested_status(): void
     {
         $this->order([
-            'status' => CustomOrder::STATUS_READY,
+            'status' => CustomOrder::STATUS_LAYOUT,
             'name' => 'Pelanggan Siap Produksi',
         ]);
         $this->order([
-            'status' => CustomOrder::STATUS_PRODUCTION,
+            'status' => CustomOrder::STATUS_PRINTING,
             'name' => 'Pelanggan Sedang Diproses',
         ]);
 
-        $this->actingAs($this->produksi())->get('/admin/produksi?status=production')
+        $this->actingAs($this->produksi())->get('/admin/produksi?status=printing')
             ->assertOk()
             ->assertSee('Pelanggan Sedang Diproses')
             ->assertDontSee('Pelanggan Siap Produksi');
@@ -128,17 +146,17 @@ class ProductionQueueTest extends TestCase
     public function test_queue_mine_filter_matches_the_operator_name(): void
     {
         $this->order([
-            'status' => CustomOrder::STATUS_PRODUCTION,
+            'status' => CustomOrder::STATUS_PRINTING,
             'name' => 'Pesanan Milik Operator',
             'assigned_operator' => 'Operator Produksi',
         ]);
         $this->order([
-            'status' => CustomOrder::STATUS_PRODUCTION,
+            'status' => CustomOrder::STATUS_PRINTING,
             'name' => 'Pesanan Milik Orang Lain',
             'assigned_operator' => 'Pak Rusdi',
         ]);
 
-        $this->actingAs($this->produksi())->get('/admin/produksi?status=production&milik=1')
+        $this->actingAs($this->produksi())->get('/admin/produksi?status=printing&milik=1')
             ->assertOk()
             ->assertSee('Pesanan Milik Operator')
             ->assertDontSee('Pesanan Milik Orang Lain');
@@ -146,7 +164,7 @@ class ProductionQueueTest extends TestCase
 
     public function test_produksi_can_open_detail_without_admin_only_cards(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING]);
 
         $this->actingAs($this->produksi())->get(route('admin.orders.show', $order))
             ->assertOk()
@@ -165,7 +183,7 @@ class ProductionQueueTest extends TestCase
 
     public function test_admin_sees_all_cards_on_the_detail_page(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING]);
 
         $this->actingAs($this->admin())->get(route('admin.orders.show', $order))
             ->assertOk()
@@ -180,7 +198,7 @@ class ProductionQueueTest extends TestCase
 
     public function test_produksi_can_toggle_progress_from_detail_and_queue(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING]);
         $user = $this->produksi();
 
         $this->actingAs($user)->patch(route('admin.orders.progress', $order), [
@@ -202,7 +220,7 @@ class ProductionQueueTest extends TestCase
 
     public function test_produksi_can_open_work_card_and_spk(): void
     {
-        $order = $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $order = $this->order(['status' => CustomOrder::STATUS_PRINTING]);
         $user = $this->produksi();
 
         $this->actingAs($user)->get(route('admin.orders.card', $order))->assertOk();
@@ -241,7 +259,7 @@ class ProductionQueueTest extends TestCase
     {
         $this->actingAs($this->produksi())->get(route('admin.profile.edit'))->assertOk();
 
-        $this->order(['status' => CustomOrder::STATUS_READY]);
+        $this->order(['status' => CustomOrder::STATUS_LAYOUT]);
 
         $this->actingAs($this->admin())->get('/admin/produksi')
             ->assertOk()

@@ -65,13 +65,14 @@ class AdminDashboardTest extends TestCase
     public function test_dashboard_shows_stats_and_recent_orders(): void
     {
         $this->order(['status' => CustomOrder::STATUS_PENDING]);
-        $this->order(['status' => CustomOrder::STATUS_PRODUCTION]);
+        $this->order(['status' => CustomOrder::STATUS_PRINTING]);
         $this->order(['status' => CustomOrder::STATUS_CANCELLED]);
 
         $this->actingAs($this->admin())
             ->get(route('admin.dashboard'))
             ->assertOk()
             ->assertSee('Menunggu Konfirmasi')
+            ->assertSee('Dalam Produksi')
             ->assertSee('Pesanan Terbaru')
             ->assertSee('Pelanggan Uji')
             ->assertSee('Dibatalkan')

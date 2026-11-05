@@ -76,13 +76,15 @@
                         <dd class="mt-0.5 font-medium">{{ $order->deadline?->translatedFormat('d F Y') ?? '—' }}</dd>
                     </div>
                     <div class="border-b border-border py-2 sm:col-span-2">
-                        <dt class="text-xs text-muted-foreground">Estimasi</dt>
+                        <dt class="text-xs text-muted-foreground">Tanggal Selesai</dt>
                         <dd class="mt-0.5 font-medium">
+                            {{ $order->estimatedCompletionDate()->translatedFormat('d F Y') }}
+                            <span class="text-xs font-normal text-muted-foreground">(perkiraan, dihitung dari tanggal masuk)</span>
                             @if ($order->is_express)
-                                <span class="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-destructive">Express</span>
-                                <span class="text-xs font-normal text-muted-foreground">same-day / &lt;10 hari</span>
-                            @else
-                                Reguler (3–7 hari kaos, 10–12 hari jersey)
+                                <span class="ml-1 inline-flex flex-wrap items-center gap-1 align-middle">
+                                    <span class="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-destructive">Express</span>
+                                    <span class="text-xs font-normal text-muted-foreground">same-day / &lt;10 hari</span>
+                                </span>
                             @endif
                         </dd>
                     </div>
@@ -272,7 +274,7 @@
                                         max="100000000000"
                                         value="{{ old('size_prices.'.$size, $order->size_prices[$size] ?? '') }}"
                                         placeholder="{{ $order->unit_price !== null ? 'Rp '.number_format($order->unit_price + \App\Support\SizeSurcharge::of((string) $size), 0, ',', '.') : 'otomatis' }}"
-                                        class="flex h-9 w-36 rounded-md border border-input bg-transparent px-3 py-1 text-sm text-right shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        class="flex h-9 w-24 shrink-0 rounded-md border border-input bg-transparent px-3 py-1 text-sm text-right shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-36"
                                     />
                                 </div>
                             @endforeach
@@ -301,36 +303,66 @@
             @if ($isAdmin)
             <div class="rounded-xl border border-border bg-card p-4">
                 <h2 class="text-base font-semibold">Perbarui Status</h2>
-                @php $nextStatuses = $order->allowedNextStatuses(); @endphp
+                @php
+                    $stages = $order->selectableStatuses();
+                    $stageIdx = array_search($order->status, $stages, true);
+                    $checked = old('status');
 
-                @if ($nextStatuses === [])
+                    if (! in_array($checked, $stages, true)) {
+                        $checked = $stageIdx !== false ? $order->status : ($stages[0] ?? null);
+                    }
+                @endphp
+
+                @if ($stages === [])
                     <p class="mt-2 text-sm text-muted-foreground">
                         Status "<span class="font-medium">{{ $order->statusLabel() }}</span>" sudah final.
                     </p>
                 @else
-                    <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="mt-3 space-y-3" x-data="{ target: '{{ old('status', $nextStatuses[0]) }}' }">
+                    <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="mt-3 space-y-3">
                         @csrf
                         @method('PATCH')
 
-                        <div class="space-y-1.5">
-                            <x-label for="status">Pindahkan ke</x-label>
-                            <x-select
-                                id="status"
-                                name="status"
-                                x-model="target"
-                                aria-label="Status pesanan"
-                            >
-                                @foreach ($nextStatuses as $key)
-                                    <option value="{{ $key }}" {{ old('status', $nextStatuses[0]) === $key ? 'selected' : '' }}>{{ \App\Models\CustomOrder::STATUS_LABELS[$key] }}</option>
-                                @endforeach
-                            </x-select>
-                            @error('status')
-                                <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <fieldset class="space-y-1.5">
+                            <legend class="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                Tahap {{ $order->isJersey() ? 'Jersey' : 'Kaos & Lainnya' }} — pilih bebas, tidak harus berurutan
+                            </legend>
 
-                        <div class="space-y-1.5" x-show="target === 'cancelled'" x-cloak>
-                            <x-label for="cancel_reason">Alasan pembatalan (wajib)</x-label>
+                            @foreach ($stages as $idx => $key)
+                                <label class="flex {{ $checked === $key ? 'border-primary bg-primary/5' : 'border-border' }} cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm transition-colors hover:bg-secondary">
+                                    <input
+                                        type="radio"
+                                        name="status"
+                                        value="{{ $key }}"
+                                        {{ $checked === $key ? 'checked' : '' }}
+                                        class="h-4 w-4 shrink-0 accent-primary"
+                                        aria-label="{{ \App\Models\CustomOrder::STATUS_LABELS[$key] }}"
+                                    >
+                                    <span class="flex-1">{{ \App\Models\CustomOrder::STATUS_LABELS[$key] }}</span>
+                                    @if ($stageIdx !== false && $idx < $stageIdx)
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                                    @elseif ($stageIdx !== false && $idx === $stageIdx)
+                                        <span class="text-[11px] font-medium uppercase tracking-wide text-primary">Saat ini</span>
+                                    @endif
+                                </label>
+                            @endforeach
+                        </fieldset>
+
+                        @error('status')
+                            <p class="text-xs text-destructive" role="alert">{{ $message }}</p>
+                        @enderror
+
+                        <p class="text-xs text-muted-foreground">Tahap dapat dipilih bebas sesuai jenis produk. Status "Selesai" dan "Dibatalkan" bersifat final.</p>
+
+                        <x-button type="submit" class="w-full">Simpan Status</x-button>
+                    </form>
+
+                    <form method="POST" action="{{ route('admin.orders.status', $order) }}" class="mt-3 space-y-3 border-t border-border pt-3">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="status" value="cancelled">
+
+                        <div class="space-y-1.5">
+                            <x-label for="cancel_reason">Batalkan Pesanan — alasan (wajib)</x-label>
                             <textarea
                                 id="cancel_reason"
                                 name="cancel_reason"
@@ -344,9 +376,7 @@
                             @enderror
                         </div>
 
-                        <p class="text-xs text-muted-foreground">Urutan tahap: Menunggu Konfirmasi → Terkonfirmasi → Siap Produksi → Sedang Diproses → Selesai. Lompat tahap tidak diizinkan.</p>
-
-                        <x-button type="submit" class="w-full">Simpan Status</x-button>
+                        <x-button type="submit" variant="outline" class="w-full text-destructive hover:text-destructive">Batalkan Pesanan</x-button>
                     </form>
                 @endif
             </div>
@@ -463,19 +493,19 @@
 
                                 <template x-for="(row, ri) in group.rows" :key="ri">
                                     <div class="flex items-end gap-2">
-                                        <div class="flex-1 space-y-1">
+                                        <div class="min-w-0 flex-1 space-y-1">
                                             <x-label>Ukuran</x-label>
                                             <x-input x-bind:name="`spec_groups[${gi}][rows][${ri}][size]`" x-model="row.size" placeholder="S / M / L" maxlength="20" />
                                         </div>
-                                        <div class="w-20 space-y-1">
+                                        <div class="w-16 shrink-0 space-y-1 sm:w-20">
                                             <x-label>Jumlah</x-label>
                                             <x-input x-bind:name="`spec_groups[${gi}][rows][${ri}][qty]`" x-model="row.qty" type="number" min="1" max="1000000" />
                                         </div>
-                                        <div class="w-28 space-y-1">
+                                        <div class="w-24 shrink-0 space-y-1 sm:w-28">
                                             <x-label>Harga (Rp)</x-label>
                                             <x-input x-bind:name="`spec_groups[${gi}][rows][${ri}][unit]`" x-model="row.unit" type="number" min="0" placeholder="otomatis" />
                                         </div>
-                                        <button type="button" class="pb-2.5 text-xs text-destructive" @click="group.rows.splice(ri, 1)" :disabled="group.rows.length === 1">✕</button>
+                                        <button type="button" class="shrink-0 pb-2.5 text-xs text-destructive" @click="group.rows.splice(ri, 1)" :disabled="group.rows.length === 1">✕</button>
                                     </div>
                                 </template>
 
@@ -505,7 +535,7 @@
                         Diterima {{ $order->dp_received_at->translatedFormat('d M Y, H:i') }}.
                     </p>
                 @else
-                    <p class="mt-1.5 text-xs text-muted-foreground">Catat nominal DP yang sudah diterima — syarat naik ke Siap Produksi.</p>
+                    <p class="mt-1.5 text-xs text-muted-foreground">Catat nominal DP yang sudah diterima.</p>
                 @endif
 
                 @php $dpOld = old('dp_amount', $order->dp_amount); @endphp
